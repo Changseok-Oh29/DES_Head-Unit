@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Head Unit
+Comment=Head Unit Application
+Exec=/usr/bin/HU_app
+Icon=headunit
+Terminal=false
+Type=Application
+Categories=System;
+StartupNotify=true
