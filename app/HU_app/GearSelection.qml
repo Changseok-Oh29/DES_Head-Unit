@@ -1,11 +1,13 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import HeadUnit 1.0
 
 Rectangle {
     id: root
     color: "#34495e"
     
-    property string currentGear: "P"
+    // Use IPC manager for actual gear position
+    property string currentGear: ipcManager.gearPosition
     
     Text {
         id: titleText
@@ -80,7 +82,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    root.currentGear = "P"
+                    ipcManager.setGearPosition("P")
                     console.log("Gear changed to Park")
                 }
             }
@@ -106,7 +108,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    root.currentGear = "R"
+                    ipcManager.setGearPosition("R")
                     console.log("Gear changed to Reverse")
                 }
             }
@@ -132,7 +134,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    root.currentGear = "N"
+                    ipcManager.setGearPosition("N")
                     console.log("Gear changed to Neutral")
                 }
             }
@@ -158,7 +160,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    root.currentGear = "D"
+                    ipcManager.setGearPosition("D")
                     console.log("Gear changed to Drive")
                 }
             }

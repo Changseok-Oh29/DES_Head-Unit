@@ -1,51 +1,75 @@
-name: Head Unit CI/CD
+name: Head Unit CI/CD Pipeline
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build-app:
     runs-on: ubuntu-22.04
+    name: Build HU Application
     
     steps:
-    - name: Checkout code
+    - name: Checkout Repository
       uses: actions/checkout@v4
-      
-    - name: Install Qt5 dependencies
+      with:
+        fetch-depth: 0
+
+    - name: Setup Qt5 Environment
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '5.15.2'
+        host: 'linux'
+        target: 'desktop'
+        arch: 'gcc_64'
+        modules: 'qtquick qtquickcontrols2 qtmultimedia'
+
+    - name: Install Build Dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          qt5-qmake \
-          qtbase5-dev \
-          qtdeclarative5-dev \
-          qtquickcontrols2-5-dev \
+          build-essential \
           cmake \
-          build-essential
-    
+          ninja-build \
+          pkg-config \
+          libgl1-mesa-dev \
+          libasound2-dev \
+          libpulse-dev
+
     - name: Configure CMake
-      working-directory: ./app/HU_app
-      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
-      
-    - name: Build application
-      working-directory: ./app/HU_app
-      run: cmake --build build --config Release
-      
-    - name: Test application (basic checks)
-      working-directory: ./app/HU_app/build
+      working-directory: app/HU_app
       run: |
-        # Check if binary was created
-        ls -la HU_app
-        # Basic smoke test (check if app can show help/version)
-        # ./HU_app --help || true
-        
-    - name: Upload application artifact
-      uses: actions/upload-artifact@v3
+        cmake -B build -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_PREFIX_PATH=$Qt5_DIR
+
+    - name: Build Application
+      working-directory: app/HU_app
+      run: cmake --build build --config Release
+
+    - name: Run Tests
+      working-directory: app/HU_app
+      run: |
+        if [ -f build/test_* ]; then
+          echo "Running tests..."
+          ctest --test-dir build --output-on-failure
+        else
+          echo "No tests found, performing basic checks..."
+          ls -la build/HU_app
+          file build/HU_app
+        fi
+
+    - name: Upload Build Artifacts
+      uses: actions/upload-artifact@v4
       with:
-        name: headunit-app-x86_64
-        path: app/HU_app/build/HU_app
+        name: HU_app-x86_64
+        path: |
+          app/HU_app/build/HU_app
+          app/HU_app/build/*.so*
+        retention-days: 30
 
   build-yocto:
     runs-on: ubuntu-22.04

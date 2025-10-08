@@ -1,5 +1,6 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import HeadUnit 1.0
 
 Rectangle {
     id: root
@@ -10,6 +11,24 @@ Rectangle {
     property real blueValue: 255
     property real brightness: 80
     property string currentMode: "Manual"
+    
+    // Use IPC manager for ambient lighting state
+    property bool ambientEnabled: ipcManager.ambientLightEnabled
+    property string ambientColor: ipcManager.ambientColor
+    
+    // Convert RGB to hex color string
+    function rgbToHex(r, g, b) {
+        var red = Math.floor(r).toString(16).padStart(2, '0')
+        var green = Math.floor(g).toString(16).padStart(2, '0')
+        var blue = Math.floor(b).toString(16).padStart(2, '0')
+        return "#" + red + green + blue
+    }
+    
+    // Update IPC manager when color changes
+    function updateAmbientColor() {
+        var hexColor = rgbToHex(redValue, greenValue, blueValue)
+        ipcManager.setAmbientColor(hexColor)
+    }
     
     Text {
         id: titleText

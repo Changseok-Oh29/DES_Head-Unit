@@ -3,7 +3,7 @@ DESCRIPTION = "Qt5-based Head Unit application for automotive infotainment syste
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-DEPENDS = "qtbase qtdeclarative qtquickcontrols2"
+DEPENDS = "qtbase qtdeclarative qtquickcontrols2 qtmultimedia"
 
 # Source from local directory - in production this would be a git repository
 SRC_URI = "file://../../../app/HU_app"
@@ -29,4 +29,4 @@ SRC_URI += "file://headunit.desktop"
 
 FILES:${PN} += "${bindir}/HU_app ${sysconfdir}/xdg/autostart/headunit.desktop"
 
-RDEPENDS:${PN} = "qtbase qtdeclarative qtquickcontrols2"
+RDEPENDS:${PN} = "qtbase qtdeclarative qtquickcontrols2 qtmultimedia"

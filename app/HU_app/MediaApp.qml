@@ -1,22 +1,23 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import HeadUnit 1.0
 
 Rectangle {
     id: root
     color: "#34495e"
     
-    property bool isPlaying: false
-    property string currentSong: "No song selected"
-    property int currentIndex: -1
+    // Use actual media manager properties
+    property bool isPlaying: mediaManager.isPlaying
+    property string currentSong: mediaManager.currentFile
+    property int currentIndex: mediaManager.currentIndex
+    property var mediaFiles: mediaManager.mediaFiles
     
-    // Mock USB media files (in real implementation, this would come from USB scan)
-    property var mediaFiles: [
-        "Song 1 - Artist A.mp3",
-        "Song 2 - Artist B.mp3", 
-        "Song 3 - Artist C.mp3",
-        "Song 4 - Artist D.mp3",
-        "Song 5 - Artist E.mp3"
-    ]
+    // Function to get just the filename from full path
+    function getFileName(filePath) {
+        if (!filePath) return "No song selected"
+        var parts = filePath.split('/')
+        return parts[parts.length - 1]
+    }
     
     Text {
         id: titleText
@@ -80,17 +81,18 @@ Rectangle {
                             anchors.left: parent.left
                             anchors.leftMargin: 10
                             anchors.verticalCenter: parent.verticalCenter
-                            text: modelData
+                            text: root.getFileName(modelData)
                             color: "#ecf0f1"
                             font.pixelSize: 14
+                            elide: Text.ElideRight
+                            width: parent.width - 20
                         }
                         
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                root.currentIndex = index
-                                root.currentSong = modelData
-                                console.log("Selected: " + modelData)
+                                mediaManager.playFile(index)
+                                console.log("Playing: " + modelData)
                             }
                         }
                     }
@@ -128,12 +130,13 @@ Rectangle {
                     
                     Text {
                         anchors.centerIn: parent
-                        text: root.currentSong
+                        text: root.getFileName(root.currentSong)
                         color: "#ecf0f1"
                         font.pixelSize: 12
                         wrapMode: Text.WordWrap
                         horizontalAlignment: Text.AlignHCenter
                         anchors.margins: 10
+                        width: parent.width - 20
                     }
                 }
                 
@@ -159,10 +162,7 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (root.currentIndex > 0) {
-                                    root.currentIndex--
-                                    root.currentSong = root.mediaFiles[root.currentIndex]
-                                }
+                                mediaManager.previous()
                             }
                         }
                     }
@@ -184,12 +184,12 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                root.isPlaying = !root.isPlaying
-                                if (root.currentIndex === -1 && root.mediaFiles.length > 0) {
-                                    root.currentIndex = 0
-                                    root.currentSong = root.mediaFiles[0]
+                                if (root.isPlaying) {
+                                    mediaManager.pause()
+                                } else {
+                                    mediaManager.play()
                                 }
-                                console.log("Playback: " + (root.isPlaying ? "Playing" : "Paused"))
+                                console.log("Playback: " + (root.isPlaying ? "Paused" : "Playing"))
                             }
                         }
                     }
@@ -211,10 +211,7 @@ Rectangle {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                if (root.currentIndex < root.mediaFiles.length - 1) {
-                                    root.currentIndex++
-                                    root.currentSong = root.mediaFiles[root.currentIndex]
-                                }
+                                mediaManager.next()
                             }
                         }
                     }

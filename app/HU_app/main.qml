@@ -1,15 +1,19 @@
 import QtQuick 2.12
 import QtQuick.Window 2.12
 import QtQuick.Controls 2.12
+import HeadUnit 1.0
 
 ApplicationWindow {
     id: window
     width: 1024
     height: 600
     visible: true
-    title: qsTr("Head Unit")
+    title: qsTr("Head Unit - SEA-ME Project")
     
     property int currentPage: 0  // 0: Main, 1: Gear, 2: Media, 3: Ambient
+    
+    // Connection status indicator
+    property bool isConnected: ipcManager.isConnected
     
     // Main Header
     Rectangle {
