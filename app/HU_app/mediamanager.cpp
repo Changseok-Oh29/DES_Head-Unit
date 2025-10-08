@@ -15,6 +15,7 @@ MediaManager::MediaManager(QObject *parent)
     : QObject(parent)
     , m_isPlaying(false)
     , m_currentIndex(-1)
+    , m_volume(0.8)
     , m_usbWatcher(new QFileSystemWatcher(this))
     , m_scanTimer(new QTimer(this))
     , m_mediaPlayer(new QMediaPlayer(this))
@@ -34,6 +35,7 @@ MediaManager::MediaManager(QObject *parent)
     
     // Setup media player
     m_mediaPlayer->setPlaylist(m_playlist);
+    m_mediaPlayer->setVolume(m_volume * 100); // MediaPlayer uses 0-100 range
     connect(m_mediaPlayer, QOverload<QMediaPlayer::MediaStatus>::of(&QMediaPlayer::mediaStatusChanged),
             this, &MediaManager::onMediaStatusChanged);
     connect(m_mediaPlayer, &QMediaPlayer::positionChanged,
@@ -46,6 +48,9 @@ MediaManager::MediaManager(QObject *parent)
     
     // Initial scan
     QTimer::singleShot(1000, this, &MediaManager::scanForMedia);
+    
+    // Initial USB scan
+    refreshUsbMountsInternal();
 }
 
 void MediaManager::scanForMedia()
@@ -199,4 +204,92 @@ void MediaManager::onPositionChanged(qint64 position)
 {
     // Handle position changes for progress updates
     Q_UNUSED(position)
+}
+
+// USB 관련 메서드들 (이전 UsbMedia 기능 통합)
+QStringList MediaManager::listUsbMounts()
+{
+    refreshUsbMountsInternal();
+    return m_usbMounts;
+}
+
+QStringList MediaManager::scanUsbAt(const QString& path)
+{
+    qDebug() << "MediaManager: Scanning USB at:" << path;
+    QStringList out;
+    recursiveUsbScan(path, out);
+    out.removeDuplicates();
+    
+    // 발견된 파일들을 미디어 파일 목록에 업데이트
+    m_mediaFiles = out;
+    emit mediaFilesChanged();
+    
+    // 플레이리스트 업데이트 (재생을 위해 중요!)
+    updatePlaylist();
+    
+    // 현재 인덱스 초기화
+    m_currentIndex = -1;
+    
+    qDebug() << "MediaManager: Found" << out.length() << "media files in" << path;
+    
+    return out;
+}
+
+void MediaManager::refreshUsbMounts()
+{
+    refreshUsbMountsInternal();
+}
+
+void MediaManager::refreshUsbMountsInternal()
+{
+    m_usbMounts.clear();
+    const auto vols = QStorageInfo::mountedVolumes();
+    for (const auto& v : vols) {
+        if (!v.isValid() || !v.isReady()) continue;
+        QString root = v.rootPath();
+        
+        // USB 장치 감지: 일반적인 마운트 경로나 루트가 아닌 장치 확인
+        bool isUsbDevice = root.startsWith("/run/media") || 
+                          root.startsWith("/media") ||
+                          root.startsWith("/mnt") ||
+                          (root != "/" && v.device().startsWith("/dev/sd"));
+                          
+        if (isUsbDevice) {
+            m_usbMounts << root;
+            qDebug() << "MediaManager: Found USB mount:" << root;
+        }
+    }
+    m_usbMounts.removeDuplicates();
+    emit usbMountsChanged();
+}
+
+void MediaManager::recursiveUsbScan(const QString& root, QStringList& out) const
+{
+    QDirIterator it(root, QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QString path = it.next();
+        QString ext = QFileInfo(path).suffix().toLower();
+        
+        // 지원되는 오디오/비디오 형식 확장
+        QStringList mediaExts = {
+            "mp3","wav","ogg","m4a","flac","aac","wma",
+            "mp4","avi","mkv","mov","webm","wmv","3gp"
+        };
+        
+        if (mediaExts.contains(ext))
+            out << path;
+    }
+}
+
+void MediaManager::setVolume(qreal volume)
+{
+    // Clamp volume to 0.0-1.0 range
+    volume = qBound(0.0, volume, 1.0);
+    
+    if (qAbs(m_volume - volume) > 0.01) { // Avoid unnecessary updates
+        m_volume = volume;
+        m_mediaPlayer->setVolume(static_cast<int>(volume * 100)); // MediaPlayer uses 0-100 range
+        emit volumeChanged();
+        qDebug() << "MediaManager: Volume set to:" << volume << "(" << (volume * 100) << "%)";
+    }
 }

@@ -24,15 +24,82 @@ Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.topMargin: 20
-        text: "Media Player"
+        text: "USB Media Player"
         font.pixelSize: 28
         font.bold: true
         color: "#ecf0f1"
     }
     
+    // USB Controls Section
     Row {
+        id: usbControls
         anchors.top: titleText.bottom
-        anchors.topMargin: 30
+        anchors.topMargin: 20
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: 10
+
+        ComboBox {
+            id: mountBox
+            width: 250
+            model: mediaManager.usbMounts
+            displayText: currentText || "Select USB Device"
+            background: Rectangle {
+                color: "#3498db"
+                radius: 5
+            }
+            contentItem: Text {
+                text: mountBox.displayText
+                color: "white"
+                leftPadding: 10
+                rightPadding: 10
+                verticalAlignment: Text.AlignVCenter
+            }
+        }
+        
+        Button {
+            text: "Scan USB"
+            background: Rectangle {
+                color: "#e74c3c"
+                radius: 5
+            }
+            contentItem: Text {
+                text: parent.text
+                color: "white"
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+            onClicked: {
+                if (mountBox.currentText) {
+                    console.log("Scanning USB at:", mountBox.currentText);
+                    var files = mediaManager.scanUsbAt(mountBox.currentText);
+                    console.log("Found", files.length, "media files");
+                } else {
+                    console.log("No USB mount selected");
+                }
+            }
+        }
+
+        Button {
+            text: "Refresh USB"
+            background: Rectangle {
+                color: "#27ae60" 
+                radius: 5
+            }
+            contentItem: Text {
+                text: parent.text
+                color: "white"
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+            }
+            onClicked: {
+                mediaManager.refreshUsbMounts();
+            }
+        }
+    }
+    
+    Row {
+        anchors.top: usbControls.bottom
+        anchors.topMargin: 20
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.leftMargin: 20
@@ -233,8 +300,12 @@ Rectangle {
                         width: parent.width
                         from: 0
                         to: 100
-                        value: 50
+                        value: mediaManager.volume
                         anchors.horizontalCenter: parent.horizontalCenter
+                        
+                        onValueChanged: {
+                            mediaManager.volume = value
+                        }
                         
                         background: Rectangle {
                             x: parent.leftPadding
