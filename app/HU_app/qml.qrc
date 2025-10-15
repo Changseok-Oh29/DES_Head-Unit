@@ -3,7 +3,17 @@
         <file>main.qml</file>
         <file>MainMenu.qml</file>
         <file>GearSelection.qml</file>
+        <file>GearSelectionWidget.qml</file>
         <file>MediaApp.qml</file>
         <file>AmbientLighting.qml</file>
+        <file>images/car.svg</file>
+        <file>images/refresh.svg</file>
+        <file>images/backward.svg</file>
+        <file>images/start.svg</file>
+        <file>images/pause.svg</file>
+        <file>images/forward.svg</file>
+        <file>images/arrow.svg</file>
+        <file>images/mp3.svg</file>
+        <file>images/ambient_light.svg</file>
     </qresource>
 </RCC>

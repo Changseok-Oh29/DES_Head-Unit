@@ -54,117 +54,12 @@ Rectangle {
         }
     }
     
-    // Gear Selection Buttons
-    Grid {
+    // Gear Selection Buttons (새로운 위젯 사용)
+    GearSelectionWidget {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: currentGearDisplay.bottom
         anchors.topMargin: 50
-        columns: 4
-        spacing: 30
-        
-        // Park (P)
-        Rectangle {
-            width: 100
-            height: 80
-            color: root.currentGear === "P" ? "#e74c3c" : "#7f8c8d"
-            radius: 10
-            border.color: root.currentGear === "P" ? "#c0392b" : "#95a5a6"
-            border.width: 2
-            
-            Text {
-                anchors.centerIn: parent
-                text: "P"
-                font.pixelSize: 32
-                font.bold: true
-                color: "#ecf0f1"
-            }
-            
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    ipcManager.setGearPosition("P")
-                    console.log("Gear changed to Park")
-                }
-            }
-        }
-        
-        // Reverse (R)
-        Rectangle {
-            width: 100
-            height: 80
-            color: root.currentGear === "R" ? "#e74c3c" : "#7f8c8d"
-            radius: 10
-            border.color: root.currentGear === "R" ? "#c0392b" : "#95a5a6"
-            border.width: 2
-            
-            Text {
-                anchors.centerIn: parent
-                text: "R"
-                font.pixelSize: 32
-                font.bold: true
-                color: "#ecf0f1"
-            }
-            
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    ipcManager.setGearPosition("R")
-                    console.log("Gear changed to Reverse")
-                }
-            }
-        }
-        
-        // Neutral (N)
-        Rectangle {
-            width: 100
-            height: 80
-            color: root.currentGear === "N" ? "#f39c12" : "#7f8c8d"
-            radius: 10
-            border.color: root.currentGear === "N" ? "#e67e22" : "#95a5a6"
-            border.width: 2
-            
-            Text {
-                anchors.centerIn: parent
-                text: "N"
-                font.pixelSize: 32
-                font.bold: true
-                color: "#ecf0f1"
-            }
-            
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    ipcManager.setGearPosition("N")
-                    console.log("Gear changed to Neutral")
-                }
-            }
-        }
-        
-        // Drive (D)
-        Rectangle {
-            width: 100
-            height: 80
-            color: root.currentGear === "D" ? "#27ae60" : "#7f8c8d"
-            radius: 10
-            border.color: root.currentGear === "D" ? "#229954" : "#95a5a6"
-            border.width: 2
-            
-            Text {
-                anchors.centerIn: parent
-                text: "D"
-                font.pixelSize: 32
-                font.bold: true
-                color: "#ecf0f1"
-            }
-            
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    ipcManager.setGearPosition("D")
-                    console.log("Gear changed to Drive")
-                }
-            }
-        }
+        compactMode: false
     }
     
     // Gear Description

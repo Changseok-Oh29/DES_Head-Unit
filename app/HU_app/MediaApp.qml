@@ -1,10 +1,13 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import QtGraphicalEffects 1.0
 import HeadUnit 1.0
 
 Rectangle {
     id: root
-    color: "#34495e"
+    color: "transparent"  // 배경을 투명하게 하여 main.qml의 그라데이션 보이도록
+    
+    signal backClicked()
     
     // Use actual media manager properties
     property bool isPlaying: mediaManager.isPlaying
@@ -19,30 +22,77 @@ Rectangle {
         return parts[parts.length - 1]
     }
     
-    Text {
-        id: titleText
-        anchors.horizontalCenter: parent.horizontalCenter
+    // 컴포넌트 로드 시 자동으로 미디어 스캔
+    Component.onCompleted: {
+        console.log("MediaApp: Starting auto scan...")
+        autoScanTimer.start()
+    }
+    
+    // 자동 스캔 타이머
+    Timer {
+        id: autoScanTimer
+        interval: 1000
+        onTriggered: {
+            // UsbMedia 스타일의 전체 USB 스캔 사용
+            var files = mediaManager.scanAllUsbMounts()
+            console.log("Auto scan completed. Found", files.length, "media files")
+        }
+    }
+    
+    // Back Arrow Button (왼쪽 상단)
+    Rectangle {
+        id: backButton
+        anchors.left: parent.left
         anchors.top: parent.top
+        anchors.leftMargin: 20
         anchors.topMargin: 20
-        text: "USB Media Player"
-        font.pixelSize: 28
-        font.bold: true
-        color: "#ecf0f1"
+        width: 50
+        height: 50
+        color: "transparent"
+        z: 100  // 다른 요소들 위에 표시
+        
+        Image {
+            id: backArrowIcon
+            anchors.centerIn: parent
+            source: "qrc:/images/arrow.svg"
+            sourceSize.width: 50
+            sourceSize.height: 50
+            fillMode: Image.PreserveAspectFit
+        }
+        
+        ColorOverlay {
+            anchors.fill: backArrowIcon
+            source: backArrowIcon
+            color: "#ecf0f1"
+        }
+        
+        MouseArea {
+            id: backMouseArea
+            anchors.fill: parent
+            onClicked: root.backClicked()
+            
+            onPressed: parent.scale = 0.9
+            onReleased: parent.scale = 1.0
+        }
+        
+        Behavior on scale {
+            NumberAnimation { duration: 100 }
+        }
     }
     
     // USB Controls Section
     Row {
         id: usbControls
-        anchors.top: titleText.bottom
+        anchors.top: parent.top
         anchors.topMargin: 20
         anchors.horizontalCenter: parent.horizontalCenter
-        spacing: 10
+        spacing: 20  // 콤보박스와 refresh 버튼 사이 간격 증가 (10 -> 20)
 
         ComboBox {
             id: mountBox
-            width: 250
+            width: 350  // 콤보박스 너비 증가 (250 -> 350)
             model: mediaManager.usbMounts
-            displayText: currentText || "Select USB Device"
+            displayText: currentText || "No USB Device"
             background: Rectangle {
                 color: "#3498db"
                 radius: 5
@@ -56,43 +106,52 @@ Rectangle {
             }
         }
         
-        Button {
-            text: "Scan USB"
-            background: Rectangle {
-                color: "#e74c3c"
-                radius: 5
+        // Refresh Button with SVG icon
+        Rectangle {
+            width: 50
+            height: 50
+            color: "transparent"
+            
+            Image {
+                id: refreshIcon
+                anchors.centerIn: parent
+                source: "qrc:/images/refresh.svg"
+                sourceSize.width: 50
+                sourceSize.height: 50
+                fillMode: Image.PreserveAspectFit
             }
-            contentItem: Text {
-                text: parent.text
-                color: "white"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
+            
+            ColorOverlay {
+                anchors.fill: refreshIcon
+                source: refreshIcon
+                color: "#ecf0f1"
             }
-            onClicked: {
-                if (mountBox.currentText) {
-                    console.log("Scanning USB at:", mountBox.currentText);
-                    var files = mediaManager.scanUsbAt(mountBox.currentText);
-                    console.log("Found", files.length, "media files");
-                } else {
-                    console.log("No USB mount selected");
+            
+            MouseArea {
+                id: refreshMouseArea
+                anchors.fill: parent
+                onClicked: {
+                    console.log("Refreshing USB mounts...")
+                    mediaManager.refreshUsbMounts()
+                    // 짧은 지연 후 자동으로 스캔
+                    refreshScanTimer.start()
                 }
+                
+                onPressed: parent.scale = 0.9
+                onReleased: parent.scale = 1.0
             }
-        }
-
-        Button {
-            text: "Refresh USB"
-            background: Rectangle {
-                color: "#27ae60" 
-                radius: 5
+            
+            Behavior on scale {
+                NumberAnimation { duration: 100 }
             }
-            contentItem: Text {
-                text: parent.text
-                color: "white"
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
-            }
-            onClicked: {
-                mediaManager.refreshUsbMounts();
+            
+            Timer {
+                id: refreshScanTimer
+                interval: 500
+                onTriggered: {
+                    var files = mediaManager.scanAllUsbMounts()
+                    console.log("Refresh scan completed. Found", files.length, "media files")
+                }
             }
         }
     }
@@ -104,8 +163,9 @@ Rectangle {
         anchors.right: parent.right
         anchors.leftMargin: 20
         anchors.rightMargin: 20
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 20
         spacing: 20
-        height: parent.height - titleText.height - 50
         
         // Media List
         Rectangle {
@@ -212,25 +272,41 @@ Rectangle {
                     spacing: 15
                     anchors.horizontalCenter: parent.horizontalCenter
                     
-                    // Previous Button
+                    // Previous Button (Backward)
                     Rectangle {
                         width: 50
                         height: 50
-                        color: "#7f8c8d"
-                        radius: 25
+                        color: "transparent"
                         
-                        Text {
+                        Image {
+                            id: backwardIcon
                             anchors.centerIn: parent
-                            text: "⏮"
-                            font.pixelSize: 20
+                            source: "qrc:/images/backward.svg"
+                            sourceSize.width: 50
+                            sourceSize.height: 50
+                            fillMode: Image.PreserveAspectFit
+                        }
+                        
+                        ColorOverlay {
+                            anchors.fill: backwardIcon
+                            source: backwardIcon
                             color: "#ecf0f1"
                         }
                         
                         MouseArea {
+                            id: backwardMouseArea
                             anchors.fill: parent
                             onClicked: {
                                 mediaManager.previous()
+                                console.log("Previous track")
                             }
+                            
+                            onPressed: parent.scale = 0.9
+                            onReleased: parent.scale = 1.0
+                        }
+                        
+                        Behavior on scale {
+                            NumberAnimation { duration: 100 }
                         }
                     }
                     
@@ -238,48 +314,80 @@ Rectangle {
                     Rectangle {
                         width: 60
                         height: 60
-                        color: root.isPlaying ? "#e74c3c" : "#27ae60"
-                        radius: 30
+                        color: "transparent"
                         
-                        Text {
+                        Image {
+                            id: playPauseIcon
                             anchors.centerIn: parent
-                            text: root.isPlaying ? "⏸" : "▶"
-                            font.pixelSize: 24
+                            source: root.isPlaying ? "qrc:/images/pause.svg" : "qrc:/images/start.svg"
+                            sourceSize.width: 60
+                            sourceSize.height: 60
+                            fillMode: Image.PreserveAspectFit
+                        }
+                        
+                        ColorOverlay {
+                            anchors.fill: playPauseIcon
+                            source: playPauseIcon
                             color: "#ecf0f1"
                         }
                         
                         MouseArea {
+                            id: playPauseMouseArea
                             anchors.fill: parent
                             onClicked: {
                                 if (root.isPlaying) {
                                     mediaManager.pause()
+                                    console.log("Paused")
                                 } else {
                                     mediaManager.play()
+                                    console.log("Playing")
                                 }
-                                console.log("Playback: " + (root.isPlaying ? "Paused" : "Playing"))
                             }
+                            
+                            onPressed: parent.scale = 0.9
+                            onReleased: parent.scale = 1.0
+                        }
+                        
+                        Behavior on scale {
+                            NumberAnimation { duration: 100 }
                         }
                     }
                     
-                    // Next Button
+                    // Next Button (Forward)
                     Rectangle {
                         width: 50
                         height: 50
-                        color: "#7f8c8d"
-                        radius: 25
+                        color: "transparent"
                         
-                        Text {
+                        Image {
+                            id: forwardIcon
                             anchors.centerIn: parent
-                            text: "⏭"
-                            font.pixelSize: 20
+                            source: "qrc:/images/forward.svg"
+                            sourceSize.width: 50
+                            sourceSize.height: 50
+                            fillMode: Image.PreserveAspectFit
+                        }
+                        
+                        ColorOverlay {
+                            anchors.fill: forwardIcon
+                            source: forwardIcon
                             color: "#ecf0f1"
                         }
                         
                         MouseArea {
+                            id: forwardMouseArea
                             anchors.fill: parent
                             onClicked: {
                                 mediaManager.next()
+                                console.log("Next track")
                             }
+                            
+                            onPressed: parent.scale = 0.9
+                            onReleased: parent.scale = 1.0
+                        }
+                        
+                        Behavior on scale {
+                            NumberAnimation { duration: 100 }
                         }
                     }
                 }
@@ -290,7 +398,7 @@ Rectangle {
                     spacing: 10
                     
                     Text {
-                        text: "Volume"
+                        text: "Volume: " + Math.round(mediaManager.volume * 100) + "%"
                         font.pixelSize: 16
                         color: "#ecf0f1"
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -300,11 +408,12 @@ Rectangle {
                         width: parent.width
                         from: 0
                         to: 100
-                        value: mediaManager.volume
+                        value: mediaManager.volume * 100  // Convert 0.0-1.0 to 0-100 for display
+                        stepSize: 1  // 1% 단위로 조절
                         anchors.horizontalCenter: parent.horizontalCenter
                         
                         onValueChanged: {
-                            mediaManager.volume = value
+                            mediaManager.volume = value / 100.0  // Convert back to 0.0-1.0 range
                         }
                         
                         background: Rectangle {
@@ -326,21 +435,6 @@ Rectangle {
                             radius: 10
                             color: "#3498db"
                         }
-                    }
-                }
-                
-                // USB Status
-                Rectangle {
-                    width: parent.width
-                    height: 40
-                    color: "#27ae60"
-                    radius: 5
-                    
-                    Text {
-                        anchors.centerIn: parent
-                        text: "USB Connected - " + root.mediaFiles.length + " files found"
-                        color: "#ecf0f1"
-                        font.pixelSize: 12
                     }
                 }
             }

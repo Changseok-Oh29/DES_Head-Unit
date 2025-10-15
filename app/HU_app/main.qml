@@ -10,59 +10,31 @@ ApplicationWindow {
     visible: true
     title: qsTr("Head Unit - SEA-ME Project")
     
-    property int currentPage: 0  // 0: Main, 1: Gear, 2: Media, 3: Ambient
+    property int currentPage: 0  // 0: Main, 1: Media, 2: Ambient
     
     // Connection status indicator
     property bool isConnected: ipcManager.isConnected
     
-    // Main Header
+    // Main Content Area - 전체 화면 사용
     Rectangle {
-        id: header
-        anchors.top: parent.top
-        width: parent.width
-        height: 80
-        color: "#2c3e50"
+        anchors.fill: parent
         
-        Text {
-            anchors.centerIn: parent
-            text: "HEAD UNIT SYSTEM"
-            font.pixelSize: 24
-            font.bold: true
-            color: "#ecf0f1"
-        }
-        
-        // Back button (visible when not on main page)
-        Rectangle {
-            id: backButton
-            visible: window.currentPage !== 0
-            anchors.left: parent.left
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.leftMargin: 20
-            width: 60
-            height: 40
-            color: "#34495e"
-            radius: 5
-            
-            Text {
-                anchors.centerIn: parent
-                text: "← Back"
-                color: "#ecf0f1"
-                font.pixelSize: 14
+        // Ambient light 색상을 전체 배경에 적용
+        gradient: Gradient {
+            GradientStop { 
+                position: 0.0
+                color: ipcManager.ambientLightEnabled ? 
+                       Qt.lighter(ipcManager.ambientColor, 1.8) : "#34495e"
             }
-            
-            MouseArea {
-                anchors.fill: parent
-                onClicked: window.currentPage = 0
+            GradientStop { 
+                position: 1.0
+                color: "#34495e"
             }
         }
-    }
-    
-    // Main Content Area
-    Rectangle {
-        anchors.top: header.bottom
-        anchors.bottom: parent.bottom
-        width: parent.width
-        color: "#34495e"
+        
+        Behavior on gradient {
+            PropertyAnimation { duration: 1500 }
+        }
         
         // Main Menu
         MainMenu {
@@ -70,30 +42,26 @@ ApplicationWindow {
             visible: window.currentPage === 0
             anchors.fill: parent
             
-            onGearSelected: window.currentPage = 1
-            onMediaSelected: window.currentPage = 2
-            onAmbientSelected: window.currentPage = 3
-        }
-        
-        // Gear Selection Page
-        GearSelection {
-            id: gearPage
-            visible: window.currentPage === 1
-            anchors.fill: parent
+            onMediaSelected: window.currentPage = 1
+            onAmbientSelected: window.currentPage = 2
         }
         
         // Media App Page
         MediaApp {
             id: mediaPage
-            visible: window.currentPage === 2
+            visible: window.currentPage === 1
             anchors.fill: parent
+            
+            onBackClicked: window.currentPage = 0
         }
         
         // Ambient Lighting Page
         AmbientLighting {
             id: ambientPage
-            visible: window.currentPage === 3
+            visible: window.currentPage === 2
             anchors.fill: parent
+            
+            onBackClicked: window.currentPage = 0
         }
     }
 }

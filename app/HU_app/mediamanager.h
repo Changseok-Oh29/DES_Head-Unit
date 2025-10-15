@@ -40,6 +40,7 @@ public slots:
     void previous();
     Q_INVOKABLE QStringList listUsbMounts();
     Q_INVOKABLE QStringList scanUsbAt(const QString& path);
+    Q_INVOKABLE QStringList scanAllUsbMounts();
     Q_INVOKABLE void refreshUsbMounts();
 
 signals:

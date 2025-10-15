@@ -1,551 +1,226 @@
 import QtQuick 2.12
 import QtQuick.Controls 2.12
+import QtQuick.Layouts 1.3
+import QtGraphicalEffects 1.0
 import HeadUnit 1.0
 
 Rectangle {
     id: root
-    color: "#34495e"
     
-    property real redValue: 128
-    property real greenValue: 128  
-    property real blueValue: 255
-    property real brightness: 80
-    property string currentMode: "Manual"
+    signal backClicked()
     
-    // Use IPC manager for ambient lighting state
-    property bool ambientEnabled: ipcManager.ambientLightEnabled
-    property string ambientColor: ipcManager.ambientColor
+    // Color wheel properties
+    property color selectedColor: colorWheel.color
     
-    // Convert RGB to hex color string
-    function rgbToHex(r, g, b) {
-        var red = Math.floor(r).toString(16).padStart(2, '0')
-        var green = Math.floor(g).toString(16).padStart(2, '0')
-        var blue = Math.floor(b).toString(16).padStart(2, '0')
-        return "#" + red + green + blue
+    // Ambient light 색상을 배경 그라데이션으로 표시 (MainMenu와 동일)
+    gradient: Gradient {
+        GradientStop { 
+            position: 0.0
+            color: {
+                if (ipcManager.ambientLightEnabled && ipcManager.ambientColor) {
+                    return Qt.lighter(ipcManager.ambientColor, 1.3)
+                }
+                return "#34495e"
+            }
+        }
+        GradientStop { 
+            position: 0.5
+            color: {
+                if (ipcManager.ambientLightEnabled && ipcManager.ambientColor) {
+                    return ipcManager.ambientColor
+                }
+                return "#2c3e50"
+            }
+        }
+        GradientStop { 
+            position: 1.0
+            color: {
+                if (ipcManager.ambientLightEnabled && ipcManager.ambientColor) {
+                    return Qt.darker(ipcManager.ambientColor, 2.0)
+                }
+                return "#2c3e50"
+            }
+        }
     }
     
     // Update IPC manager when color changes
     function updateAmbientColor() {
-        var hexColor = rgbToHex(redValue, greenValue, blueValue)
-        ipcManager.setAmbientColor(hexColor)
+        ipcManager.setAmbientColor(selectedColor.toString())
     }
     
-    Text {
-        id: titleText
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: 20
-        text: "Ambient Lighting Control"
-        font.pixelSize: 28
-        font.bold: true
-        color: "#ecf0f1"
-    }
+    // Watch for color changes
+    onSelectedColorChanged: updateAmbientColor()
     
-    Row {
-        anchors.top: titleText.bottom
-        anchors.topMargin: 30
+    // Back Arrow Button (왼쪽 상단)
+    Rectangle {
+        id: backButton
         anchors.left: parent.left
-        anchors.right: parent.right
+        anchors.top: parent.top
         anchors.leftMargin: 20
-        anchors.rightMargin: 20
-        spacing: 30
-        height: parent.height - titleText.height - 50
+        anchors.topMargin: 20
+        width: 50
+        height: 50
+        color: "transparent"
+        z: 100  // 다른 요소들 위에 표시
         
-        // Left Panel - Controls
-        Rectangle {
-            width: parent.width * 0.6
-            height: parent.height
-            color: "#2c3e50"
-            radius: 10
+        Image {
+            id: backArrowIcon
+            anchors.centerIn: parent
+            source: "qrc:/images/arrow.svg"
+            sourceSize.width: 50
+            sourceSize.height: 50
+            fillMode: Image.PreserveAspectFit
+        }
+        
+        ColorOverlay {
+            anchors.fill: backArrowIcon
+            source: backArrowIcon
+            color: "#ecf0f1"
+        }
+        
+        MouseArea {
+            id: backMouseArea
+            anchors.fill: parent
+            onClicked: root.backClicked()
             
-            Column {
-                anchors.fill: parent
-                anchors.margins: 20
-                spacing: 20
-                
-                // Mode Selection
-                Text {
-                    text: "Lighting Mode"
-                    font.pixelSize: 18
-                    font.bold: true
-                    color: "#ecf0f1"
+            onPressed: parent.scale = 0.9
+            onReleased: parent.scale = 1.0
+        }
+        
+        Behavior on scale {
+            NumberAnimation { duration: 100 }
+        }
+    }
+    
+    // 왼쪽 기어 선택 영역 (MainMenu와 동일)
+    Rectangle {
+        id: leftGearPanel
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: 120
+        color: "transparent"
+        
+        GearSelectionWidget {
+            id: gearWidget
+            compactMode: true
+            anchors.centerIn: parent
+        }
+    }
+    
+    // 중앙 색상 휠 컨트롤
+    Rectangle {
+        anchors.centerIn: parent
+        width: 350
+        height: 350
+        color: "transparent"
+            
+        Control {
+            id: colorWheel
+            anchors.centerIn: parent
+            property real ringWidth: 30
+            property real hsvValue: 1.0
+            property real hsvSaturation: 1.0
+
+            readonly property color color: Qt.hsva(mousearea.angle, 1.0, 1.0, 1.0)
+
+            contentItem: Item {
+                implicitWidth: 350
+                implicitHeight: width
+
+                ShaderEffect {
+                    id: shadereffect
+                    width: parent.width
+                    height: parent.height
+                    readonly property real ringWidth: colorWheel.ringWidth / width / 2
+                    readonly property real s: colorWheel.hsvSaturation
+                    readonly property real v: colorWheel.hsvValue
+
+                    vertexShader: "
+                        attribute vec4 qt_Vertex;
+                        attribute vec2 qt_MultiTexCoord0;
+                        varying vec2 qt_TexCoord0;
+                        uniform mat4 qt_Matrix;
+
+                        void main() {
+                            gl_Position = qt_Matrix * qt_Vertex;
+                            qt_TexCoord0 = qt_MultiTexCoord0;
+                        }"
+
+                    fragmentShader: "
+                        varying vec2 qt_TexCoord0;
+                        uniform float qt_Opacity;
+                        uniform float ringWidth;
+                        uniform float s;
+                        uniform float v;
+
+                        vec3 hsv2rgb(vec3 c) {
+                            vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+                            vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+                            return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+                        }
+
+                        void main() {
+                            vec2 coord = qt_TexCoord0 - vec2(0.5);
+                            float ring = smoothstep(0.0, 0.01, -abs(length(coord) - 0.5 + ringWidth) + ringWidth);
+                            gl_FragColor = vec4(hsv2rgb(vec3((atan(coord.y, coord.x) + 3.1415 + 3.1415 / 2.0) / 6.2831 + 0.5, s, v)), 1.0);
+                            gl_FragColor *= ring;
+                        }"
                 }
-                
-                Row {
-                    spacing: 15
-                    
-                    Rectangle {
-                        width: 100
-                        height: 40
-                        color: root.currentMode === "Manual" ? "#3498db" : "#7f8c8d"
-                        radius: 5
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: "Manual"
-                            color: "#ecf0f1"
-                            font.pixelSize: 14
-                        }
-                        
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: root.currentMode = "Manual"
-                        }
-                    }
-                    
-                    Rectangle {
-                        width: 100
-                        height: 40
-                        color: root.currentMode === "Auto" ? "#3498db" : "#7f8c8d"
-                        radius: 5
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: "Auto"
-                            color: "#ecf0f1"
-                            font.pixelSize: 14
-                        }
-                        
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: root.currentMode = "Auto"
-                        }
-                    }
-                    
-                    Rectangle {
-                        width: 100
-                        height: 40
-                        color: root.currentMode === "Music Sync" ? "#3498db" : "#7f8c8d"
-                        radius: 5
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: "Music Sync"
-                            color: "#ecf0f1"
-                            font.pixelSize: 14
-                        }
-                        
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: root.currentMode = "Music Sync"
-                        }
-                    }
-                }
-                
+
                 Rectangle {
-                    width: parent.width
-                    height: 2
-                    color: "#3498db"
-                }
-                
-                // Color Controls (visible in Manual mode)
-                Column {
-                    visible: root.currentMode === "Manual"
-                    width: parent.width
-                    spacing: 15
-                    
-                    Text {
-                        text: "Color Control"
-                        font.pixelSize: 16
-                        font.bold: true
-                        color: "#ecf0f1"
+                    id: indicator
+                    x: (parent.width - width)/2
+                    y: colorWheel.ringWidth * 0.1
+
+                    width: colorWheel.ringWidth * 0.8; height: width
+                    radius: width/2
+
+                    color: 'white'
+                    border {
+                        width: mousearea.containsPress ? 3 : 1
+                        color: Qt.lighter(colorWheel.color)
+                        Behavior on width { NumberAnimation { duration: 50 } }
                     }
-                    
-                    // Red Control
-                    Row {
-                        width: parent.width
-                        spacing: 10
-                        
-                        Text {
-                            text: "Red:"
-                            width: 50
-                            color: "#ecf0f1"
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                        
-                        Slider {
-                            width: parent.width - 100
-                            from: 0
-                            to: 255
-                            value: root.redValue
-                            onValueChanged: root.redValue = value
-                            
-                            background: Rectangle {
-                                x: parent.leftPadding
-                                y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                                implicitWidth: 200
-                                implicitHeight: 4
-                                width: parent.availableWidth
-                                height: implicitHeight
-                                radius: 2
-                                color: "#7f8c8d"
-                            }
-                            
-                            handle: Rectangle {
-                                x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
-                                y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                                implicitWidth: 20
-                                implicitHeight: 20
-                                radius: 10
-                                color: "#e74c3c"
-                            }
-                        }
-                        
-                        Text {
-                            text: Math.round(root.redValue)
-                            width: 40
-                            color: "#ecf0f1"
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                    }
-                    
-                    // Green Control
-                    Row {
-                        width: parent.width
-                        spacing: 10
-                        
-                        Text {
-                            text: "Green:"
-                            width: 50
-                            color: "#ecf0f1"
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                        
-                        Slider {
-                            width: parent.width - 100
-                            from: 0
-                            to: 255
-                            value: root.greenValue
-                            onValueChanged: root.greenValue = value
-                            
-                            background: Rectangle {
-                                x: parent.leftPadding
-                                y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                                implicitWidth: 200
-                                implicitHeight: 4
-                                width: parent.availableWidth
-                                height: implicitHeight
-                                radius: 2
-                                color: "#7f8c8d"
-                            }
-                            
-                            handle: Rectangle {
-                                x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
-                                y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                                implicitWidth: 20
-                                implicitHeight: 20
-                                radius: 10
-                                color: "#27ae60"
-                            }
-                        }
-                        
-                        Text {
-                            text: Math.round(root.greenValue)
-                            width: 40
-                            color: "#ecf0f1"
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                    }
-                    
-                    // Blue Control
-                    Row {
-                        width: parent.width
-                        spacing: 10
-                        
-                        Text {
-                            text: "Blue:"
-                            width: 50
-                            color: "#ecf0f1"
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
-                        
-                        Slider {
-                            width: parent.width - 100
-                            from: 0
-                            to: 255
-                            value: root.blueValue
-                            onValueChanged: root.blueValue = value
-                            
-                            background: Rectangle {
-                                x: parent.leftPadding
-                                y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                                implicitWidth: 200
-                                implicitHeight: 4
-                                width: parent.availableWidth
-                                height: implicitHeight
-                                radius: 2
-                                color: "#7f8c8d"
-                            }
-                            
-                            handle: Rectangle {
-                                x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
-                                y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                                implicitWidth: 20
-                                implicitHeight: 20
-                                radius: 10
-                                color: "#3498db"
-                            }
-                        }
-                        
-                        Text {
-                            text: Math.round(root.blueValue)
-                            width: 40
-                            color: "#ecf0f1"
-                            anchors.verticalCenter: parent.verticalCenter
-                        }
+
+                    transform: Rotation {
+                        angle: mousearea.angle * 360
+                        origin.x: indicator.width/2
+                        origin.y: colorWheel.availableHeight/2 - indicator.y
                     }
                 }
-                
-                Rectangle {
-                    width: parent.width
-                    height: 2
-                    color: "#3498db"
-                }
-                
-                // Brightness Control
-                Row {
-                    width: parent.width
-                    spacing: 10
-                    
-                    Text {
-                        text: "Brightness:"
-                        width: 80
-                        color: "#ecf0f1"
-                        font.pixelSize: 16
-                        font.bold: true
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-                    
-                    Slider {
-                        width: parent.width - 130
-                        from: 0
-                        to: 100
-                        value: root.brightness
-                        onValueChanged: root.brightness = value
-                        
-                        background: Rectangle {
-                            x: parent.leftPadding
-                            y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                            implicitWidth: 200
-                            implicitHeight: 4
-                            width: parent.availableWidth
-                            height: implicitHeight
-                            radius: 2
-                            color: "#7f8c8d"
-                        }
-                        
-                        handle: Rectangle {
-                            x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
-                            y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                            implicitWidth: 20
-                            implicitHeight: 20
-                            radius: 10
-                            color: "#f39c12"
-                        }
-                    }
-                    
-                    Text {
-                        text: Math.round(root.brightness) + "%"
-                        width: 40
-                        color: "#ecf0f1"
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
+
+                MouseArea {
+                    id: mousearea
+                    anchors.fill: parent
+                    property real angle: Math.atan2(width/2 - mouseX, mouseY - height/2) / 3.14 / 2 + 0.5
                 }
             }
         }
         
-        // Right Panel - Preview
-        Rectangle {
-            width: parent.width * 0.35
-            height: parent.height
-            color: "#2c3e50"
-            radius: 10
+        // 중앙 차량 이미지 (색상 원 안)
+        Item {
+            anchors.centerIn: parent
+            width: 140
+            height: 95
             
-            Column {
-                anchors.fill: parent
-                anchors.margins: 20
-                spacing: 20
-                
-                Text {
-                    text: "Preview"
-                    font.pixelSize: 18
-                    font.bold: true
-                    color: "#ecf0f1"
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
-                
-                // Color Preview
-                Rectangle {
-                    width: parent.width
-                    height: 100
-                    color: Qt.rgba(root.redValue/255, root.greenValue/255, root.blueValue/255, root.brightness/100)
-                    radius: 10
-                    border.color: "#7f8c8d"
-                    border.width: 2
-                    
-                    Text {
-                        anchors.centerIn: parent
-                        text: "Ambient Light Preview"
-                        color: "#2c3e50"
-                        font.pixelSize: 14
-                        font.bold: true
-                    }
-                }
-                
-                // Status Info
-                Rectangle {
-                    width: parent.width
-                    height: 120
-                    color: "#34495e"
-                    radius: 5
-                    
-                    Column {
-                        anchors.centerIn: parent
-                        spacing: 8
-                        
-                        Text {
-                            text: "Status"
-                            font.pixelSize: 16
-                            font.bold: true
-                            color: "#3498db"
-                            anchors.horizontalCenter: parent.horizontalCenter
-                        }
-                        
-                        Text {
-                            text: "Mode: " + root.currentMode
-                            color: "#ecf0f1"
-                            font.pixelSize: 12
-                        }
-                        
-                        Text {
-                            text: "RGB: (" + Math.round(root.redValue) + ", " + Math.round(root.greenValue) + ", " + Math.round(root.blueValue) + ")"
-                            color: "#ecf0f1"
-                            font.pixelSize: 12
-                        }
-                        
-                        Text {
-                            text: "Brightness: " + Math.round(root.brightness) + "%"
-                            color: "#ecf0f1"
-                            font.pixelSize: 12
-                        }
-                    }
-                }
-                
-                // Quick Preset Colors
-                Text {
-                    text: "Quick Presets"
-                    font.pixelSize: 16
-                    font.bold: true
-                    color: "#ecf0f1"
-                }
-                
-                Grid {
-                    columns: 3
-                    spacing: 10
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    
-                    // Red preset
-                    Rectangle {
-                        width: 40
-                        height: 40
-                        color: "#e74c3c"
-                        radius: 20
-                        
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                root.redValue = 231
-                                root.greenValue = 76
-                                root.blueValue = 60
-                            }
-                        }
-                    }
-                    
-                    // Green preset
-                    Rectangle {
-                        width: 40
-                        height: 40
-                        color: "#27ae60"
-                        radius: 20
-                        
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                root.redValue = 39
-                                root.greenValue = 174
-                                root.blueValue = 96
-                            }
-                        }
-                    }
-                    
-                    // Blue preset
-                    Rectangle {
-                        width: 40
-                        height: 40
-                        color: "#3498db"
-                        radius: 20
-                        
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                root.redValue = 52
-                                root.greenValue = 152
-                                root.blueValue = 219
-                            }
-                        }
-                    }
-                    
-                    // Yellow preset
-                    Rectangle {
-                        width: 40
-                        height: 40
-                        color: "#f1c40f"
-                        radius: 20
-                        
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                root.redValue = 241
-                                root.greenValue = 196
-                                root.blueValue = 15
-                            }
-                        }
-                    }
-                    
-                    // Purple preset
-                    Rectangle {
-                        width: 40
-                        height: 40
-                        color: "#9b59b6"
-                        radius: 20
-                        
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                root.redValue = 155
-                                root.greenValue = 89
-                                root.blueValue = 182
-                            }
-                        }
-                    }
-                    
-                    // White preset
-                    Rectangle {
-                        width: 40
-                        height: 40
-                        color: "#ecf0f1"
-                        radius: 20
-                        
-                        MouseArea {
-                            anchors.fill: parent
-                            onClicked: {
-                                root.redValue = 236
-                                root.greenValue = 240
-                                root.blueValue = 241
-                            }
-                        }
-                    }
-                }
+            // 차량 이미지
+            Image {
+                id: carImageAmbient
+                anchors.centerIn: parent
+                width: parent.width
+                height: parent.height
+                source: "qrc:/images/car.svg"
+                fillMode: Image.PreserveAspectFit
+                opacity: 0.9
+            }
+            
+            // 차량에 ambient light 색상 적용
+            ColorOverlay {
+                anchors.fill: carImageAmbient
+                source: carImageAmbient
+                color: root.selectedColor
+                opacity: 0.6
             }
         }
     }

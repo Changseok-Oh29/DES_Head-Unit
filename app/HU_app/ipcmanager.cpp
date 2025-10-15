@@ -8,8 +8,8 @@ const QString IpcManager::IC_ADDRESS = "127.0.0.1";
 IpcManager::IpcManager(QObject *parent)
     : QObject(parent)
     , m_gearPosition("P")
-    , m_ambientLightEnabled(false)
-    , m_ambientColor("#ffffff")
+    , m_ambientLightEnabled(true)  // 기본적으로 활성화
+    , m_ambientColor("#3498db")    // 기본 파란색
     , m_isConnected(false)
     , m_socket(new QUdpSocket(this))
     , m_heartbeatTimer(new QTimer(this))
