@@ -7,6 +7,7 @@
 
 #include "mediamanager.h"
 #include "ipcmanager.h"
+#include "services/MockVehicleService.h"
 
 int main(int argc, char *argv[])
 {
@@ -22,10 +23,12 @@ int main(int argc, char *argv[])
     // Register QML types
     qmlRegisterType<MediaManager>("HeadUnit", 1, 0, "MediaManager");
     qmlRegisterType<IpcManager>("HeadUnit", 1, 0, "IpcManager");
-    
+    qmlRegisterType<MockVehicleService>("HeadUnit", 1, 0, "MockVehicleService");
+
     // Create backend instances
     MediaManager mediaManager;
     IpcManager ipcManager;
+    MockVehicleService mockVehicleService;
     
     // Setup QML engine
     QQmlApplicationEngine engine;
@@ -33,6 +36,7 @@ int main(int argc, char *argv[])
     // Expose backend instances to QML
     engine.rootContext()->setContextProperty("mediaManager", &mediaManager);
     engine.rootContext()->setContextProperty("ipcManager", &ipcManager);
+    engine.rootContext()->setContextProperty("mockVehicleService", &mockVehicleService);
     
     // Load main QML file
     const QUrl url(QStringLiteral("qrc:/main.qml"));

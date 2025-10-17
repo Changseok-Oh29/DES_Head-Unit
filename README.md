@@ -1,23 +1,97 @@
 # DES_Head-Unit
-Head Unit project repository for automotive infotainment system
+Head Unit project repository for automotive infotainment system with **CommonAPI + SOME/IP communication**
+
+[![CI/CD Pipeline](https://github.com/Changseok-Oh29/DES_Head-Unit/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Changseok-Oh29/DES_Head-Unit/actions)
+[![CommonAPI](https://img.shields.io/badge/CommonAPI-3.2.4-blue)](https://github.com/GENIVI/capicxx-core-runtime)
+[![vsomeip](https://img.shields.io/badge/vsomeip-3.5.8-green)](https://github.com/COVESA/vsomeip)
+[![Qt5](https://img.shields.io/badge/Qt5-5.15.2-brightgreen)](https://www.qt.io/)
+[![SOME/IP](https://img.shields.io/badge/AUTOSAR-SOME%2FIP-orange)](https://www.autosar.org/)
+[![Phase](https://img.shields.io/badge/Development-Phase%201%20Complete-success)](commonapi/PHASE1_COMPLETE_GUIDE.md)
 
 ## 🚗 Project Overview
 
-This project implements a Head Unit (HU) application for automotive systems, designed to work with Raspberry Pi hardware. The Head Unit provides an intuitive interface for:
+This project implements a professional-grade Head Unit (HU) application for automotive systems, featuring **automotive-standard communication protocols**. Built with industry-standard middleware used in real vehicles by BMW, Audi, and other OEMs.
 
+### Key Features:
 - **Gear Selection**: P, R, N, D gear control interface
 - **Media Player**: USB media scanning and playback
 - **Ambient Lighting**: Customizable cabin lighting control
-- **System Integration**: IPC communication with Instrument Cluster (IC)
+- **SOME/IP Communication**: AUTOSAR-compliant ECU-to-ECU communication
+- **CommonAPI Integration**: Service-oriented architecture with automatic code generation
+- **2-ECU System**: Vehicle Control ECU + Infotainment ECU simulation
 
-## 🏗️ Architecture
+### 🌟 What Makes This Special:
+- Uses the **same communication stack as real automotive systems**
+- **AUTOSAR SOME/IP** protocol for network communication  
+- **Service Discovery** for automatic ECU detection
+- **Type-safe interfaces** generated from FIDL specifications
+- **Production-ready middleware** (vsomeip + CommonAPI)
 
+## 🏗️ System Architecture
+
+### High-Level Overview
 ```
-┌─────────────────┐    ┌─────────────────┐
-│   Head Unit     │◄──►│ Instrument      │
-│   (This Repo)   │    │ Cluster (IC)    │
-│                 │    │                 │
-│ • Gear Control  │    │ • Speed Display │
+    ┌─────────────────────┐                 ┌─────────────────────┐
+    │     ECU 1           │   SOME/IP       │     ECU 2           │
+    │  Vehicle Control    │◄─────────────── ▷│  Infotainment       │
+    │                     │   Network       │                     │  
+    │ • Battery Info      │                 │ • Head Unit App     │
+    │ • Speed Control     │                 │ • Media Player      │
+    │ • Gear Selection    │                 │ • Ambient Light     │
+    └─────────────────────┘                 │ • Instrument Cluster│
+                                            └─────────────────────┘
+```
+
+### Communication Stack
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Application Layer                        │
+│           (Qt5 QML UI + C++ Business Logic)                 │
+├─────────────────────────────────────────────────────────────┤
+│                    CommonAPI Layer                          │
+│        (Auto-generated Proxy/Stub from FIDL)               │
+├─────────────────────────────────────────────────────────────┤
+│                   SOME/IP Protocol                          │
+│           (vsomeip - Service Discovery + RPC)               │
+├─────────────────────────────────────────────────────────────┤
+│                 Network Transport                           │
+│                (TCP/UDP + Multicast)                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 🚀 Quick Start
+
+### Option 1: Use Pre-built Environment (Recommended)
+If you've completed Phase 1 setup:
+```bash
+# Clone the repository
+git clone https://github.com/Changseok-Oh29/DES_Head-Unit.git
+cd DES_Head-Unit
+
+# Test CommonAPI environment
+cd commonapi/simple/build
+./integration_test
+
+# Build Head Unit application
+cd ../../../app/HU_app
+mkdir build && cd build
+cmake .. -DCMAKE_PREFIX_PATH="/usr/local"
+make
+./HU_app
+```
+
+### Option 2: Complete Setup from Scratch  
+Follow the complete setup guide:
+```bash
+# See detailed instructions
+cat commonapi/PHASE1_COMPLETE_GUIDE.md
+```
+
+### Option 3: Docker Environment (Coming Soon)
+```bash
+# TODO: Docker setup for easy deployment
+docker-compose up --build
+```
 │ • Media Player  │    │ • Status Info   │
 │ • Ambient Light │    │ • Gear Status   │
 └─────────────────┘    └─────────────────┘

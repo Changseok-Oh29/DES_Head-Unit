@@ -1,0 +1,36 @@
+{
+	"BUILD_DIR" : "/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/build/IC_app_autogen",
+	"CMAKE_BINARY_DIR" : "/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/build",
+	"CMAKE_CURRENT_BINARY_DIR" : "/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/build",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/home/leo/SEA-ME/DES_Head-Unit/app/IC_app",
+	"CMAKE_SOURCE_DIR" : "/home/leo/SEA-ME/DES_Head-Unit/app/IC_app",
+	"INCLUDE_DIR" : "/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/build/IC_app_autogen/include",
+	"INPUTS" : 
+	[
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/qtquickcontrols2.conf",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/Design/EventListSimulator.qml",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/Design/Constants.qml",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/Design/EventListModel.qml",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/Design/qmldir",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/DesignContent/App.qml",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/DesignContent/Screen01.qml",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/DesignContent/Screen01Form.ui.qml",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/DesignContent/images/gaugeNeedleBig.png",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/DesignContent/images/GaugeSpeedometer_Ticks2.png",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/DesignContent/images/Gauge_Speed.png",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/DesignContent/images/battery_outline_icon.png",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/DesignContent/images/GaugeSpeedometer_Ticks1.png",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/DesignContent/images/BottomPanel.png",
+		"/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/DesignContent/images/bolt_icon.png"
+	],
+	"LOCK_FILE" : "/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/build/CMakeFiles/IC_app_autogen.dir/AutoRcc_App_EWIEGA46WW_Lock.lock",
+	"MULTI_CONFIG" : false,
+	"OPTIONS" : [ "-name", "App" ],
+	"OUTPUT_CHECKSUM" : "EWIEGA46WW",
+	"OUTPUT_NAME" : "qrc_App.cpp",
+	"RCC_EXECUTABLE" : "/usr/lib/qt5/bin/rcc",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/build/CMakeFiles/IC_app_autogen.dir/AutoRcc_App_EWIEGA46WW_Used.txt",
+	"SOURCE" : "/home/leo/SEA-ME/DES_Head-Unit/app/IC_app/App.qrc",
+	"VERBOSITY" : 0
+}

@@ -18,6 +18,8 @@ set(PROJECT_SOURCES
         mediamanager.h
         ipcmanager.cpp
         ipcmanager.h
+        services/MockVehicleService.h
+        services/MockVehicleService.cpp
         qml.qrc
 )
 
