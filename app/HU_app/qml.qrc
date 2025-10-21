@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>main.qml</file>
-        <file>MainMenu.qml</file>
-        <file>GearSelection.qml</file>
-        <file>MediaApp.qml</file>
-        <file>AmbientLighting.qml</file>
-    </qresource>
-</RCC>
