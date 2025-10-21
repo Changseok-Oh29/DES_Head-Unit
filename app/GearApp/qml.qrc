@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/GearSelectionWidget.qml</file>
+    </qresource>
+</RCC>
