@@ -1,0 +1,13 @@
+package mediacontrol
+
+interface MediaControl {
+    version { major 1 minor 0 }
+    
+    
+    // Events (Media → Ambient)
+    broadcast volumeChanged {
+        out {
+            Float newVolume
+        }
+    }
+}

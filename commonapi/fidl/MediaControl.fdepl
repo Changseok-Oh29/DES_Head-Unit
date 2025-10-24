@@ -1,0 +1,18 @@
+import "platform:/plugin/org.genivi.commonapi.someip/deployment/CommonAPI-SOMEIP_deployment_spec.fdepl"
+import "MediaControl.fidl"
+
+define org.genivi.commonapi.someip.deployment for interface mediacontrol.MediaControl {
+    SomeIpServiceID = 4661
+    
+    broadcast volumeChanged {
+        SomeIpEventID = 40100
+        SomeIpEventGroups = { 4661 }
+    }
+}
+
+define org.genivi.commonapi.someip.deployment for provider as MediaService {
+    instance mediacontrol.MediaControl {
+        InstanceId = "mediacontrol.MediaControl"
+        SomeIpInstanceID = 22137
+    }
+}
