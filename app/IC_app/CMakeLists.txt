@@ -10,26 +10,52 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt5 Qt6 REQUIRED COMPONENTS Core Widgets Quick Network DBus)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets Quick Network DBus)
+find_package(QT NAMES Qt5 Qt6 REQUIRED COMPONENTS Core Widgets Quick Network)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets Quick Network)
+
+# CommonAPI (vsomeip)
+find_package(CommonAPI 3.2.0 REQUIRED)
+find_package(CommonAPI-SomeIP 3.2.0 REQUIRED)
+find_package(vsomeip3 REQUIRED)
+
+# Generated CommonAPI code paths
+set(COMMONAPI_GEN_DIR ${CMAKE_SOURCE_DIR}/../../commonapi/generated)
+set(COMMONAPI_CORE_DIR ${COMMONAPI_GEN_DIR}/core)
+set(COMMONAPI_SOMEIP_DIR ${COMMONAPI_GEN_DIR}/someip)
+
+include_directories(
+    ${COMMONAPI_CORE_DIR}
+    ${COMMONAPI_SOMEIP_DIR}
+    ${COMMONAPI_INCLUDE_DIRS}
+    ${COMMONAPI_SOMEIP_INCLUDE_DIRS}
+    ${VSOMEIP_INCLUDE_DIRS}
+)
 
 set(PROJECT_SOURCES
         main.cpp
         caninterface.cpp
         caninterface.h
-        dbusreceiver.cpp
-        dbusreceiver.h
+        vehiclecontrolclient.cpp
+        vehiclecontrolclient.h
         App.qrc
+)
+
+# CommonAPI generated sources (Client uses Proxy)
+file(GLOB COMMONAPI_SOMEIP_SOURCES
+    "${COMMONAPI_SOMEIP_DIR}/v1/vehiclecontrol/VehicleControlSomeIPProxy.cpp"
+    "${COMMONAPI_SOMEIP_DIR}/v1/vehiclecontrol/VehicleControlSomeIPDeployment.cpp"
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(IC_app
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        ${COMMONAPI_SOMEIP_SOURCES}
     )
 else()
     add_executable(IC_app
         ${PROJECT_SOURCES}
+        ${COMMONAPI_SOMEIP_SOURCES}
     )
 endif()
 
@@ -38,7 +64,9 @@ target_link_libraries(IC_app
             Qt${QT_VERSION_MAJOR}::Widgets 
             Qt${QT_VERSION_MAJOR}::Quick 
             Qt${QT_VERSION_MAJOR}::Network
-            Qt${QT_VERSION_MAJOR}::DBus)
+            CommonAPI
+            CommonAPI-SomeIP
+            vsomeip3)
 
 if(${QT_VERSION} VERSION_LESS 6.1.0)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.IC_app)

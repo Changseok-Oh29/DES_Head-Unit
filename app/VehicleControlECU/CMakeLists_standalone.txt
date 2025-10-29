@@ -1,0 +1,52 @@
+cmake_minimum_required(VERSION 3.16)
+project(VehicleControlECU_Standalone VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Qt5 (Core only, no GUI)
+find_package(Qt5 REQUIRED COMPONENTS Core)
+set(CMAKE_AUTOMOC ON)
+
+# pigpio library (하드웨어 제어)
+find_library(PIGPIO_LIBRARY NAMES pigpio REQUIRED)
+if(NOT PIGPIO_LIBRARY)
+    message(FATAL_ERROR "pigpio library not found! Install: sudo apt install libpigpio-dev")
+endif()
+
+include_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src
+    ${CMAKE_CURRENT_SOURCE_DIR}/../lib
+)
+
+# Source files (vsomeip 관련 제외)
+set(SOURCES
+    ../src/main_standalone.cpp
+    ../src/BatteryMonitor.cpp
+    ../src/GamepadHandler.cpp
+    ../src/PiRacerController.cpp
+    ../lib/Adafruit_INA219.cpp
+    ../lib/Adafruit_PCA9685.cpp
+    ../lib/ShanwanGamepad.cpp
+)
+
+# Create executable
+add_executable(${PROJECT_NAME} ${SOURCES})
+
+# Link libraries (CommonAPI/vsomeip 제외)
+target_link_libraries(${PROJECT_NAME}
+    Qt5::Core
+    ${PIGPIO_LIBRARY}
+    pthread
+)
+
+# Installation
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
+)
+
+message(STATUS "=== VehicleControlECU Standalone Configuration ===")
+message(STATUS "Mode: Hardware Control Only (No vsomeip)")
+message(STATUS "Qt5 Core: ${Qt5Core_VERSION}")
+message(STATUS "pigpio library: ${PIGPIO_LIBRARY}")
+message(STATUS "==============================================")

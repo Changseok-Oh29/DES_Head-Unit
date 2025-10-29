@@ -12,10 +12,9 @@ Rectangle {
     property string gear: "P"
 
     Connections {
-        target: dbusReceiver
-        onGearChanged: { gear = dbusReceiver.gear }
-        onBatteryChanged: { console.log("Battery:", dbusReceiver.batteryPercentage) }
-        onCurrentChanged: { console.log("Current:", dbusReceiver.current) }
+        target: vehicleClient
+        onCurrentGearChanged: { gear = vehicleClient.currentGear }
+        onBatteryLevelChanged: { console.log("Battery:", vehicleClient.batteryLevel) }
     }
 
     Connections {
@@ -30,7 +29,7 @@ Rectangle {
     Rectangle {
         id: battery_fill
         width: 70
-        height: 116 * dbusReceiver.batteryPercentage / 100
+        height: 116 * vehicleClient.batteryLevel / 100
         x: 1045
 
         // [Modified] Dynamically calculate y coordinate with height
@@ -43,8 +42,8 @@ Rectangle {
         // [Deleted] This property is no longer needed
         // anchors.bottomMargin: 15
 
-        color: dbusReceiver.batteryPercentage <= 20 ? "#ff4444"
-             : dbusReceiver.batteryPercentage <= 60 ? "#ffaa33"
+        color: vehicleClient.batteryLevel <= 20 ? "#ff4444"
+             : vehicleClient.batteryLevel <= 60 ? "#ffaa33"
                                                     : "#57e389"
     }
 
@@ -64,7 +63,8 @@ Rectangle {
         width: 60
         source: "images/bolt_icon.png"
         fillMode: Image.PreserveAspectFit
-        visible: dbusReceiver.current > 0.1
+        // Note: vehicleClient doesn't expose current, keeping visible by default or remove if not needed
+        visible: false  // Disabled since current is not available from VehicleControl
     }
 
     Text {
@@ -73,7 +73,7 @@ Rectangle {
         font.pixelSize: 25
         font.bold: true
         color: "white"
-        text: dbusReceiver.batteryPercentage + "%"
+        text: vehicleClient.batteryLevel + "%"
         visible: !bolt_icon.visible
     }
 
