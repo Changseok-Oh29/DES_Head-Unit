@@ -3,10 +3,15 @@
 #include <QQmlContext>
 #include <QDebug>
 #include <QTimer>
+#include <CommonAPI/CommonAPI.hpp>
 #include "ambientmanager.h"
+#include "MediaControlClient.h"
 
 int main(int argc, char *argv[])
 {
+    // Set vsomeip application name BEFORE creating QApplication
+    qputenv("VSOMEIP_APPLICATION_NAME", "AmbientApp");
+
     QGuiApplication app(argc, argv);
     app.setApplicationName("AmbientApp");
     app.setApplicationVersion("1.0");
@@ -18,11 +23,27 @@ int main(int argc, char *argv[])
     qDebug() << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP";
 
     // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
-    // AmbientManager 1ÔÜ \Á Ý1
+    // AmbientManager 1ï¿½ï¿½ \ï¿½ ï¿½1
     // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
     AmbientManager ambientManager;
 
-    // „ø: Signal ð° Ux
+    // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+    // vSOMEIP í´ë¼ì´ì–¸íŠ¸ ì´ˆê¸°í™”
+    // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+    qDebug() << "";
+    qDebug() << "ðŸ”§ Initializing vSOMEIP Client...";
+    
+    MediaControlClient* mediaControlClient = new MediaControlClient(&ambientManager, &app);
+    
+    if (!mediaControlClient->initialize()) {
+        qCritical() << "âŒ Failed to initialize MediaControl client!";
+        return -1;
+    }
+    
+    qDebug() << "âœ… MediaControl client initialized";
+    qDebug() << "   Waiting for MediaApp service...";
+
+    // ï¿½ï¿½: Signal ï¿½ Ux
     QObject::connect(&ambientManager, &AmbientManager::ambientColorChanged,
                      [&ambientManager](){
                          qDebug() << "[AmbientApp] ambientColorChanged signal emitted:"
@@ -40,22 +61,22 @@ int main(int argc, char *argv[])
     qDebug() << "   - Current Color:" << ambientManager.ambientColor();
     qDebug() << "   - Brightness:" << ambientManager.brightness();
     qDebug() << "";
-    qDebug() << "=Ì NOTE: ¬” Å½ \8¤\ ä‰)Èä.";
-    qDebug() << "   ¥Ä vsomeip µi Ü äx \8¤@ µàiÈä.";
-    qDebug() << "   GearApp<\€0 0´ À½ à8| D ÉÁD Ù À½iÈä.";
+    qDebug() << "=ï¿½ NOTE: ï¿½ï¿½ Å½ \8ï¿½\ ï¿½)ï¿½ï¿½.";
+    qDebug() << "   ï¿½ï¿½ vsomeip ï¿½i ï¿½ ï¿½x \8ï¿½@ ï¿½ï¿½iï¿½ï¿½.";
+    qDebug() << "   GearApp<\ï¿½0 0ï¿½ ï¿½ï¿½ ï¿½8| D ï¿½ï¿½D ï¿½ï¿½ ï¿½ï¿½iï¿½ï¿½.";
     qDebug() << "";
     qDebug() << "AmbientApp is running...";
     qDebug() << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP";
 
     // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
-    // QML GUI \Ü (L¤¸/ ¨Ü)
+    // QML GUI \ï¿½ (Lï¿½ï¿½/ ï¿½ï¿½)
     // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
     QQmlApplicationEngine engine;
 
-    // C++ ´| QMLÐ xœ
+    // C++ ï¿½| QMLï¿½ xï¿½
     engine.rootContext()->setContextProperty("ambientManager", &ambientManager);
 
-    // QML | \Ü
+    // QML | \ï¿½
     const QUrl url(QStringLiteral("qrc:/qml/AmbientLighting.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
@@ -68,13 +89,13 @@ int main(int argc, char *argv[])
 
     if (!engine.rootObjects().isEmpty()) {
         qDebug() << " QML GUI loaded: AmbientLighting.qml";
-        qDebug() << "=¥  Window should appear now!";
+        qDebug() << "=ï¿½  Window should appear now!";
     }
 
     qDebug() << "";
 
     // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
-    // L¤¸: 5Èä ÉÁ À½ Ü¬tX (0´ À½ Ü¬tX)
+    // Lï¿½ï¿½: 5ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ Ü¬tX (0ï¿½ ï¿½ï¿½ Ü¬tX)
     // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
     QTimer *testTimer = new QTimer(&app);
     QStringList testGears = {"P", "R", "N", "D"};
@@ -83,10 +104,10 @@ int main(int argc, char *argv[])
         QString testGear = testGears[gearIndex];
         gearIndex = (gearIndex + 1) % testGears.size();
         qDebug() << "";
-        qDebug() << ">ê [Test] Simulating gear change to:" << testGear;
+        qDebug() << ">ï¿½ [Test] Simulating gear change to:" << testGear;
         ambientManager.onGearPositionChanged(testGear);
     });
-    // testTimer->start(5000);  // L¤¸© Àt8 (D”Ü ü t)
+    // testTimer->start(5000);  // Lï¿½ï¿½ï¿½ ï¿½t8 (Dï¿½ï¿½ ï¿½ t)
 
     return app.exec();
 }

@@ -65,6 +65,11 @@ public:
         float volume = 0.0f;
         _reply(volume);
     }
+    COMMONAPI_EXPORT virtual void setVolume(const std::shared_ptr<CommonAPI::ClientId> _client, float _volume, setVolumeReply_t _reply) {
+        (void)_client;
+        (void)_volume;
+        _reply();
+    }
     COMMONAPI_EXPORT virtual void fireVolumeChangedEvent(const float &_newVolume) {
         MediaControlStub::fireVolumeChangedEvent(_newVolume);
     }

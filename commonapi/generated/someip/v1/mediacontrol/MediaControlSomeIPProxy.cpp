@@ -60,6 +60,98 @@ MediaControlSomeIPProxy::VolumeChangedEvent& MediaControlSomeIPProxy::getVolumeC
     return volumeChanged_;
 }
 
+void MediaControlSomeIPProxy::getVolume(CommonAPI::CallStatus &_internalCallStatus, float &_volume, const CommonAPI::CallInfo *_info) {
+    CommonAPI::Deployable< float, CommonAPI::EmptyDeployment> deploy_volume(static_cast< CommonAPI::EmptyDeployment* >(nullptr));
+    CommonAPI::SomeIP::ProxyHelper<
+        CommonAPI::SomeIP::SerializableArguments<
+        >,
+        CommonAPI::SomeIP::SerializableArguments<
+            CommonAPI::Deployable<
+                float,
+                CommonAPI::EmptyDeployment
+            >
+        >
+    >::callMethodWithReply(
+        *this,
+        CommonAPI::SomeIP::method_id_t(0x7d1),
+        false,
+        false,
+        (_info ? _info : &CommonAPI::SomeIP::defaultCallInfo),
+        _internalCallStatus,
+        deploy_volume);
+    _volume = deploy_volume.getValue();
+}
+
+std::future<CommonAPI::CallStatus> MediaControlSomeIPProxy::getVolumeAsync(GetVolumeAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
+    CommonAPI::Deployable< float, CommonAPI::EmptyDeployment> deploy_volume(static_cast< CommonAPI::EmptyDeployment* >(nullptr));
+    return CommonAPI::SomeIP::ProxyHelper<
+        CommonAPI::SomeIP::SerializableArguments<
+        >,
+        CommonAPI::SomeIP::SerializableArguments<
+            CommonAPI::Deployable<
+                float,
+                CommonAPI::EmptyDeployment
+            >
+        >
+    >::callMethodAsync(
+        *this,
+        CommonAPI::SomeIP::method_id_t(0x7d1),
+        false,
+        false,
+        (_info ? _info : &CommonAPI::SomeIP::defaultCallInfo),
+        [_callback] (CommonAPI::CallStatus _internalCallStatus, CommonAPI::Deployable< float, CommonAPI::EmptyDeployment > _volume) {
+            if (_callback)
+                _callback(_internalCallStatus, _volume.getValue());
+        },
+        std::make_tuple(deploy_volume));
+}
+
+void MediaControlSomeIPProxy::setVolume(float _volume, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info) {
+    CommonAPI::Deployable< float, CommonAPI::EmptyDeployment> deploy_volume(_volume, static_cast< CommonAPI::EmptyDeployment* >(nullptr));
+    CommonAPI::SomeIP::ProxyHelper<
+        CommonAPI::SomeIP::SerializableArguments<
+            CommonAPI::Deployable<
+                float,
+                CommonAPI::EmptyDeployment
+            >
+        >,
+        CommonAPI::SomeIP::SerializableArguments<
+        >
+    >::callMethodWithReply(
+        *this,
+        CommonAPI::SomeIP::method_id_t(0x7d2),
+        false,
+        false,
+        (_info ? _info : &CommonAPI::SomeIP::defaultCallInfo),
+        deploy_volume,
+        _internalCallStatus);
+}
+
+std::future<CommonAPI::CallStatus> MediaControlSomeIPProxy::setVolumeAsync(const float &_volume, SetVolumeAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
+    CommonAPI::Deployable< float, CommonAPI::EmptyDeployment> deploy_volume(_volume, static_cast< CommonAPI::EmptyDeployment* >(nullptr));
+    return CommonAPI::SomeIP::ProxyHelper<
+        CommonAPI::SomeIP::SerializableArguments<
+            CommonAPI::Deployable<
+                float,
+                CommonAPI::EmptyDeployment
+            >
+        >,
+        CommonAPI::SomeIP::SerializableArguments<
+        >
+    >::callMethodAsync(
+        *this,
+        CommonAPI::SomeIP::method_id_t(0x7d2),
+        false,
+        false,
+        (_info ? _info : &CommonAPI::SomeIP::defaultCallInfo),
+        deploy_volume,
+        [_callback] (CommonAPI::CallStatus _internalCallStatus) {
+            if (_callback)
+                _callback(_internalCallStatus);
+        },
+        std::make_tuple());
+}
+
 void MediaControlSomeIPProxy::getOwnVersion(uint16_t& ownVersionMajor, uint16_t& ownVersionMinor) const {
     ownVersionMajor = 1;
     ownVersionMinor = 0;

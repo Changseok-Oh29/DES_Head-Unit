@@ -21,9 +21,9 @@ Column {
             color: {
                 if (root.currentGear === modelData) {
                     switch(modelData) {
-                        case "P": return "#e74c3c"  // 빨간색 (Park)
+                        case "P": return "#3498db"  // 파란색 (Park)
                         case "R": return "#e74c3c"  // 빨간색 (Reverse)
-                        case "N": return "#f39c12"  // 주황색 (Neutral)
+                        case "N": return "#f39c12"  // 노란색 (Neutral)
                         case "D": return "#27ae60"  // 녹색 (Drive)
                     }
                 }
@@ -33,10 +33,10 @@ Column {
             border.color: {
                 if (root.currentGear === modelData) {
                     switch(modelData) {
-                        case "P": return "#c0392b"
-                        case "R": return "#c0392b"
-                        case "N": return "#e67e22"
-                        case "D": return "#229954"
+                        case "P": return "#2980b9"  // 진한 파란색
+                        case "R": return "#c0392b"  // 진한 빨간색
+                        case "N": return "#e67e22"  // 진한 노란색
+                        case "D": return "#229954"  // 진한 녹색
                     }
                 }
                 return "#95a5a6"

@@ -1,0 +1,27 @@
+{
+    "unicast": "127.0.0.1",
+    "logging": {
+        "level": "info",
+        "console": "true"
+    },
+    "applications": [
+        {
+            "name": "MediaApp",
+            "id": "0x1234"
+        }
+    ],
+    "services": [
+        {
+            "service": "0x1235",
+            "instance": "0x5679",
+            "unreliable": "30509"
+        }
+    ],
+    "routing": "MediaApp",
+    "service-discovery": {
+        "enable": "true",
+        "multicast": "224.0.0.1",
+        "port": "30490",
+        "protocol": "udp"
+    }
+}

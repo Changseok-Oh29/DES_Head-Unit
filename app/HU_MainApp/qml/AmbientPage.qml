@@ -21,16 +21,17 @@ Rectangle {
     Item {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
-        anchors.verticalCenterOffset: -60
+        anchors.verticalCenterOffset: 0
         width: 700
-        height: 420
+        height: 400
 
         // Color wheel
         Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
-            width: 350
-            height: 350
+            anchors.topMargin: 10
+            width: 300
+            height: 300
             color: "transparent"
 
             Control {
@@ -47,7 +48,7 @@ Rectangle {
                 }
 
                 contentItem: Item {
-                    implicitWidth: 350
+                    implicitWidth: 300
                     implicitHeight: width
 
                     ShaderEffect {
@@ -125,8 +126,8 @@ Rectangle {
             // Center vehicle preview
             Item {
                 anchors.centerIn: parent
-                width: 140
-                height: 100
+                width: 120
+                height: 85
 
                 Image {
                     id: carImageAmbient
@@ -147,236 +148,76 @@ Rectangle {
             }
         }
 
-        // Control panel below color wheel
+        // Control panel below color wheel - Only brightness slider
         Rectangle {
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
-            width: 500
-            height: 120
+            anchors.bottomMargin: 0
+            width: 400
+            height: 85
             radius: 15
             color: "#2c3e50"
             opacity: 0.95
 
-            Row {
-                anchors.centerIn: parent
-                spacing: 40
-
-                // Enable/Disable toggle
-                Column {
-                    spacing: 10
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    Text {
-                        text: "Ambient Lighting"
-                        font.pixelSize: 14
-                        font.bold: true
-                        color: "#95a5a6"
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-
-                    Switch {
-                        id: ambientSwitch
-                        checked: ambientManager.ambientLightEnabled
-                        anchors.horizontalCenter: parent.horizontalCenter
-
-                        onCheckedChanged: {
-                            ambientManager.ambientLightEnabled = checked
-                        }
-
-                        indicator: Rectangle {
-                            implicitWidth: 60
-                            implicitHeight: 30
-                            x: ambientSwitch.leftPadding
-                            y: parent.height / 2 - height / 2
-                            radius: 15
-                            color: ambientSwitch.checked ? "#27ae60" : "#7f8c8d"
-                            border.color: ambientSwitch.checked ? "#229954" : "#95a5a6"
-
-                            Rectangle {
-                                x: ambientSwitch.checked ? parent.width - width - 3 : 3
-                                y: 3
-                                width: 24
-                                height: 24
-                                radius: 12
-                                color: "#ecf0f1"
-                                border.color: "#bdc3c7"
-
-                                Behavior on x {
-                                    NumberAnimation { duration: 200 }
-                                }
-                            }
-
-                            Behavior on color {
-                                ColorAnimation { duration: 200 }
-                            }
-                        }
-                    }
-
-                    Text {
-                        text: ambientSwitch.checked ? "ON" : "OFF"
-                        font.pixelSize: 16
-                        font.bold: true
-                        color: ambientSwitch.checked ? "#27ae60" : "#7f8c8d"
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                }
-
-                // Brightness control
-                Column {
-                    width: 280
-                    spacing: 10
-                    anchors.verticalCenter: parent.verticalCenter
-
-                    Text {
-                        text: "Brightness: " + Math.round(brightnessSlider.value) + "%"
-                        font.pixelSize: 14
-                        font.bold: true
-                        color: "#95a5a6"
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-
-                    // Brightness slider maps UI 0%-100% to actual brightness 50%-100%
-                    Slider {
-                        id: brightnessSlider
-                        width: parent.width
-                        from: 0
-                        to: 100
-                        // Initialize from backend (reverse mapping: 0.5-1.0 → 0-100)
-                        value: (ambientManager.brightness - 0.5) * 200
-                        stepSize: 1
-                        enabled: ambientSwitch.checked
-
-                        onMoved: {
-                            // Map slider value (0-100) to brightness (0.5-1.0)
-                            var mappedBrightness = 0.5 + (value / 200.0)
-                            ambientManager.brightness = mappedBrightness
-                        }
-
-                        background: Rectangle {
-                            x: parent.leftPadding
-                            y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                            implicitWidth: 200
-                            implicitHeight: 6
-                            width: parent.availableWidth
-                            height: implicitHeight
-                            radius: 3
-                            color: "#34495e"
-
-                            Rectangle {
-                                // Use slider value (0-100) for visual fill, not backend brightness
-                                width: parent.width * (brightnessSlider.value / 100.0)
-                                height: parent.height
-                                radius: parent.radius
-                                color: enabled ? "#3498db" : "#7f8c8d"
-                            }
-                        }
-
-                        handle: Rectangle {
-                            x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
-                            y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                            implicitWidth: 20
-                            implicitHeight: 20
-                            radius: 10
-                            color: enabled ? "#3498db" : "#7f8c8d"
-                            border.color: enabled ? "#2980b9" : "#95a5a6"
-                            border.width: 2
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Color preview panel
-    Row {
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottomMargin: 15
-        spacing: 20
-
-        // Current color preview
-        Rectangle {
-            width: 250
-            height: 80
-            radius: 10
-            color: "#2c3e50"
-            opacity: 0.95
-
-            Row {
-                anchors.centerIn: parent
-                spacing: 15
-
-                Rectangle {
-                    width: 50
-                    height: 50
-                    radius: 25
-                    color: root.selectedColor
-                    border.color: Qt.darker(root.selectedColor, 1.3)
-                    border.width: 3
-                }
-
-                Column {
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 5
-
-                    Text {
-                        text: "Selected Color"
-                        font.pixelSize: 11
-                        color: "#95a5a6"
-                    }
-
-                    Text {
-                        text: root.selectedColor.toString().toUpperCase()
-                        font.pixelSize: 14
-                        font.bold: true
-                        font.family: "monospace"
-                        color: "#ecf0f1"
-                    }
-                }
-            }
-        }
-
-        // Gear sync indicator
-        Rectangle {
-            width: 200
-            height: 80
-            radius: 10
-            color: "#2c3e50"
-            opacity: 0.95
-
+            // Brightness control
             Column {
                 anchors.centerIn: parent
+                width: 350
                 spacing: 8
 
                 Text {
-                    text: "Gear Sync"
-                    font.pixelSize: 11
-                    color: "#95a5a6"
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
-
-                Text {
-                    text: "Color changes with gear"
-                    font.pixelSize: 12
+                    text: "Brightness: " + Math.round(brightnessSlider.value) + "%"
+                    font.pixelSize: 15
                     font.bold: true
                     color: "#ecf0f1"
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
-                Text {
-                    text: "Current: " + gearManager.gearPosition
-                    font.pixelSize: 13
-                    font.bold: true
-                    color: {
-                        switch(gearManager.gearPosition) {
-                            case "P": return "#e74c3c"
-                            case "R": return "#e67e22"
-                            case "N": return "#f39c12"
-                            case "D": return "#27ae60"
-                            default: return "#7f8c8d"
+                // Brightness slider maps UI 0%-100% to actual brightness 50%-100%
+                Slider {
+                    id: brightnessSlider
+                    width: parent.width
+                    from: 0
+                    to: 100
+                    // Initialize from backend (reverse mapping: 0.5-1.0 → 0-100)
+                    value: (ambientManager.brightness - 0.5) * 200
+                    stepSize: 1
+
+                    onMoved: {
+                        // Map slider value (0-100) to brightness (0.5-1.0)
+                        var mappedBrightness = 0.5 + (value / 200.0)
+                        ambientManager.brightness = mappedBrightness
+                    }
+
+                    background: Rectangle {
+                        x: parent.leftPadding
+                        y: parent.topPadding + parent.availableHeight / 2 - height / 2
+                        implicitWidth: 200
+                        implicitHeight: 8
+                        width: parent.availableWidth
+                        height: implicitHeight
+                        radius: 4
+                        color: "#34495e"
+
+                        Rectangle {
+                            // Use slider value (0-100) for visual fill, not backend brightness
+                            width: parent.width * (brightnessSlider.value / 100.0)
+                            height: parent.height
+                            radius: parent.radius
+                            color: "#3498db"
                         }
                     }
-                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    handle: Rectangle {
+                        x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
+                        y: parent.topPadding + parent.availableHeight / 2 - height / 2
+                        implicitWidth: 24
+                        implicitHeight: 24
+                        radius: 12
+                        color: "#3498db"
+                        border.color: "#2980b9"
+                        border.width: 2
+                    }
                 }
             }
         }

@@ -3,7 +3,7 @@
 
 #include <v1/mediacontrol/MediaControlStubDefault.hpp>
 #include <CommonAPI/CommonAPI.hpp>
-#include "mediamanager.h"
+#include "../../MediaApp/src/mediamanager.h"
 
 namespace v1 {
 namespace mediacontrol {

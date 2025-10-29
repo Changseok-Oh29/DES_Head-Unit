@@ -72,11 +72,11 @@ void AmbientManager::onGearPositionChanged(const QString &gear)
     // HU 내부 통신: Gear → Color
     // ═══════════════════════════════════════════════════════════
     // GearManager로부터 기어 상태를 받아 색상 자동 변경
-    // 
+    //
     // 기어별 색상 매핑:
-    //   P (Park)    : 빨간색 #e74c3c (정지)
-    //   R (Reverse) : 주황색 #e67e22 (주의)
-    //   N (Neutral) : 노란색 #f39c12 (대기)
+    //   P (Park)    : 파란색 #3498db (정차)
+    //   R (Reverse) : 빨간색 #e74c3c (후진 주의)
+    //   N (Neutral) : 노란색 #f39c12 (중립 대기)
     //   D (Drive)   : 녹색   #27ae60 (주행)
     // ═══════════════════════════════════════════════════════════
     
@@ -111,11 +111,11 @@ void AmbientManager::onVolumeChanged(int volume)
 QString AmbientManager::getColorForGear(const QString &gear) const
 {
     // 기어별 색상 매핑 테이블
-    if (gear == "P") return "#e74c3c";      // 빨간색 (Park)
-    if (gear == "R") return "#e67e22";      // 주황색 (Reverse)
+    if (gear == "P") return "#3498db";      // 파란색 (Park)
+    if (gear == "R") return "#e74c3c";      // 빨간색 (Reverse)
     if (gear == "N") return "#f39c12";      // 노란색 (Neutral)
     if (gear == "D") return "#27ae60";      // 녹색 (Drive)
-    
+
     qDebug() << "AmbientManager: Unknown gear position:" << gear;
     return "";  // 알 수 없는 기어는 색상 변경 안 함
 }

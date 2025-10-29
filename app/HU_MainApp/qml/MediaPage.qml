@@ -249,13 +249,13 @@ Rectangle {
 
             Column {
                 anchors.fill: parent
-                anchors.margins: 30
-                spacing: 25
+                anchors.margins: 20
+                spacing: 15
 
                 // Now playing header
                 Text {
                     text: "Now Playing"
-                    font.pixelSize: 22
+                    font.pixelSize: 20
                     font.bold: true
                     color: "#ecf0f1"
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -263,23 +263,23 @@ Rectangle {
 
                 // Album art placeholder
                 Rectangle {
-                    width: 200
-                    height: 200
+                    width: 100
+                    height: 100
                     radius: 10
                     color: "#34495e"
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     Item {
                         anchors.centerIn: parent
-                        width: 100
-                        height: 100
+                        width: 80
+                        height: 80
 
                         Image {
                             id: musicIcon
                             anchors.centerIn: parent
                             source: "qrc:/images/mp3.svg"
-                            sourceSize.width: 80
-                            sourceSize.height: 80
+                            sourceSize.width: 60
+                            sourceSize.height: 60
                             fillMode: Image.PreserveAspectFit
                         }
 
@@ -302,29 +302,32 @@ Rectangle {
                         anchors.centerIn: parent
                         text: root.getFileName(root.currentSong)
                         color: "#ecf0f1"
-                        font.pixelSize: 14
+                        font.pixelSize: 13
                         wrapMode: Text.WordWrap
                         horizontalAlignment: Text.AlignHCenter
                         width: parent.width - 20
                     }
                 }
 
+                // Spacer
+                Item { height: 5 }
+
                 // Playback controls
                 Row {
-                    spacing: 20
+                    spacing: 15
                     anchors.horizontalCenter: parent.horizontalCenter
 
                     // Previous button
                     MediaButton {
                         icon: "qrc:/images/backward.svg"
-                        size: 50
+                        size: 45
                         onClicked: mediaManager.previous()
                     }
 
                     // Play/Pause button
                     MediaButton {
                         icon: root.isPlaying ? "qrc:/images/pause.svg" : "qrc:/images/start.svg"
-                        size: 65
+                        size: 60
                         primary: true
                         onClicked: {
                             if (root.isPlaying) {
@@ -338,19 +341,22 @@ Rectangle {
                     // Next button
                     MediaButton {
                         icon: "qrc:/images/forward.svg"
-                        size: 50
+                        size: 45
                         onClicked: mediaManager.next()
                     }
                 }
 
+                // Spacer
+                Item { height: 10 }
+
                 // Volume control
                 Column {
                     width: parent.width
-                    spacing: 10
+                    spacing: 8
 
                     Text {
                         text: "Volume: " + Math.round(mediaManager.volume * 100) + "%"
-                        font.pixelSize: 16
+                        font.pixelSize: 15
                         font.bold: true
                         color: "#ecf0f1"
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -358,13 +364,14 @@ Rectangle {
 
                     Slider {
                         width: parent.width
+                        height: 40
                         from: 0
                         to: 100
                         value: mediaManager.volume * 100
                         stepSize: 1
 
-                        onValueChanged: {
-                            mediaManager.volume = value / 100.0
+                        onMoved: {
+                            mediaManager.setVolume(value / 100.0)
                         }
 
                         background: Rectangle {
@@ -388,9 +395,9 @@ Rectangle {
                         handle: Rectangle {
                             x: parent.leftPadding + parent.visualPosition * (parent.availableWidth - width)
                             y: parent.topPadding + parent.availableHeight / 2 - height / 2
-                            implicitWidth: 24
-                            implicitHeight: 24
-                            radius: 12
+                            implicitWidth: 22
+                            implicitHeight: 22
+                            radius: 11
                             color: "#3498db"
                             border.color: "#2980b9"
                             border.width: 2

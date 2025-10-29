@@ -3,85 +3,106 @@
 #include <QQmlContext>
 #include <QDebug>
 #include <QTimer>
+#include <CommonAPI/CommonAPI.hpp>
 #include "mediamanager.h"
+#include "MediaControlStubImpl.h"
 
 int main(int argc, char *argv[])
 {
+    // Set vsomeip application name BEFORE creating QApplication
+    qputenv("VSOMEIP_APPLICATION_NAME", "MediaApp");
+
     QGuiApplication app(argc, argv);
     app.setApplicationName("MediaApp");
     app.setApplicationVersion("1.0");
     app.setOrganizationName("SEA-ME");
-    
+
     qDebug() << "═══════════════════════════════════════════════════════";
-    qDebug() << "MediaApp Process Starting...";
-    qDebug() << "Service: MediaManager (USB Media Playback)";
+    qDebug() << "MediaApp (vsomeip Service) Starting...";
+    qDebug() << "Service: MediaControl (USB Media Playback + Volume Events)";
     qDebug() << "═══════════════════════════════════════════════════════";
-    
+
     // ═══════════════════════════════════════════════════════
-    // MediaManager 백엔드 로직 생성
+    // MediaManager backend logic
     // ═══════════════════════════════════════════════════════
     MediaManager mediaManager;
-    
-    // 디버그: Signal 연결 확인
-    QObject::connect(&mediaManager, &MediaManager::volumeChanged,
-                     [](){ 
-                         qDebug() << "[MediaApp] volumeChanged signal emitted"; 
-                     });
-    
-    QObject::connect(&mediaManager, &MediaManager::playbackStateChanged,
-                     [](){ 
-                         qDebug() << "[MediaApp] playbackStateChanged signal emitted"; 
-                     });
-    
+
     qDebug() << "";
     qDebug() << "✅ MediaManager initialized";
     qDebug() << "   - Volume:" << mediaManager.volume();
     qDebug() << "   - isPlaying:" << mediaManager.isPlaying();
-    qDebug() << "";
-    qDebug() << "📌 NOTE: 현재는 독립 프로세스로 실행됩니다.";
-    qDebug() << "   향후 vsomeip 통합 시 다른 프로세스와 통신합니다.";
-    qDebug() << "";
-    qDebug() << "MediaApp is running...";
-    qDebug() << "═══════════════════════════════════════════════════════";
-    
+
     // ═══════════════════════════════════════════════════════
-    // QML GUI 로드 (테스트/개발 모드)
+    // CommonAPI vsomeip Service Registration
+    // ═══════════════════════════════════════════════════════
+    std::shared_ptr<CommonAPI::Runtime> runtime = CommonAPI::Runtime::get();
+
+    std::shared_ptr<v1::mediacontrol::MediaControlStubImpl> mediaService =
+        std::make_shared<v1::mediacontrol::MediaControlStubImpl>(&mediaManager);
+
+    const std::string domain = "local";
+    const std::string instance = "mediacontrol.MediaControl";
+
+    bool success = runtime->registerService(domain, instance, mediaService);
+
+    if (success) {
+        qDebug() << "✅ MediaControl vsomeip service registered successfully";
+        qDebug() << "   Domain:" << QString::fromStdString(domain);
+        qDebug() << "   Instance:" << QString::fromStdString(instance);
+    } else {
+        qCritical() << "❌ Failed to register MediaControl service!";
+        return -1;
+    }
+
+    qDebug() << "";
+    qDebug() << "📡 vsomeip Service Status:";
+    qDebug() << "   - Service: MediaControl";
+    qDebug() << "   - Events: volumeChanged";
+    qDebug() << "   - Methods: getVolume()";
+    qDebug() << "   - Clients: AmbientApp can subscribe";
+    qDebug() << "";
+    qDebug() << "MediaApp is running as vsomeip service...";
+    qDebug() << "═══════════════════════════════════════════════════════";
+
+    // ═══════════════════════════════════════════════════════
+    // QML GUI (Optional - for standalone testing with UI)
     // ═══════════════════════════════════════════════════════
     QQmlApplicationEngine engine;
-    
-    // C++ 객체를 QML에 노출
+
+    // Expose C++ objects to QML
     engine.rootContext()->setContextProperty("mediaManager", &mediaManager);
-    
-    // QML 파일 로드
-    const QUrl url(QStringLiteral("qrc:/MediaApp.qml"));
+
+    // Load QML file
+    const QUrl url(QStringLiteral("qrc:/qml/MediaApp.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl) {
-            qCritical() << "❌ Failed to load QML file!";
+            qCritical() << "❌ Failed to load QML file:" << url;
             QCoreApplication::exit(-1);
         }
     }, Qt::QueuedConnection);
     engine.load(url);
-    
+
     if (!engine.rootObjects().isEmpty()) {
         qDebug() << "✅ QML GUI loaded: MediaApp.qml";
         qDebug() << "🖥️  Window should appear now!";
     }
-    
+
     qDebug() << "";
-    
+
     // ═══════════════════════════════════════════════════════
-    // 테스트: 5초마다 볼륨 변경 시뮬레이션
+    // Test Timer: Simulate volume changes every 5 seconds
     // ═══════════════════════════════════════════════════════
     QTimer *testTimer = new QTimer(&app);
-    int testVolume = 50;
-    QObject::connect(testTimer, &QTimer::timeout, [&mediaManager, &testVolume]() {
-        testVolume = (testVolume + 10) % 100;
+    QObject::connect(testTimer, &QTimer::timeout, [&mediaManager]() {
+        static qreal testVolume = 0.8;
+        testVolume = (testVolume >= 1.0) ? 0.0 : (testVolume + 0.2);
         qDebug() << "";
-        qDebug() << "🧪 [Test] Setting volume to:" << testVolume;
+        qDebug() << "🧪 [Test] Simulating volume change to:" << testVolume;
         mediaManager.setVolume(testVolume);
     });
-    // testTimer->start(5000);  // 테스트용 타이머 (필요시 주석 해제)
-    
+    testTimer->start(5000);  // Change volume every 5 seconds
+    qDebug() << "🧪 Test timer enabled: Volume will change every 5 seconds";
+
     return app.exec();
 }
