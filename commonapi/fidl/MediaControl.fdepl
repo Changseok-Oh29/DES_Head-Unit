@@ -4,6 +4,14 @@ import "MediaControl.fidl"
 define org.genivi.commonapi.someip.deployment for interface mediacontrol.MediaControl {
     SomeIpServiceID = 4661
     
+    method getVolume {
+        SomeIpMethodID = 2001
+    }
+    
+    method setVolume {
+        SomeIpMethodID = 2002
+    }
+    
     broadcast volumeChanged {
         SomeIpEventID = 40100
         SomeIpEventGroups = { 4661 }

@@ -42,9 +42,12 @@ public:
     > VolumeChangedEvent;
 
     typedef std::function<void(const CommonAPI::CallStatus&, const float&)> GetVolumeAsyncCallback;
+    typedef std::function<void(const CommonAPI::CallStatus&)> SetVolumeAsyncCallback;
 
     virtual void getVolume(CommonAPI::CallStatus &_internalCallStatus, float &_volume, const CommonAPI::CallInfo *_info = nullptr) = 0;
     virtual std::future<CommonAPI::CallStatus> getVolumeAsync(GetVolumeAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr) = 0;
+    virtual void setVolume(float _volume, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info = nullptr) = 0;
+    virtual std::future<CommonAPI::CallStatus> setVolumeAsync(const float &_volume, SetVolumeAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr) = 0;
     virtual VolumeChangedEvent& getVolumeChangedEvent() = 0;
 
     virtual std::future<void> getCompletionFuture() = 0;

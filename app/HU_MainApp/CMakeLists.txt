@@ -12,9 +12,28 @@ endif()
 # Qt packages
 find_package(Qt5 REQUIRED COMPONENTS Core Quick Qml Multimedia Network)
 
+# Boost (required by vSOMEIP)
+find_package(Boost 1.74 REQUIRED COMPONENTS system thread filesystem)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
+
+# CommonAPI and vSOMEIP paths
+set(COMMONAPI_INSTALL_PATH "/home/seam/DES_Head-Unit/install_folder")
+set(COMMONAPI_GENERATED_PATH "/home/seam/DES_Head-Unit/commonapi/generated")
+
+include_directories(
+    ${COMMONAPI_INSTALL_PATH}/include/CommonAPI-3.2
+    ${COMMONAPI_INSTALL_PATH}/include/CommonAPI-SomeIP-3.2
+    ${COMMONAPI_INSTALL_PATH}/include
+    ${COMMONAPI_GENERATED_PATH}/core
+    ${COMMONAPI_GENERATED_PATH}/someip
+)
+
+link_directories(
+    ${COMMONAPI_INSTALL_PATH}/lib
+)
 
 # ═══════════════════════════════════════════════════════════════════
 # Source files - HU_MainApp (UI Integration Only)
@@ -36,29 +55,32 @@ set(CMAKE_AUTOUIC ON)
 set(SOURCES
     src/main.cpp
 
-    # TEMPORARY: Manager 소스 포함 (vsomeip 전까지)
+    # Manager 소스
     ../MediaApp/src/mediamanager.cpp
     ../GearApp/src/gearmanager.cpp
     ../AmbientApp/src/ambientmanager.cpp
     ../GearApp/src/ipcmanager.cpp
 
-    # TODO: vsomeip 통합 시 아래로 교체
-    # proxies/MediaProxy.cpp
-    # proxies/GearProxy.cpp
-    # proxies/AmbientProxy.cpp
+    # vSOMEIP Communication (MediaControl)
+    src/MediaControlStubImpl.cpp
+    src/MediaControlClient.cpp
+
+    # CommonAPI Generated Code
+    ${COMMONAPI_GENERATED_PATH}/someip/v1/mediacontrol/MediaControlSomeIPProxy.cpp
+    ${COMMONAPI_GENERATED_PATH}/someip/v1/mediacontrol/MediaControlSomeIPStubAdapter.cpp
+    ${COMMONAPI_GENERATED_PATH}/someip/v1/mediacontrol/MediaControlSomeIPDeployment.cpp
 )
 
 set(HEADERS
-    # TEMPORARY: Manager 헤더 포함 (vsomeip 전까지)
+    # Manager 헤더
     ../MediaApp/src/mediamanager.h
     ../GearApp/src/gearmanager.h
     ../AmbientApp/src/ambientmanager.h
     ../GearApp/src/ipcmanager.h
 
-    # TODO: vsomeip 통합 시 아래로 교체
-    # proxies/MediaProxy.h
-    # proxies/GearProxy.h
-    # proxies/AmbientProxy.h
+    # vSOMEIP Communication
+    src/MediaControlStubImpl.h
+    src/MediaControlClient.h
 )
 
 # QML resources
@@ -79,6 +101,19 @@ target_link_libraries(HU_MainApp
     Qt5::Qml
     Qt5::Multimedia
     Qt5::Network
+    Boost::system
+    Boost::thread
+    Boost::filesystem
+    CommonAPI
+    CommonAPI-SomeIP
+    vsomeip3
+)
+
+# Set RPATH to find libraries at runtime
+set_target_properties(HU_MainApp PROPERTIES
+    INSTALL_RPATH "${COMMONAPI_INSTALL_PATH}/lib"
+    BUILD_WITH_INSTALL_RPATH TRUE
+    BUILD_RPATH "${COMMONAPI_INSTALL_PATH}/lib"
 )
 
 # Install

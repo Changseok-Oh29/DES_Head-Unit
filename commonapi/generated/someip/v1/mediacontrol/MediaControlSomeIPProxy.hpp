@@ -56,6 +56,14 @@ public:
 
     virtual VolumeChangedEvent& getVolumeChangedEvent();
 
+    virtual void getVolume(CommonAPI::CallStatus &_internalCallStatus, float &_volume, const CommonAPI::CallInfo *_info);
+
+    virtual std::future<CommonAPI::CallStatus> getVolumeAsync(GetVolumeAsyncCallback _callback, const CommonAPI::CallInfo *_info);
+
+    virtual void setVolume(float _volume, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info);
+
+    virtual std::future<CommonAPI::CallStatus> setVolumeAsync(const float &_volume, SetVolumeAsyncCallback _callback, const CommonAPI::CallInfo *_info);
+
     virtual void getOwnVersion(uint16_t &_major, uint16_t &_minor) const;
 
     virtual std::future<void> getCompletionFuture();

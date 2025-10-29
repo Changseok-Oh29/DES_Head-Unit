@@ -161,14 +161,30 @@ void MediaManager::stop()
 
 void MediaManager::next()
 {
-    if (m_currentIndex < m_mediaFiles.size() - 1)
+    if (m_mediaFiles.isEmpty())
+        return;
+
+    // Circular navigation: wrap to first track if at the end
+    if (m_currentIndex < m_mediaFiles.size() - 1) {
         playFile(m_currentIndex + 1);
+    } else {
+        playFile(0);  // Go to first track
+        qDebug() << "MediaManager: Wrapped to first track";
+    }
 }
 
 void MediaManager::previous()
 {
-    if (m_currentIndex > 0)
+    if (m_mediaFiles.isEmpty())
+        return;
+
+    // Circular navigation: wrap to last track if at the beginning
+    if (m_currentIndex > 0) {
         playFile(m_currentIndex - 1);
+    } else {
+        playFile(m_mediaFiles.size() - 1);  // Go to last track
+        qDebug() << "MediaManager: Wrapped to last track";
+    }
 }
 
 void MediaManager::onUsbDeviceChanged()

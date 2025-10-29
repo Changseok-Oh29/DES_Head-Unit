@@ -55,6 +55,22 @@ public:
         CommonAPI::Version
     > getMediaControlInterfaceVersionStubDispatcher;
 
+    CommonAPI::SomeIP::MethodWithReplyStubDispatcher<
+        ::v1::mediacontrol::MediaControlStub,
+        std::tuple< >,
+        std::tuple< float>,
+        std::tuple< >,
+        std::tuple< CommonAPI::EmptyDeployment>
+    > getVolumeStubDispatcher;
+    
+    CommonAPI::SomeIP::MethodWithReplyStubDispatcher<
+        ::v1::mediacontrol::MediaControlStub,
+        std::tuple< float>,
+        std::tuple< >,
+        std::tuple< CommonAPI::EmptyDeployment>,
+        std::tuple< >
+    > setVolumeStubDispatcher;
+    
     MediaControlSomeIPStubAdapterInternal(
         const CommonAPI::SomeIP::Address &_address,
         const std::shared_ptr<CommonAPI::SomeIP::ProxyConnection> &_connection,
@@ -64,8 +80,25 @@ public:
             _address,
             _connection,
             std::dynamic_pointer_cast< MediaControlStub>(_stub)),
-        getMediaControlInterfaceVersionStubDispatcher(&MediaControlStub::lockInterfaceVersionAttribute, &MediaControlStub::getInterfaceVersion, false, true)
+        getMediaControlInterfaceVersionStubDispatcher(&MediaControlStub::lockInterfaceVersionAttribute, &MediaControlStub::getInterfaceVersion, false, true),
+        getVolumeStubDispatcher(
+            &MediaControlStub::getVolume,
+            false,
+            _stub->hasElement(0),
+            std::make_tuple(),
+            std::make_tuple(static_cast< CommonAPI::EmptyDeployment* >(nullptr)))
+        
+        ,
+        setVolumeStubDispatcher(
+            &MediaControlStub::setVolume,
+            false,
+            _stub->hasElement(1),
+            std::make_tuple(static_cast< CommonAPI::EmptyDeployment* >(nullptr)),
+            std::make_tuple())
+        
     {
+        MediaControlSomeIPStubAdapterHelper::addStubDispatcher( { CommonAPI::SomeIP::method_id_t(0x7d1) }, &getVolumeStubDispatcher );
+        MediaControlSomeIPStubAdapterHelper::addStubDispatcher( { CommonAPI::SomeIP::method_id_t(0x7d2) }, &setVolumeStubDispatcher );
         // Provided events/fields
         {
             std::set<CommonAPI::SomeIP::eventgroup_id_t> itsEventGroups;

@@ -21,16 +21,16 @@ class MediaManager : public QObject
 
 public:
     explicit MediaManager(QObject *parent = nullptr);
-    
+
     QStringList mediaFiles() const { return m_mediaFiles; }
     QString currentFile() const { return m_currentFile; }
     bool isPlaying() const { return m_isPlaying; }
     int currentIndex() const { return m_currentIndex; }
     QStringList usbMounts() const { return m_usbMounts; }
     qreal volume() const { return m_volume; }
-    void setVolume(qreal volume);
 
 public slots:
+    void setVolume(qreal volume);  // Moved to public slots so QML can call it directly
     void scanForMedia();
     void playFile(int index);
     void play();

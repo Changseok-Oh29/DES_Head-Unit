@@ -2,19 +2,17 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QDebug>
+#include <CommonAPI/CommonAPI.hpp>
 
-// ═══════════════════════════════════════════════════════════════════
-// TODO: vsomeip 통합 후 아래 include를 Proxy로 교체
-// ═══════════════════════════════════════════════════════════════════
-// #include "proxies/MediaProxy.h"
-// #include "proxies/GearProxy.h"
-// #include "proxies/AmbientProxy.h"
-
-// 임시: 직접 Manager include (vsomeip 전까지)
+// Manager includes
 #include "../../MediaApp/src/mediamanager.h"
 #include "../../GearApp/src/gearmanager.h"
 #include "../../AmbientApp/src/ambientmanager.h"
 #include "../../GearApp/src/ipcmanager.h"
+
+// vSOMEIP Communication
+#include "MediaControlStubImpl.h"
+#include "MediaControlClient.h"
 
 int main(int argc, char *argv[])
 {
@@ -24,79 +22,115 @@ int main(int argc, char *argv[])
     // ═══════════════════════════════════════════════════════
     qputenv("QT_QPA_PLATFORM", "wayland");
     qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
-    
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
-    
+
     QGuiApplication app(argc, argv);
     app.setApplicationName("HeadUnit-MainApp");
     app.setApplicationVersion("1.0");
     app.setOrganizationName("SEA-ME");
-    
+
     qDebug() << "═══════════════════════════════════════════════════════";
-    qDebug() << "HU_MainApp (UI Integration) Starting...";
+    qDebug() << "HU_MainApp (UI Integration with vSOMEIP) Starting...";
     qDebug() << "Display Server:" << app.platformName();
     qDebug() << "═══════════════════════════════════════════════════════";
-    
+
     // ═══════════════════════════════════════════════════════
-    // 현재 단계: 모든 Manager를 단일 프로세스에서 실행
-    // 향후 vsomeip 통합 시: Proxy 객체로 교체
-    // ═══════════════════════════════════════════════════════
-    
     // Create backend instances
+    // ═══════════════════════════════════════════════════════
     MediaManager mediaManager;
     GearManager gearManager;
     AmbientManager ambientManager;
     IpcManager ipcManager;
-    
-    // ═══════════════════════════════════════════════════════
-    // HU 내부 통신: Signal/Slot 연결
-    // (향후 vsomeip로 전환 시 제거)
-    // ═══════════════════════════════════════════════════════
-    
-    // IC → GearManager
-    QObject::connect(&ipcManager, &IpcManager::gearStatusReceivedFromIC,
-                     &gearManager, &GearManager::onGearStatusReceivedFromIC);
-    
-    // GearManager → AmbientManager
-    QObject::connect(&gearManager, &GearManager::gearPositionChanged,
-                     &ambientManager, &AmbientManager::onGearPositionChanged);
-    
-    // MediaManager → AmbientManager (TODO: volumeChanged signal)
-    // QObject::connect(&mediaManager, &MediaManager::volumeChanged,
-    //                  &ambientManager, &AmbientManager::onVolumeChanged);
-    
+
+    qDebug() << "";
     qDebug() << "✅ Backend managers initialized:";
     qDebug() << "   - MediaManager (USB media playback)";
     qDebug() << "   - GearManager (Gear control + IC sync)";
     qDebug() << "   - AmbientManager (Lighting control)";
     qDebug() << "   - IpcManager (IC communication)";
+
+    // ═══════════════════════════════════════════════════════
+    // vSOMEIP Communication Setup
+    // MediaManager (Service) → AmbientManager (Client)
+    // ═══════════════════════════════════════════════════════
     qDebug() << "";
-    qDebug() << "✅ Internal connections established:";
-    qDebug() << "   - IpcManager → GearManager";
+    qDebug() << "🔧 Initializing vSOMEIP Communication...";
+
+    // CommonAPI Runtime
+    std::shared_ptr<CommonAPI::Runtime> runtime = CommonAPI::Runtime::get();
+    if (!runtime) {
+        qCritical() << "❌ Failed to get CommonAPI Runtime!";
+        return -1;
+    }
+    qDebug() << "✅ CommonAPI Runtime initialized";
+
+    // MediaControl Service (MediaManager side)
+    std::shared_ptr<v1::mediacontrol::MediaControlStubImpl> mediaControlService =
+        std::make_shared<v1::mediacontrol::MediaControlStubImpl>(&mediaManager);
+
+    const std::string domain = "local";
+    const std::string instance = "mediacontrol.MediaControl";
+    const std::string connection = "HU_MainApp";
+
+    bool success = runtime->registerService(domain, instance, mediaControlService, connection);
+
+    if (success) {
+        qDebug() << "✅ MediaControl service registered successfully!";
+        qDebug() << "   Domain:" << QString::fromStdString(domain);
+        qDebug() << "   Instance:" << QString::fromStdString(instance);
+    } else {
+        qCritical() << "❌ Failed to register MediaControl service!";
+        return -1;
+    }
+
+    // MediaControl Client (AmbientManager side)
+    MediaControlClient* mediaControlClient = new MediaControlClient(&ambientManager, &app);
+
+    if (!mediaControlClient->initialize()) {
+        qCritical() << "❌ Failed to initialize MediaControl client!";
+        return -1;
+    }
+
+    qDebug() << "✅ MediaControl client initialized";
+    qDebug() << "   Waiting for service to be available...";
+
+    // ═══════════════════════════════════════════════════════
+    // Traditional Signal/Slot connections
+    // (for non-vSOMEIP communication)
+    // ═══════════════════════════════════════════════════════
+
+    // IC → GearManager
+    QObject::connect(&ipcManager, &IpcManager::gearStatusReceivedFromIC,
+                     &gearManager, &GearManager::onGearStatusReceivedFromIC);
+
+    // GearManager → AmbientManager (gear color change)
+    QObject::connect(&gearManager, &GearManager::gearPositionChanged,
+                     &ambientManager, &AmbientManager::onGearPositionChanged);
+
+    qDebug() << "";
+    qDebug() << "✅ Communication channels established:";
+    qDebug() << "   - IpcManager → GearManager (UDP)";
     qDebug() << "   - GearManager → AmbientManager (gear → color)";
-    qDebug() << "   - MediaManager → AmbientManager (volume → brightness) [TODO]";
+    qDebug() << "   - MediaManager → AmbientManager (volume → brightness via vSOMEIP)";
     qDebug() << "";
-    qDebug() << "📌 NOTE: 현재는 단일 프로세스 모드로 실행됩니다.";
-    qDebug() << "   파일 구조는 다중 프로세스 준비가 완료되었습니다.";
-    qDebug() << "   향후 vsomeip 통합 시:";
-    qDebug() << "   - MediaProxy로 MediaApp 접근";
-    qDebug() << "   - GearProxy로 GearApp 접근";
-    qDebug() << "   - AmbientProxy로 AmbientApp 접근";
+    qDebug() << "📌 NOTE: All components run in single process";
+    qDebug() << "   MediaManager and AmbientManager communicate via vSOMEIP internally";
     qDebug() << "═══════════════════════════════════════════════════════";
-    
+
     // ═══════════════════════════════════════════════════════
     // Setup QML engine
     // ═══════════════════════════════════════════════════════
     QQmlApplicationEngine engine;
-    
+
     // Expose backend instances to QML
     engine.rootContext()->setContextProperty("mediaManager", &mediaManager);
     engine.rootContext()->setContextProperty("gearManager", &gearManager);
     engine.rootContext()->setContextProperty("ambientManager", &ambientManager);
     engine.rootContext()->setContextProperty("ipcManager", &ipcManager);
-    
+
     // Load main QML file
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
     QObject::connect(
@@ -115,7 +149,7 @@ int main(int argc, char *argv[])
             }
         },
         Qt::QueuedConnection);
-    
+
     engine.load(url);
 
     return app.exec();
