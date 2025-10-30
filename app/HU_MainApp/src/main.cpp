@@ -2,23 +2,12 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QDebug>
-#include <CommonAPI/CommonAPI.hpp>
-
-// Manager includes
-#include "../../MediaApp/src/mediamanager.h"
-#include "../../GearApp/src/gearmanager.h"
-#include "../../AmbientApp/src/ambientmanager.h"
-#include "../../GearApp/src/ipcmanager.h"
-
-// vSOMEIP Communication
-#include "MediaControlStubImpl.h"
-#include "MediaControlClient.h"
 
 int main(int argc, char *argv[])
 {
     // ═══════════════════════════════════════════════════════
-    // Wayland Display Server 강제 설정
-    // 별도 스크립트 없이 자동으로 Wayland 사용
+    // Wayland Compositor 설정
+    // HU_MainApp은 각 독립 앱의 화면을 합성하는 역할만 수행
     // ═══════════════════════════════════════════════════════
     qputenv("QT_QPA_PLATFORM", "wayland");
     qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
@@ -28,129 +17,65 @@ int main(int argc, char *argv[])
 #endif
 
     QGuiApplication app(argc, argv);
-    app.setApplicationName("HeadUnit-MainApp");
-    app.setApplicationVersion("1.0");
+    app.setApplicationName("HeadUnit-Compositor");
+    app.setApplicationVersion("2.0");
     app.setOrganizationName("SEA-ME");
 
     qDebug() << "═══════════════════════════════════════════════════════";
-    qDebug() << "HU_MainApp (UI Integration with vSOMEIP) Starting...";
+    qDebug() << "HU_MainApp - Wayland Compositor Only";
+    qDebug() << "═══════════════════════════════════════════════════════";
     qDebug() << "Display Server:" << app.platformName();
+    qDebug() << "";
+    qDebug() << "📋 Role: Window Compositor";
+    qDebug() << "   - Composites independent app windows";
+    qDebug() << "   - No business logic";
+    qDebug() << "   - No vsomeip communication";
+    qDebug() << "";
+    qDebug() << "🖼️  Expected Apps:";
+    qDebug() << "   - GearApp (Gear selection UI)";
+    qDebug() << "   - AmbientApp (Ambient lighting control)";
+    qDebug() << "   - MediaApp (Media playback)";
+    qDebug() << "";
+    qDebug() << "💡 Apps communicate via vsomeip (not through compositor)";
     qDebug() << "═══════════════════════════════════════════════════════";
 
     // ═══════════════════════════════════════════════════════
-    // Create backend instances
-    // ═══════════════════════════════════════════════════════
-    MediaManager mediaManager;
-    GearManager gearManager;
-    AmbientManager ambientManager;
-    IpcManager ipcManager;
-
-    qDebug() << "";
-    qDebug() << "✅ Backend managers initialized:";
-    qDebug() << "   - MediaManager (USB media playback)";
-    qDebug() << "   - GearManager (Gear control + IC sync)";
-    qDebug() << "   - AmbientManager (Lighting control)";
-    qDebug() << "   - IpcManager (IC communication)";
-
-    // ═══════════════════════════════════════════════════════
-    // vSOMEIP Communication Setup
-    // MediaManager (Service) → AmbientManager (Client)
-    // ═══════════════════════════════════════════════════════
-    qDebug() << "";
-    qDebug() << "🔧 Initializing vSOMEIP Communication...";
-
-    // CommonAPI Runtime
-    std::shared_ptr<CommonAPI::Runtime> runtime = CommonAPI::Runtime::get();
-    if (!runtime) {
-        qCritical() << "❌ Failed to get CommonAPI Runtime!";
-        return -1;
-    }
-    qDebug() << "✅ CommonAPI Runtime initialized";
-
-    // MediaControl Service (MediaManager side)
-    std::shared_ptr<v1::mediacontrol::MediaControlStubImpl> mediaControlService =
-        std::make_shared<v1::mediacontrol::MediaControlStubImpl>(&mediaManager);
-
-    const std::string domain = "local";
-    const std::string instance = "mediacontrol.MediaControl";
-    const std::string connection = "HU_MainApp";
-
-    bool success = runtime->registerService(domain, instance, mediaControlService, connection);
-
-    if (success) {
-        qDebug() << "✅ MediaControl service registered successfully!";
-        qDebug() << "   Domain:" << QString::fromStdString(domain);
-        qDebug() << "   Instance:" << QString::fromStdString(instance);
-    } else {
-        qCritical() << "❌ Failed to register MediaControl service!";
-        return -1;
-    }
-
-    // MediaControl Client (AmbientManager side)
-    MediaControlClient* mediaControlClient = new MediaControlClient(&ambientManager, &app);
-
-    if (!mediaControlClient->initialize()) {
-        qCritical() << "❌ Failed to initialize MediaControl client!";
-        return -1;
-    }
-
-    qDebug() << "✅ MediaControl client initialized";
-    qDebug() << "   Waiting for service to be available...";
-
-    // ═══════════════════════════════════════════════════════
-    // Traditional Signal/Slot connections
-    // (for non-vSOMEIP communication)
-    // ═══════════════════════════════════════════════════════
-
-    // IC → GearManager
-    QObject::connect(&ipcManager, &IpcManager::gearStatusReceivedFromIC,
-                     &gearManager, &GearManager::onGearStatusReceivedFromIC);
-
-    // GearManager → AmbientManager (gear color change)
-    QObject::connect(&gearManager, &GearManager::gearPositionChanged,
-                     &ambientManager, &AmbientManager::onGearPositionChanged);
-
-    qDebug() << "";
-    qDebug() << "✅ Communication channels established:";
-    qDebug() << "   - IpcManager → GearManager (UDP)";
-    qDebug() << "   - GearManager → AmbientManager (gear → color)";
-    qDebug() << "   - MediaManager → AmbientManager (volume → brightness via vSOMEIP)";
-    qDebug() << "";
-    qDebug() << "📌 NOTE: All components run in single process";
-    qDebug() << "   MediaManager and AmbientManager communicate via vSOMEIP internally";
-    qDebug() << "═══════════════════════════════════════════════════════";
-
-    // ═══════════════════════════════════════════════════════
-    // Setup QML engine
+    // QML Engine - Layout Only
     // ═══════════════════════════════════════════════════════
     QQmlApplicationEngine engine;
 
-    // Expose backend instances to QML
-    engine.rootContext()->setContextProperty("mediaManager", &mediaManager);
-    engine.rootContext()->setContextProperty("gearManager", &gearManager);
-    engine.rootContext()->setContextProperty("ambientManager", &ambientManager);
-    engine.rootContext()->setContextProperty("ipcManager", &ipcManager);
+    // No backend managers - only Wayland window composition
+    // All business logic is in independent apps (GearApp, MediaApp, AmbientApp)
 
-    // Load main QML file
-    const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
+    // Load compositor QML
+    const QUrl url(QStringLiteral("qrc:/qml/compositor.qml"));
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreated,
         &app,
         [url](QObject *obj, const QUrl &objUrl) {
             if (!obj && url == objUrl) {
-                qCritical() << "Failed to load QML file:" << url;
+                qCritical() << "❌ Failed to load Compositor QML:" << url;
                 QCoreApplication::exit(-1);
             } else {
                 qDebug() << "";
-                qDebug() << "✅ Head Unit UI loaded successfully";
-                qDebug() << "   QML components ready";
+                qDebug() << "✅ Wayland Compositor UI loaded";
+                qDebug() << "   Waiting for app windows...";
                 qDebug() << "";
             }
         },
         Qt::QueuedConnection);
 
     engine.load(url);
+
+    if (engine.rootObjects().isEmpty()) {
+        qCritical() << "❌ No root objects found!";
+        return -1;
+    }
+
+    qDebug() << "🚀 Compositor running...";
+    qDebug() << "   Apps can now connect and display their windows";
+    qDebug() << "";
 
     return app.exec();
 }

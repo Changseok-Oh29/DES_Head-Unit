@@ -1,17 +1,11 @@
 #include "ambientmanager.h"
 #include <QDebug>
-#include <QHostAddress>
-#include <QJsonDocument>
-
-
-const QString AmbientManager::IC_ADDRESS = "127.0.0.1";
 
 AmbientManager::AmbientManager(QObject *parent)
     : QObject(parent)
     , m_ambientLightEnabled(true)
     , m_ambientColor("")  // Will be set by QML color wheel
     , m_brightness(1.0)   // 기본 밝기 100%
-    , m_socket(new QUdpSocket(this))
 {
     qDebug() << "AmbientManager initialized - Enabled:" << m_ambientLightEnabled 
              << "Brightness:" << m_brightness
@@ -26,9 +20,6 @@ void AmbientManager::setAmbientLightEnabled(bool enabled)
     qDebug() << "Ambient light enabled changed:" << m_ambientLightEnabled << "->" << enabled;
     m_ambientLightEnabled = enabled;
     emit ambientLightEnabledChanged();
-    
-    // Send ambient state to IC via UDP
-    sendAmbientStateToIC();
 }
 
 void AmbientManager::setAmbientColor(const QString &color)
@@ -39,11 +30,6 @@ void AmbientManager::setAmbientColor(const QString &color)
     qDebug() << "AmbientManager: Color changed:" << m_ambientColor << "->" << color;
     m_ambientColor = color;
     emit ambientColorChanged();
-    
-    // Send ambient state to IC via UDP
-    if (m_ambientLightEnabled) {
-        sendAmbientStateToIC();
-    }
 }
 
 void AmbientManager::setBrightness(qreal brightness)
@@ -128,20 +114,4 @@ qreal AmbientManager::calculateBrightnessFromVolume(int volume) const
     // 볼륨 0 → 0.3, 볼륨 100 → 1.0
     // 선형 매핑: y = 0.3 + (x / 100) * 0.7
     return 0.3 + (volume / 100.0) * 0.7;
-}
-
-void AmbientManager::sendAmbientStateToIC()
-{
-    QJsonObject message;
-    message["type"] = "ambient_light";
-    message["enabled"] = m_ambientLightEnabled;
-    message["color"] = m_ambientColor;
-    message["timestamp"] = QDateTime::currentMSecsSinceEpoch();
-    
-    QJsonDocument doc(message);
-    QByteArray data = doc.toJson(QJsonDocument::Compact);
-    
-    m_socket->writeDatagram(data, QHostAddress(IC_ADDRESS), IC_PORT);
-    qDebug() << "AmbientManager: Sent state to IC - Enabled:" << m_ambientLightEnabled 
-             << "Color:" << m_ambientColor;
 }

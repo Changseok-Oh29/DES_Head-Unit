@@ -3,9 +3,6 @@
 
 #include <QObject>
 #include <QString>
-#include <QUdpSocket>
-#include <QJsonObject>
-#include <QDateTime>
 
 class GearManager : public QObject
 {
@@ -18,21 +15,12 @@ public:
     QString gearPosition() const { return m_gearPosition; }
     void setGearPosition(const QString &position);
 
-public slots:
-    // IC로부터 gear status 수신 시 호출 (IpcManager 연결용)
-    void onGearStatusReceivedFromIC(const QString &gear);
-
 signals:
     void gearPositionChanged(const QString &gear);
+    void gearChangeRequested(const QString &gear);  // vsomeip RPC 호출용
 
 private:
-    void sendGearChangeToIC(const QString &gear);
-    
     QString m_gearPosition;
-    QUdpSocket *m_socket;
-    
-    static const quint16 IC_PORT = 12345;  // Instrument Cluster port
-    static const QString IC_ADDRESS;       // "127.0.0.1"
 };
 
 #endif // GEARMANAGER_H

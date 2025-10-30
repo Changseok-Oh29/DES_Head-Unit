@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # ════════════════════════════════════════════════════════════
-# IC_app 실행 스크립트 (ECU2 - 라즈베리파이, 별도 디스플레이)
+# MediaApp 실행 스크립트 (ECU2 - 라즈베리파이)
 # ════════════════════════════════════════════════════════════
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APP_NAME="IC_app"
+APP_NAME="MediaApp"
 
 # 환경변수 설정
 export VSOMEIP_APPLICATION_NAME="${APP_NAME}"
-export VSOMEIP_CONFIGURATION="${SCRIPT_DIR}/vsomeip_ic.json"
+export VSOMEIP_CONFIGURATION="${SCRIPT_DIR}/vsomeip.json"
 export COMMONAPI_CONFIG="${SCRIPT_DIR}/commonapi.ini"
 
 # 라이브러리 경로 설정 (환경변수 우선, 없으면 기본값)
@@ -38,19 +38,10 @@ else
     echo "   Searched in:"
     echo "   - ${SCRIPT_DIR}/build/${APP_NAME}"
     echo "   - ${SCRIPT_DIR}/${APP_NAME}"
-    echo ""
-    echo "   Build first with: ./build.sh"
     exit 1
 fi
 
 echo "Executable: ${EXEC_PATH}"
-echo ""
-echo "🚗 IC Display - Vehicle Dashboard"
-echo "   - Speed/RPM: CAN Bus (Arduino)"
-echo "   - Gear/Battery: vsomeip (VehicleControlECU)"
-echo ""
-echo "⚠️  Make sure VehicleControlECU is running on ECU1!"
-echo "════════════════════════════════════════════════════════════"
 echo ""
 
 # 실행

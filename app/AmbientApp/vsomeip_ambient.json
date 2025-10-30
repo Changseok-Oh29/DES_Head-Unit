@@ -4,21 +4,27 @@
         "level": "info",
         "console": "true",
         "file": {
-            "enable": "false"
+            "enable": "false",
+            "path": "/tmp/vsomeip.log"
         },
         "dlt": "false"
     },
     "applications": [
         {
-            "name": "IC_app",
-            "id": "0x0400"
+            "name": "AmbientApp",
+            "id": "0x0300"
         }
     ],
     "services": [
         {
             "service": "0x1234",
             "instance": "0x5678",
-            "unreliable": "30508"
+            "unreliable": "30509"
+        },
+        {
+            "service": "0x1235",
+            "instance": "0x5679",
+            "unreliable": "30510"
         }
     ],
     "routing": "vsomeipd",

@@ -3,9 +3,17 @@
 set -e
 
 echo "========================================="
-echo "  GearApp - DEPLOYMENT BUILD"
-echo "  (Raspberry Pi - ECU2 @ 192.168.1.101)"
+echo "  GearApp - BUILD"
+echo "  (vsomeip Client @ ECU2 192.168.1.101)"
 echo "========================================="
+echo ""
+
+# CommonAPI generated code directory
+if [ -z "$COMMONAPI_GEN_DIR" ]; then
+    export COMMONAPI_GEN_DIR=$(pwd)/../../commonapi/generated
+fi
+
+echo "📂 CommonAPI generated code: $COMMONAPI_GEN_DIR"
 echo ""
 
 # Clean previous build
@@ -17,14 +25,12 @@ fi
 mkdir -p build
 cd build
 
-# Copy CMakeLists.txt to build directory
-cp ../CMakeLists.txt .
-
 echo "🔧 Running CMake..."
 cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_COMPILER=g++ \
-    -DCMAKE_C_COMPILER=gcc
+    -DCMAKE_C_COMPILER=gcc \
+    -DCOMMONAPI_GEN_DIR=$COMMONAPI_GEN_DIR
 
 echo ""
 echo "🔨 Building..."
@@ -37,6 +43,4 @@ echo "========================================="
 echo "Executable: build/GearApp"
 echo ""
 echo "To run: ./run.sh"
-echo ""
-echo "NOTE: Make sure VehicleControlECU is running on ECU1 first!"
 echo "========================================="

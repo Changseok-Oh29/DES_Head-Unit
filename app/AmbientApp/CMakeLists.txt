@@ -9,9 +9,21 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
 endif()
 
+# ════════════════════════════════════════════════════════════
+# 배포 환경별 경로 설정 (환경변수 우선)
+# ════════════════════════════════════════════════════════════
+if(DEFINED ENV{DEPLOY_PREFIX})
+    set(INSTALL_PREFIX $ENV{DEPLOY_PREFIX})
+    message(STATUS "Using DEPLOY_PREFIX from environment: ${INSTALL_PREFIX}")
+else()
+    # 기본값: 사용자 홈 디렉토리 기준
+    set(INSTALL_PREFIX "$ENV{HOME}/DES_Head-Unit/install_folder")
+    message(STATUS "Using default DEPLOY_PREFIX: ${INSTALL_PREFIX}")
+endif()
+
 # RPATH 설정 (vsomeip, CommonAPI 라이브러리 경로)
-set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/home/seam/DES_Head-Unit/install_folder")
-set(CMAKE_INSTALL_RPATH "/home/seam/DES_Head-Unit/install_folder/lib")
+set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${INSTALL_PREFIX}")
+set(CMAKE_INSTALL_RPATH "${INSTALL_PREFIX}/lib")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--disable-new-dtags")
@@ -36,9 +48,15 @@ include_directories(
 
 # Generated CommonAPI sources
 set(GENERATED_SOURCES
+    # MediaControl (MediaApp 통신용)
     ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPProxy.cpp
     ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPStubAdapter.cpp
     ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPDeployment.cpp
+    
+    # VehicleControl (VehicleControlECU 통신용)
+    ../../commonapi/generated/someip/v1/vehiclecontrol/VehicleControlSomeIPProxy.cpp
+    ../../commonapi/generated/someip/v1/vehiclecontrol/VehicleControlSomeIPStubAdapter.cpp
+    ../../commonapi/generated/someip/v1/vehiclecontrol/VehicleControlSomeIPDeployment.cpp
 )
 
 # Source files
@@ -46,12 +64,14 @@ set(SOURCES
     src/main.cpp
     src/ambientmanager.cpp
     src/MediaControlClient.cpp
+    src/VehicleControlClient.cpp
     ${GENERATED_SOURCES}
 )
 
 set(HEADERS
     src/ambientmanager.h
     src/MediaControlClient.h
+    src/VehicleControlClient.h
 )
 
 # QML resources

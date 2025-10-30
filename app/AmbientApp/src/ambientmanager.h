@@ -4,9 +4,6 @@
 #include <QObject>
 #include <QString>
 #include <QColor>
-#include <QUdpSocket>
-#include <QJsonObject>
-#include <QDateTime>
 
 class AmbientManager : public QObject
 {
@@ -39,17 +36,12 @@ signals:
     void brightnessChanged();
 
 private:
-    void sendAmbientStateToIC();
     QString getColorForGear(const QString &gear) const;
     qreal calculateBrightnessFromVolume(int volume) const;
     
     bool m_ambientLightEnabled;
     QString m_ambientColor;
     qreal m_brightness;  // 0.0 ~ 1.0
-    QUdpSocket *m_socket;
-    
-    static const quint16 IC_PORT = 12345;  // Instrument Cluster port
-    static const QString IC_ADDRESS;       // "127.0.0.1"
 };
 
 #endif // AMBIENTMANAGER_H

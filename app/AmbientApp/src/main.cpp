@@ -6,6 +6,7 @@
 #include <CommonAPI/CommonAPI.hpp>
 #include "ambientmanager.h"
 #include "MediaControlClient.h"
+#include "VehicleControlClient.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,22 +18,23 @@ int main(int argc, char *argv[])
     app.setApplicationVersion("1.0");
     app.setOrganizationName("SEA-ME");
 
-    qDebug() << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP";
+    qDebug() << "═══════════════════════════════════════════════════════";
     qDebug() << "AmbientApp Process Starting...";
     qDebug() << "Service: AmbientManager (Ambient Lighting Control)";
-    qDebug() << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP";
+    qDebug() << "═══════════════════════════════════════════════════════";
 
-    // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
-    // AmbientManager 1�� \� �1
-    // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+    // ═══════════════════════════════════════════════════════════
+    // AmbientManager 생성
+    // ═══════════════════════════════════════════════════════════
     AmbientManager ambientManager;
 
-    // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+    // ═══════════════════════════════════════════════════════════
     // vSOMEIP 클라이언트 초기화
-    // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+    // ═══════════════════════════════════════════════════════════
     qDebug() << "";
-    qDebug() << "🔧 Initializing vSOMEIP Client...";
+    qDebug() << "🔧 Initializing vSOMEIP Clients...";
     
+    // MediaControl Client (볼륨 → 밝기)
     MediaControlClient* mediaControlClient = new MediaControlClient(&ambientManager, &app);
     
     if (!mediaControlClient->initialize()) {
@@ -42,8 +44,27 @@ int main(int argc, char *argv[])
     
     qDebug() << "✅ MediaControl client initialized";
     qDebug() << "   Waiting for MediaApp service...";
+    
+    // VehicleControl Client (기어 → 색상)
+    VehicleControlClient* vehicleControlClient = new VehicleControlClient(&app);
+    
+    if (!vehicleControlClient->initialize()) {
+        qCritical() << "❌ Failed to initialize VehicleControl client!";
+        return -1;
+    }
+    
+    qDebug() << "✅ VehicleControl client initialized";
+    qDebug() << "   Waiting for VehicleControlECU service...";
+    
+    // Connect VehicleControl gear changes to AmbientManager
+    QObject::connect(vehicleControlClient, &VehicleControlClient::currentGearChanged,
+                     &ambientManager, &AmbientManager::onGearPositionChanged);
+    
+    qDebug() << "✅ VehicleControl → AmbientManager connection established";
+    qDebug() << "   (Gear changes will update ambient light color)";
+    qDebug() << "";
 
-    // ��: Signal � Ux
+    // Debug: Signal 테스트
     QObject::connect(&ambientManager, &AmbientManager::ambientColorChanged,
                      [&ambientManager](){
                          qDebug() << "[AmbientApp] ambientColorChanged signal emitted:"
@@ -57,57 +78,42 @@ int main(int argc, char *argv[])
                      });
 
     qDebug() << "";
-    qDebug() << " AmbientManager initialized";
+    qDebug() << "✅ AmbientManager initialized";
     qDebug() << "   - Current Color:" << ambientManager.ambientColor();
     qDebug() << "   - Brightness:" << ambientManager.brightness();
     qDebug() << "";
-    qDebug() << "=� NOTE: �� Ž \8�\ �)��.";
-    qDebug() << "   �� vsomeip �i � �x \8�@ ��i��.";
-    qDebug() << "   GearApp<\�0 0� �� �8| D ��D �� ��i��.";
+    qDebug() << "📋 Communication Setup:";
+    qDebug() << "   - MediaApp → AmbientApp (Volume → Brightness)";
+    qDebug() << "   - VehicleControlECU → AmbientApp (Gear → Color)";
     qDebug() << "";
     qDebug() << "AmbientApp is running...";
-    qDebug() << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP";
+    qDebug() << "═══════════════════════════════════════════════════════";
 
-    // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
-    // QML GUI \� (L��/ ��)
-    // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+    // ═══════════════════════════════════════════════════════════
+    // QML GUI 로드
+    // ═══════════════════════════════════════════════════════════
     QQmlApplicationEngine engine;
 
-    // C++ �| QML� x�
+    // C++ 객체를 QML에 노출
     engine.rootContext()->setContextProperty("ambientManager", &ambientManager);
 
-    // QML | \�
+    // QML 파일 로드
     const QUrl url(QStringLiteral("qrc:/qml/AmbientLighting.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl) {
-            qCritical() << "L Failed to load QML file!";
+            qCritical() << "❌ Failed to load QML file!";
             QCoreApplication::exit(-1);
         }
     }, Qt::QueuedConnection);
     engine.load(url);
 
     if (!engine.rootObjects().isEmpty()) {
-        qDebug() << " QML GUI loaded: AmbientLighting.qml";
-        qDebug() << "=�  Window should appear now!";
+        qDebug() << "✅ QML GUI loaded: AmbientLighting.qml";
+        qDebug() << "   Window should appear now!";
     }
 
     qDebug() << "";
-
-    // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
-    // L��: 5�� �� �� ܬtX (0� �� ܬtX)
-    // PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
-    QTimer *testTimer = new QTimer(&app);
-    QStringList testGears = {"P", "R", "N", "D"};
-    int gearIndex = 0;
-    QObject::connect(testTimer, &QTimer::timeout, [&ambientManager, &testGears, &gearIndex]() {
-        QString testGear = testGears[gearIndex];
-        gearIndex = (gearIndex + 1) % testGears.size();
-        qDebug() << "";
-        qDebug() << ">� [Test] Simulating gear change to:" << testGear;
-        ambientManager.onGearPositionChanged(testGear);
-    });
-    // testTimer->start(5000);  // L��� �t8 (D�� � t)
 
     return app.exec();
 }

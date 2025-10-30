@@ -90,19 +90,5 @@ int main(int argc, char *argv[])
 
     qDebug() << "";
 
-    // ═══════════════════════════════════════════════════════
-    // Test Timer: Simulate volume changes every 5 seconds
-    // ═══════════════════════════════════════════════════════
-    QTimer *testTimer = new QTimer(&app);
-    QObject::connect(testTimer, &QTimer::timeout, [&mediaManager]() {
-        static qreal testVolume = 0.8;
-        testVolume = (testVolume >= 1.0) ? 0.0 : (testVolume + 0.2);
-        qDebug() << "";
-        qDebug() << "🧪 [Test] Simulating volume change to:" << testVolume;
-        mediaManager.setVolume(testVolume);
-    });
-    testTimer->start(5000);  // Change volume every 5 seconds
-    qDebug() << "🧪 Test timer enabled: Volume will change every 5 seconds";
-
     return app.exec();
 }

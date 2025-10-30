@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QTimer>
 #include "gearmanager.h"
-#include "ipcmanager.h"
+#include "VehicleControlClient.h"
 
 int main(int argc, char *argv[])
 {
@@ -15,22 +15,46 @@ int main(int argc, char *argv[])
     
     qDebug() << "═══════════════════════════════════════════════════════";
     qDebug() << "GearApp Process Starting...";
-    qDebug() << "Service: GearManager (Gear Control + IC Communication)";
+    qDebug() << "Service: GearManager (Gear Control + vsomeip Client)";
     qDebug() << "═══════════════════════════════════════════════════════";
     
     // ═══════════════════════════════════════════════════════
-    // GearManager + IpcManager 백엔드 로직 생성
+    // VehicleControlClient (vsomeip) 생성 및 연결
+    // ═══════════════════════════════════════════════════════
+    VehicleControlClient vehicleControlClient;
+    vehicleControlClient.connectToService();
+    
+    // ═══════════════════════════════════════════════════════
+    // GearManager 백엔드 로직 생성
     // ═══════════════════════════════════════════════════════
     GearManager gearManager;
-    IpcManager ipcManager;  // IC 통신 담당
     
     // ═══════════════════════════════════════════════════════
-    // IC → GearManager 연결
+    // VehicleControlClient → GearManager 연결 (vsomeip 이벤트 수신)
     // ═══════════════════════════════════════════════════════
-    QObject::connect(&ipcManager, &IpcManager::gearStatusReceivedFromIC,
-                     &gearManager, &GearManager::onGearStatusReceivedFromIC);
+    QObject::connect(&vehicleControlClient, &VehicleControlClient::currentGearChanged,
+                     [&gearManager](const QString& gear) {
+                         qDebug() << "[vsomeip → GearManager] Gear update:" << gear;
+                         // 직접 m_gearPosition 업데이트 (순환 방지)
+                         if (gearManager.gearPosition() != gear) {
+                             // setGearPosition 대신 직접 시그널 발생
+                             gearManager.setProperty("gearPosition", gear);
+                             emit gearManager.gearPositionChanged(gear);
+                         }
+                     });
     
-    qDebug() << "✅ Connection established: IpcManager → GearManager";
+    qDebug() << "✅ Connection established: VehicleControlClient → GearManager";
+    
+    // ═══════════════════════════════════════════════════════
+    // GearManager → VehicleControlClient 연결 (QML에서 기어 변경 요청 시)
+    // ═══════════════════════════════════════════════════════
+    QObject::connect(&gearManager, &GearManager::gearChangeRequested,
+                     [&vehicleControlClient](const QString& gear) {
+                         qDebug() << "[GearManager → vsomeip] Requesting gear change:" << gear;
+                         vehicleControlClient.requestGearChange(gear);
+                     });
+    
+    qDebug() << "✅ Connection established: GearManager → VehicleControlClient";
     
     // 디버그: Signal 연결 확인
     QObject::connect(&gearManager, &GearManager::gearPositionChanged,
@@ -42,12 +66,11 @@ int main(int argc, char *argv[])
     qDebug() << "✅ GearManager initialized";
     qDebug() << "   - Current Gear:" << gearManager.gearPosition();
     qDebug() << "";
-    qDebug() << "✅ IpcManager initialized";
-    qDebug() << "   - Listening on port: 12346";
-    qDebug() << "   - IC Address: 127.0.0.1:12345";
+    qDebug() << "✅ VehicleControlClient initialized";
+    qDebug() << "   - Connected:" << vehicleControlClient.connected();
+    qDebug() << "   - Service: VehicleControl @ ECU1 (192.168.1.100)";
     qDebug() << "";
-    qDebug() << "📌 NOTE: 현재는 독립 프로세스로 실행됩니다.";
-    qDebug() << "   향후 vsomeip 통합 시 다른 프로세스와 통신합니다.";
+    qDebug() << "📌 NOTE: vsomeip 통합 완료 - VehicleControlECU와 통신합니다";
     qDebug() << "";
     qDebug() << "GearApp is running...";
     qDebug() << "═══════════════════════════════════════════════════════";
@@ -59,7 +82,7 @@ int main(int argc, char *argv[])
     
     // C++ 객체를 QML에 노출
     engine.rootContext()->setContextProperty("gearManager", &gearManager);
-    engine.rootContext()->setContextProperty("ipcManager", &ipcManager);
+    engine.rootContext()->setContextProperty("vehicleControlClient", &vehicleControlClient);
     
     // QML 파일 로드
     const QUrl url(QStringLiteral("qrc:/qml/GearSelectionWidget.qml"));

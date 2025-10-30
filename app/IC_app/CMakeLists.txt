@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.16)
 
 project(IC_app VERSION 1.0 LANGUAGES CXX)
@@ -9,6 +8,25 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# ════════════════════════════════════════════════════════════
+# 배포 환경별 경로 설정 (환경변수 우선)
+# ════════════════════════════════════════════════════════════
+if(DEFINED ENV{DEPLOY_PREFIX})
+    set(INSTALL_PREFIX $ENV{DEPLOY_PREFIX})
+    message(STATUS "Using DEPLOY_PREFIX from environment: ${INSTALL_PREFIX}")
+else()
+    # 기본값: 사용자 홈 디렉토리 기준
+    set(INSTALL_PREFIX "$ENV{HOME}/DES_Head-Unit/install_folder")
+    message(STATUS "Using default DEPLOY_PREFIX: ${INSTALL_PREFIX}")
+endif()
+
+# RPATH 설정 (vsomeip, CommonAPI 라이브러리 경로)
+set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${INSTALL_PREFIX}")
+set(CMAKE_INSTALL_RPATH "${INSTALL_PREFIX}/lib")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--disable-new-dtags")
 
 find_package(QT NAMES Qt5 Qt6 REQUIRED COMPONENTS Core Widgets Quick Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Widgets Quick Network)

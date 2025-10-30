@@ -1,15 +1,7 @@
 #!/bin/bash
 
 echo "════════════════════════════════════════════════════════"
-echo "Building AmbientApp with vSOMEIP Integration"
-echo "════════════════════════════════════════════════════════"
-
-# 환경변수 DEPLOY_PREFIX 설정 (없으면 기본값)
-if [ -z "$DEPLOY_PREFIX" ]; then
-    export DEPLOY_PREFIX="${HOME}/DES_Head-Unit/install_folder"
-fi
-
-echo "DEPLOY_PREFIX: ${DEPLOY_PREFIX}"
+echo "Building HU_MainApp - Wayland Compositor"
 echo "════════════════════════════════════════════════════════"
 
 cd "$(dirname "$0")"
@@ -22,7 +14,7 @@ cd build
 
 # CMake
 echo "Running CMake..."
-cmake .. -DCMAKE_BUILD_TYPE=Debug
+cmake -DCMAKE_BUILD_TYPE=Debug ..
 if [ $? -ne 0 ]; then
     echo "❌ CMake configuration failed!"
     exit 1
@@ -38,6 +30,12 @@ fi
 
 echo "✅ Build successful!"
 echo ""
-echo "To run AmbientApp:"
+echo "To run HU_MainApp Compositor:"
 echo "  ./run.sh"
+echo ""
+echo "Note: This is a Wayland compositor only."
+echo "Run independent apps separately:"
+echo "  - cd ../GearApp && ./run.sh"
+echo "  - cd ../MediaApp && ./run.sh"
+echo "  - cd ../AmbientApp && ./run.sh"
 echo "════════════════════════════════════════════════════════"
