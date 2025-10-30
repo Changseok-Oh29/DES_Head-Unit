@@ -3,12 +3,21 @@ Head Unit project repository for automotive infotainment system
 
 ## 🚗 Project Overview
 
-This project implements a Head Unit (HU) application for automotive systems, designed to work with Raspberry Pi hardware. The Head Unit provides an intuitive interface for:
+This project implements a distributed automotive infotainment system using **vsomeip** for inter-ECU communication. The system consists of two Raspberry Pi units communicating over Ethernet.
 
-- **Gear Selection**: P, R, N, D gear control interface
-- **Media Player**: USB media scanning and playback
-- **Ambient Lighting**: Customizable cabin lighting control
-- **System Integration**: IPC communication with Instrument Cluster (IC)
+### ECU Architecture
+
+**ECU1 (Raspberry Pi #1)**: VehicleControlECU
+- IP: 192.168.1.100
+- Role: Service Provider (vsomeip routing manager)
+- Controls PiRacer hardware (motor, servo, sensors)
+- Provides VehicleControl service (0x1234:0x5678)
+
+**ECU2 (Raspberry Pi #2)**: Head-Unit Applications
+- IP: 192.168.1.101
+- Role: Service Consumer
+- Runs: GearApp, AmbientApp, MediaApp, IC_app
+- Connects to VehicleControlECU via vsomeip
 
 ## 🏗️ Architecture
 

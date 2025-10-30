@@ -1,4 +1,0 @@
-/home/leo/SEA-ME/DES_Head-Unit/app/VehicleControlECU/build_mock/CMakeFiles/VehicleControlECU_Mock.dir
-/home/leo/SEA-ME/DES_Head-Unit/app/VehicleControlECU/build_mock/CMakeFiles/edit_cache.dir
-/home/leo/SEA-ME/DES_Head-Unit/app/VehicleControlECU/build_mock/CMakeFiles/rebuild_cache.dir
-/home/leo/SEA-ME/DES_Head-Unit/app/VehicleControlECU/build_mock/CMakeFiles/VehicleControlECU_Mock_autogen.dir

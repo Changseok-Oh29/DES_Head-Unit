@@ -3,8 +3,8 @@
 set -e
 
 echo "========================================="
-echo "  VehicleControlECU - DEPLOYMENT BUILD"
-echo "  (Raspberry Pi - ECU1 @ 192.168.1.100)"
+echo "  GearApp - DEPLOYMENT BUILD"
+echo "  (Raspberry Pi - ECU2 @ 192.168.1.101)"
 echo "========================================="
 echo ""
 
@@ -34,7 +34,9 @@ echo ""
 echo "========================================="
 echo "✅ Build Successful!"
 echo "========================================="
-echo "Executable: build/VehicleControlECU"
+echo "Executable: build/GearApp"
 echo ""
 echo "To run: ./run.sh"
+echo ""
+echo "NOTE: Make sure VehicleControlECU is running on ECU1 first!"
 echo "========================================="
