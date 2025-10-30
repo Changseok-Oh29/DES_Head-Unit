@@ -17,14 +17,12 @@ fi
 mkdir -p build
 cd build
 
-# Copy CMakeLists.txt to build directory
-cp ../CMakeLists.txt .
-
 echo "🔧 Running CMake..."
 cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_COMPILER=g++ \
-    -DCMAKE_C_COMPILER=gcc
+    -DCMAKE_C_COMPILER=gcc \
+    -DCOMMONAPI_GEN_DIR=$HOME/commonapi/generated
 
 echo ""
 echo "🔨 Building..."

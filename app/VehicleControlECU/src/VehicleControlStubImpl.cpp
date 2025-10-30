@@ -72,12 +72,9 @@ void VehicleControlStubImpl::onVehicleStateChanged(QString gear, uint16_t speed,
                                  battery,
                                  timestamp);
     
-    // Log periodically (every 1 second worth of updates at 10Hz = every 10 calls)
-    static int callCount = 0;
-    if (++callCount % 10 == 0) {
-        qDebug() << "📡 [Event] vehicleStateChanged:"
-                 << "Gear:" << gear
-                 << "Speed:" << speed
-                 << "Battery:" << battery << "%";
-    }
+    // Log every state change to see speed updates in real-time
+    qDebug() << "📡 [Event] vehicleStateChanged:"
+             << "Gear:" << gear
+             << "Speed:" << speed << "km/h"
+             << "Battery:" << battery << "%";
 }

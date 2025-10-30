@@ -2,6 +2,13 @@
 
 set -e
 
+# Check for root privileges (required for GPIO access)
+if [ "$EUID" -ne 0 ]; then
+    echo "⚠️  GPIO 접근을 위해 root 권한이 필요합니다."
+    echo "   다시 실행: sudo ./run.sh"
+    exit 1
+fi
+
 # Check if executable exists
 if [ ! -f "build/VehicleControlECU" ]; then
     echo "❌ VehicleControlECU not found!"
@@ -17,6 +24,7 @@ echo ""
 
 # Set environment variables for DEPLOYMENT
 export VSOMEIP_CONFIGURATION=$(pwd)/config/vsomeip_ecu1.json
+export VSOMEIP_APPLICATION_NAME=VehicleControlECU
 export COMMONAPI_CONFIG=$(pwd)/config/commonapi_ecu1.ini
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
