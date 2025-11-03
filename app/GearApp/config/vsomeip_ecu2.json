@@ -1,20 +1,19 @@
 {
     "unicast": "192.168.1.101",
+    "netmask": "255.255.255.0",
     "logging": {
-        "level": "info",
+        "level": "debug",
         "console": "true",
-        "file": {
-            "enable": "false"
-        },
+        "file": { "enable": "false" },
         "dlt": "false"
     },
     "applications": [
         {
-            "name": "GearApp",
-            "id": "0x4444"
+            "name": "client-sample",
+            "id": "0xFFFF"
         }
     ],
-    "routing": "VehicleControlECU",
+    "routing": "client-sample",
     "service-discovery": {
         "enable": "true",
         "multicast": "224.244.224.245",
@@ -28,14 +27,11 @@
         "cyclic_offer_delay": "2000",
         "request_response_delay": "1500"
     },
-    "services": [
+    "clients": [
         {
             "service": "0x1234",
             "instance": "0x5678",
-            "unreliable": "30509"
+            "unreliable": "30501"
         }
-    ],
-    "routing-manager": {
-        "host": "192.168.1.100"
-    }
+    ]
 }

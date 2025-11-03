@@ -1,14 +1,11 @@
 #!/bin/bash
 
-# Run script for VehicleControlECU
-# Must be run with sudo for GPIO access
-
 set -e
 
-# Check if running as root
-if [ "$EUID" -ne 0 ]; then 
-    echo "❌ This application requires root privileges for GPIO access!"
-    echo "   Please run with sudo: sudo ./run.sh"
+# Check for root privileges (required for GPIO access)
+if [ "$EUID" -ne 0 ]; then
+    echo "⚠️  GPIO 접근을 위해 root 권한이 필요합니다."
+    echo "   다시 실행: sudo ./run.sh"
     exit 1
 fi
 
@@ -20,37 +17,33 @@ if [ ! -f "build/VehicleControlECU" ]; then
 fi
 
 echo "═══════════════════════════════════════════════════════"
-echo "Starting VehicleControlECU"
+echo "Starting VehicleControlECU - DEPLOYMENT MODE"
+echo "ECU1 @ 192.168.1.100"
 echo "═══════════════════════════════════════════════════════"
 echo ""
 
-# Set environment variables
+# Set environment variables for DEPLOYMENT
 export VSOMEIP_CONFIGURATION=$(pwd)/config/vsomeip_ecu1.json
-export COMMONAPI_CONFIG=$(pwd)/config/commonapi4someip_ecu1.ini
+export VSOMEIP_APPLICATION_NAME=VehicleControlECU
+export COMMONAPI_CONFIG=$(pwd)/config/commonapi_ecu1.ini
+export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 echo "📋 Configuration:"
+echo "   Mode: DEPLOYMENT (Raspberry Pi ECU1)"
+echo "   Local IP: 192.168.1.100"
+echo "   Role: Service Provider (routing manager)"
 echo "   VSOMEIP_CONFIGURATION=$VSOMEIP_CONFIGURATION"
 echo "   COMMONAPI_CONFIG=$COMMONAPI_CONFIG"
 echo ""
 
-# Check I2C devices
-echo "🔍 Checking I2C devices..."
-if command -v i2cdetect &> /dev/null; then
-    echo "I2C Bus 1:"
-    i2cdetect -y 1
-    echo ""
-else
-    echo "⚠️  i2cdetect not found (install i2c-tools)"
-    echo ""
-fi
+echo "🔧 Hardware:"
+echo "   - PiRacer motor controller"
+echo "   - Gamepad input"
+echo "   - Battery monitor"
+echo ""
 
-# Check gamepad
-if [ -e "/dev/input/js0" ]; then
-    echo "✅ Gamepad found at /dev/input/js0"
-else
-    echo "⚠️  Gamepad not found at /dev/input/js0"
-    echo "   Application will still work via vsomeip RPC"
-fi
+echo "Starting service..."
+echo "═══════════════════════════════════════════════════════"
 echo ""
 
 # Run the application

@@ -10,9 +10,8 @@ GearManager::GearManager(QObject *parent)
 
 void GearManager::setGearPosition(const QString &position)
 {
-    if (m_gearPosition == position)
-        return;
-    
+    // 같은 기어를 선택해도 항상 RPC 전송
+    // 이유: ECU1-ECU2 상태 동기화 보장, 사용자 의도 확실히 반영
     qDebug() << "GearManager: Requesting gear change via vsomeip:" << m_gearPosition << "->" << position;
     
     // ═══════════════════════════════════════════════════════════

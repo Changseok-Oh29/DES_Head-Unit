@@ -35,12 +35,9 @@ int main(int argc, char *argv[])
     QObject::connect(&vehicleControlClient, &VehicleControlClient::currentGearChanged,
                      [&gearManager](const QString& gear) {
                          qDebug() << "[vsomeip → GearManager] Gear update:" << gear;
-                         // 직접 m_gearPosition 업데이트 (순환 방지)
-                         if (gearManager.gearPosition() != gear) {
-                             // setGearPosition 대신 직접 시그널 발생
-                             gearManager.setProperty("gearPosition", gear);
-                             emit gearManager.gearPositionChanged(gear);
-                         }
+                         // 같은 기어여도 항상 업데이트 (GUI 동기화 보장)
+                         gearManager.setProperty("gearPosition", gear);
+                         emit gearManager.gearPositionChanged(gear);
                      });
     
     qDebug() << "✅ Connection established: VehicleControlClient → GearManager";

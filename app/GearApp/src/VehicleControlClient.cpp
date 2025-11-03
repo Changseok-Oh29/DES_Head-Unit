@@ -146,10 +146,9 @@ void VehicleControlClient::onGearChanged(std::string newGear, std::string oldGea
              << qOldGear << "→" << qNewGear
              << "@ timestamp:" << timestamp;
     
-    if (m_currentGear != qNewGear) {
-        m_currentGear = qNewGear;
-        emit currentGearChanged(m_currentGear);
-    }
+    // 같은 기어여도 항상 emit (ECU1에서 확인한 상태를 GUI에 반영)
+    m_currentGear = qNewGear;
+    emit currentGearChanged(m_currentGear);
 }
 
 void VehicleControlClient::onVehicleStateChanged(std::string gear, uint16_t speed, uint8_t battery, uint64_t timestamp)

@@ -36,12 +36,14 @@ find_package(CommonAPI 3.2 REQUIRED)
 find_package(CommonAPI-SomeIP 3.2 REQUIRED)
 find_package(vsomeip3 3.5 REQUIRED)
 
+message(STATUS "시작!")
 # CommonAPI generated code path
 if(NOT COMMONAPI_GEN_DIR)
+    message(STATUS "들어옴!")
     if(DEFINED ENV{COMMONAPI_GEN_DIR})
         set(COMMONAPI_GEN_DIR $ENV{COMMONAPI_GEN_DIR})
     else()
-        set(COMMONAPI_GEN_DIR "${CMAKE_SOURCE_DIR}/../../commonapi/generated")
+        set(COMMONAPI_GEN_DIR "/home/seame2025/commonapi/generated")
     endif()
 endif()
 

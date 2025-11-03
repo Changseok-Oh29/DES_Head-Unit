@@ -20,7 +20,16 @@ find_package(CommonAPI-SomeIP 3.2.0 REQUIRED)
 find_package(vsomeip3 REQUIRED)
 
 # Generated CommonAPI code paths
-set(COMMONAPI_GEN_DIR ${CMAKE_SOURCE_DIR}/../../commonapi/generated)
+if(DEFINED ENV{COMMONAPI_GEN_DIR})
+    set(COMMONAPI_GEN_DIR $ENV{COMMONAPI_GEN_DIR})
+    message(STATUS "Using COMMONAPI_GEN_DIR from environment: ${COMMONAPI_GEN_DIR}")
+elseif(DEFINED COMMONAPI_GEN_DIR)
+    message(STATUS "Using COMMONAPI_GEN_DIR from CMake argument: ${COMMONAPI_GEN_DIR}")
+else()
+    set(COMMONAPI_GEN_DIR ${CMAKE_SOURCE_DIR}/../../commonapi/generated)
+    message(STATUS "Using default COMMONAPI_GEN_DIR: ${COMMONAPI_GEN_DIR}")
+endif()
+
 set(COMMONAPI_CORE_DIR ${COMMONAPI_GEN_DIR}/core)
 set(COMMONAPI_SOMEIP_DIR ${COMMONAPI_GEN_DIR}/someip)
 
