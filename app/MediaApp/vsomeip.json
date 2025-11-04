@@ -1,13 +1,18 @@
 {
-    "unicast": "127.0.0.1",
+    "unicast": "192.168.1.101",
+    "netmask": "255.255.255.0",
     "logging": {
         "level": "info",
-        "console": "true"
+        "console": "true",
+        "file": {
+            "enable": "false"
+        },
+        "dlt": "false"
     },
     "applications": [
         {
             "name": "MediaApp",
-            "id": "0x1234"
+            "id": "0x1236"
         }
     ],
     "services": [
@@ -17,11 +22,17 @@
             "unreliable": "30509"
         }
     ],
-    "routing": "MediaApp",
     "service-discovery": {
         "enable": "true",
-        "multicast": "224.0.0.1",
+        "multicast": "224.244.224.245",
         "port": "30490",
-        "protocol": "udp"
+        "protocol": "udp",
+        "initial_delay_min": "10",
+        "initial_delay_max": "100",
+        "repetitions_base_delay": "200",
+        "repetitions_max": "3",
+        "ttl": "3",
+        "cyclic_offer_delay": "2000",
+        "request_response_delay": "1500"
     }
 }
