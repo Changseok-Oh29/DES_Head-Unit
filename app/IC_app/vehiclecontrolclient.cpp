@@ -7,8 +7,16 @@ VehicleControlClient::VehicleControlClient(QObject *parent)
     , m_currentGear("P")
     , m_currentSpeed(0)
     , m_batteryLevel(0)
+    , m_previousBatteryLevel(0)
     , m_serviceAvailable(false)
+    , m_isCharging(false)
+    , m_batteryHistoryIndex(0)
+    , m_batteryHistoryCount(0)
 {
+    // Initialize battery history buffer
+    for (int i = 0; i < BATTERY_FILTER_SIZE; i++) {
+        m_batteryHistory[i] = 0;
+    }
     qDebug() << "VehicleControlClient created";
 }
 
@@ -104,7 +112,9 @@ void VehicleControlClient::onVehicleStateChanged(std::string gear, uint16_t spee
     }
     
     if (m_batteryLevel != battery) {
-        m_batteryLevel = battery;
+        int smoothedBattery = smoothBatteryLevel(battery);
+        m_batteryLevel = smoothedBattery;
+        detectCharging(smoothedBattery);
         emit batteryLevelChanged(m_batteryLevel);
         changed = true;
     }
@@ -152,4 +162,49 @@ void VehicleControlClient::onAvailabilityChanged(CommonAPI::AvailabilityStatus s
         qWarning() << "⚠️  VehicleControlECU service is not available";
         qWarning() << "   → Make sure VehicleControlECU is running on Raspberry Pi";
     }
+}
+
+// ═══════════════════════════════════════════════════════
+// Helper Functions: Battery Smoothing & Charging Detection
+// ═══════════════════════════════════════════════════════
+
+int VehicleControlClient::smoothBatteryLevel(int rawLevel)
+{
+    // Add new value to circular buffer
+    m_batteryHistory[m_batteryHistoryIndex] = rawLevel;
+    m_batteryHistoryIndex = (m_batteryHistoryIndex + 1) % BATTERY_FILTER_SIZE;
+    
+    if (m_batteryHistoryCount < BATTERY_FILTER_SIZE) {
+        m_batteryHistoryCount++;
+    }
+    
+    // Calculate moving average
+    int sum = 0;
+    for (int i = 0; i < m_batteryHistoryCount; i++) {
+        sum += m_batteryHistory[i];
+    }
+    
+    return sum / m_batteryHistoryCount;
+}
+
+void VehicleControlClient::detectCharging(int newLevel)
+{
+    // Detect charging: battery level increasing significantly
+    bool wasCharging = m_isCharging;
+    
+    if (newLevel > m_previousBatteryLevel + 2) {
+        // Battery increasing → charging
+        m_isCharging = true;
+    } else if (newLevel < m_previousBatteryLevel - 1) {
+        // Battery decreasing → not charging
+        m_isCharging = false;
+    }
+    // Else: small change, keep current state
+    
+    if (m_isCharging != wasCharging) {
+        qDebug() << "🔋 Charging status changed:" << (m_isCharging ? "CHARGING ⚡" : "DISCHARGING 🔻");
+        emit isChargingChanged(m_isCharging);
+    }
+    
+    m_previousBatteryLevel = newLevel;
 }

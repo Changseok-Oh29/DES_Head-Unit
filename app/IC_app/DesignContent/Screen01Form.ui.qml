@@ -11,18 +11,39 @@ Rectangle {
     property int speed: 0
     property string gear: "P"
 
+    Component.onCompleted: {
+        // Initialize with current values from vehicleClient
+        gear = vehicleClient.currentGear
+        console.log("🎬 IC_app initialized - Gear:", gear, "Battery:", vehicleClient.batteryLevel)
+    }
+
     Connections {
         target: vehicleClient
-        onCurrentGearChanged: { gear = vehicleClient.currentGear }
-        onBatteryLevelChanged: { console.log("Battery:", vehicleClient.batteryLevel) }
+        function onCurrentGearChanged() {
+            console.log("📡 Gear changed:", vehicleClient.currentGear)
+            gear = vehicleClient.currentGear
+        }
+        function onBatteryLevelChanged() {
+            console.log("📡 Battery changed:", vehicleClient.batteryLevel)
+        }
+        function onCurrentSpeedChanged() {
+            console.log("📡 Speed changed:", vehicleClient.currentSpeed, "km/h")
+        }
     }
 
     Connections {
         target: canInterface
-        // Receive only cm/s value and directly reflect it to speed property
-        onSpeedDataReceived: {
+        function onSpeedDataReceived(speedCms) {
+            console.log("🏎️  CAN Speed received:", speedCms, "cm/s →", Math.round(speedCms), "km/h")
             speed = Math.round(speedCms);
         }
+    }
+
+    // 속도 변화 감지해서 바늘 회전 및 로그
+    onSpeedChanged: {
+        var angle = -45 + (speed * 1.125)
+        console.log("📊 Speed changed:", speed, "km/h → Needle angle:", angle)
+        needleRotation.angle = angle
     }
 
     // --- Battery UI ---
@@ -63,8 +84,7 @@ Rectangle {
         width: 60
         source: "images/bolt_icon.png"
         fillMode: Image.PreserveAspectFit
-        // Note: vehicleClient doesn't expose current, keeping visible by default or remove if not needed
-        visible: false  // Disabled since current is not available from VehicleControl
+        visible: vehicleClient.isCharging  // ← 충전 중일 때만 표시
     }
 
     Text {
@@ -74,7 +94,7 @@ Rectangle {
         font.bold: true
         color: "white"
         text: vehicleClient.batteryLevel + "%"
-        visible: !bolt_icon.visible
+        visible: !bolt_icon.visible  // ← 충전 중이 아닐 때 표시
     }
 
     // --- Gauge UI ---
@@ -120,10 +140,19 @@ Rectangle {
         anchors.horizontalCenterOffset: -49
         anchors.horizontalCenter: gauge_Speed.horizontalCenter
         fillMode: Image.PreserveAspectFit
+        
         transform: Rotation {
+            id: needleRotation
             origin.x: 130
             origin.y: 33
-            angle: -45 + (speed * 1.125)
+            angle: -45
+            
+            Behavior on angle {
+                NumberAnimation {
+                    duration: 100  // ← 부드러운 애니메이션 (100ms)
+                    easing.type: Easing.OutQuad
+                }
+            }
         }
     }
 
