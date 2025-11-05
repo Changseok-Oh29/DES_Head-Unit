@@ -21,7 +21,6 @@ class VehicleControlClient : public QObject
     Q_PROPERTY(int currentSpeed READ currentSpeed NOTIFY currentSpeedChanged)
     Q_PROPERTY(int batteryLevel READ batteryLevel NOTIFY batteryLevelChanged)
     Q_PROPERTY(bool serviceAvailable READ serviceAvailable NOTIFY serviceAvailableChanged)
-    Q_PROPERTY(bool isCharging READ isCharging NOTIFY isChargingChanged)  // ← 충전 중 여부
 
 public:
     explicit VehicleControlClient(QObject *parent = nullptr);
@@ -32,7 +31,6 @@ public:
     int currentSpeed() const { return m_currentSpeed; }
     int batteryLevel() const { return m_batteryLevel; }
     bool serviceAvailable() const { return m_serviceAvailable; }
-    bool isCharging() const { return m_isCharging; }  // ← 충전 중 getter
 
     // Initialize connection
     void initialize();
@@ -42,7 +40,6 @@ signals:
     void currentSpeedChanged(int speed);
     void batteryLevelChanged(int level);
     void serviceAvailableChanged(bool available);
-    void isChargingChanged(bool charging);  // ← 충전 중 signal
 
 private:
     // CommonAPI proxy
@@ -53,12 +50,10 @@ private:
     QString m_currentGear;
     int m_currentSpeed;
     int m_batteryLevel;
-    int m_previousBatteryLevel;  // ← 이전 배터리 레벨 (충전 감지용)
     bool m_serviceAvailable;
-    bool m_isCharging;  // ← 충전 중 상태
     
-    // Smoothing filter for battery level
-    static const int BATTERY_FILTER_SIZE = 5;  // ← 노이즈 필터
+    // Smoothing filter for battery level (increased size for stability)
+    static const int BATTERY_FILTER_SIZE = 10;  // ← 10개 샘플 평균
     int m_batteryHistory[BATTERY_FILTER_SIZE];
     int m_batteryHistoryIndex;
     int m_batteryHistoryCount;
@@ -71,7 +66,6 @@ private:
     
     // Helper functions
     int smoothBatteryLevel(int rawLevel);  // ← 배터리 레벨 스무딩
-    void detectCharging(int newLevel);     // ← 충전 감지
 };
 
 #endif // VEHICLECONTROLCLIENT_H

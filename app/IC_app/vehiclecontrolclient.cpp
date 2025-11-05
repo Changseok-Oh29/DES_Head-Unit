@@ -7,9 +7,7 @@ VehicleControlClient::VehicleControlClient(QObject *parent)
     , m_currentGear("P")
     , m_currentSpeed(0)
     , m_batteryLevel(0)
-    , m_previousBatteryLevel(0)
     , m_serviceAvailable(false)
-    , m_isCharging(false)
     , m_batteryHistoryIndex(0)
     , m_batteryHistoryCount(0)
 {
@@ -114,7 +112,6 @@ void VehicleControlClient::onVehicleStateChanged(std::string gear, uint16_t spee
     if (m_batteryLevel != battery) {
         int smoothedBattery = smoothBatteryLevel(battery);
         m_batteryLevel = smoothedBattery;
-        detectCharging(smoothedBattery);
         emit batteryLevelChanged(m_batteryLevel);
         changed = true;
     }
@@ -165,7 +162,7 @@ void VehicleControlClient::onAvailabilityChanged(CommonAPI::AvailabilityStatus s
 }
 
 // ═══════════════════════════════════════════════════════
-// Helper Functions: Battery Smoothing & Charging Detection
+// Helper Functions: Battery Smoothing (Enhanced Stability)
 // ═══════════════════════════════════════════════════════
 
 int VehicleControlClient::smoothBatteryLevel(int rawLevel)
@@ -184,27 +181,15 @@ int VehicleControlClient::smoothBatteryLevel(int rawLevel)
         sum += m_batteryHistory[i];
     }
     
-    return sum / m_batteryHistoryCount;
-}
-
-void VehicleControlClient::detectCharging(int newLevel)
-{
-    // Detect charging: battery level increasing significantly
-    bool wasCharging = m_isCharging;
+    int smoothed = sum / m_batteryHistoryCount;
     
-    if (newLevel > m_previousBatteryLevel + 2) {
-        // Battery increasing → charging
-        m_isCharging = true;
-    } else if (newLevel < m_previousBatteryLevel - 1) {
-        // Battery decreasing → not charging
-        m_isCharging = false;
-    }
-    // Else: small change, keep current state
-    
-    if (m_isCharging != wasCharging) {
-        qDebug() << "🔋 Charging status changed:" << (m_isCharging ? "CHARGING ⚡" : "DISCHARGING 🔻");
-        emit isChargingChanged(m_isCharging);
+    // Additional stability: only update if change is significant (>= 2%)
+    if (m_batteryHistoryCount >= BATTERY_FILTER_SIZE) {
+        int diff = abs(smoothed - m_batteryLevel);
+        if (diff < 2) {
+            return m_batteryLevel;  // Keep current value for small changes
+        }
     }
     
-    m_previousBatteryLevel = newLevel;
+    return smoothed;
 }

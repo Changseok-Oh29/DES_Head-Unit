@@ -28,21 +28,23 @@ Rectangle {
         }
         function onCurrentSpeedChanged() {
             console.log("📡 Speed changed:", vehicleClient.currentSpeed, "km/h")
+            speed = vehicleClient.currentSpeed  // ← vsomeip 속도를 speed property에 연결!
         }
     }
 
     Connections {
         target: canInterface
-        function onSpeedDataReceived(speedCms) {
-            console.log("🏎️  CAN Speed received:", speedCms, "cm/s →", Math.round(speedCms), "km/h")
+        // Receive only cm/s value and directly reflect it to speed property
+        onSpeedDataReceived: {
+            console.log("🏎️  CAN Speed:", speedCms, "cm/s")
             speed = Math.round(speedCms);
         }
     }
 
-    // 속도 변화 감지해서 바늘 회전 및 로그
+    // 속도 변화 감지해서 바늘 회전
     onSpeedChanged: {
         var angle = -45 + (speed * 1.125)
-        console.log("📊 Speed changed:", speed, "km/h → Needle angle:", angle)
+        console.log("📊 Needle angle:", angle, "for speed:", speed)
         needleRotation.angle = angle
     }
 
@@ -84,7 +86,7 @@ Rectangle {
         width: 60
         source: "images/bolt_icon.png"
         fillMode: Image.PreserveAspectFit
-        visible: vehicleClient.isCharging  // ← 충전 중일 때만 표시
+        visible: false  // ← 충전 표시 제거
     }
 
     Text {
@@ -94,7 +96,7 @@ Rectangle {
         font.bold: true
         color: "white"
         text: vehicleClient.batteryLevel + "%"
-        visible: !bolt_icon.visible  // ← 충전 중이 아닐 때 표시
+        visible: true  // ← 항상 표시
     }
 
     // --- Gauge UI ---
