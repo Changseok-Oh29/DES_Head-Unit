@@ -8,9 +8,10 @@ import QtGraphicalEffects 1.0
 // AmbientApp 독립 실행용 메인 윈도우
 Window {
     id: window
-    // Size controlled by Wayland Compositor
+    width: 800
+    height: 600
     visible: true
-    title: "Ambient"  // Compositor will match this title
+    title: "AmbientApp - Ambient Lighting Control"
 
     Rectangle {
         id: root

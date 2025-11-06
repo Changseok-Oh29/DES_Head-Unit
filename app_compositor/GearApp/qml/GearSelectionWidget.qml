@@ -6,9 +6,10 @@ import QtQuick.Controls 2.12
 // GearApp 독립 실행용 메인 윈도우
 Window {
     id: window
-    // Size controlled by Wayland Compositor
+    width: 400
+    height: 600
     visible: true
-    title: "Gear"  // Compositor will match this title
+    title: "GearApp - Gear Selection"
     
     Rectangle {
         anchors.fill: parent
@@ -20,7 +21,7 @@ Window {
                 color: {
                     // 기어에 따른 ambient 색상 (버튼과 매칭)
                     switch(root.currentGear) {
-                        case "P": return Qt.lighter("#3498db", 1.3)  // Blue (Park)
+                        case "P": return Qt.lighter("#e74c3c", 1.3)  // Red (Park)
                         case "R": return Qt.lighter("#e67e22", 1.3)  // Orange (Reverse)
                         case "N": return Qt.lighter("#f39c12", 1.3)  // Yellow (Neutral)
                         case "D": return Qt.lighter("#27ae60", 1.3)  // Green (Drive)
@@ -111,7 +112,7 @@ Window {
             color: {
                 if (root.currentGear === modelData) {
                     switch(modelData) {
-                        case "P": return "#3498db"  // 파란색 (Park)
+                        case "P": return "#e74c3c"  // 빨간색 (Park)
                         case "R": return "#e67e22"  // 주황색 (Reverse)
                         case "N": return "#f39c12"  // 노란색 (Neutral)
                         case "D": return "#27ae60"  // 녹색 (Drive)
@@ -123,7 +124,7 @@ Window {
             border.color: {
                 if (root.currentGear === modelData) {
                     switch(modelData) {
-                        case "P": return "#2980b9"  // 진한 파란색 (Park)
+                        case "P": return "#c0392b"
                         case "R": return "#ca6f1e"
                         case "N": return "#e67e22"
                         case "D": return "#229954"

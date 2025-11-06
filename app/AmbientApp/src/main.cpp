@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("AmbientApp");
     app.setApplicationVersion("1.0");
     app.setOrganizationName("SEA-ME");
+    app.setDesktopFileName("AmbientApp");  // For Wayland appId
 
     qDebug() << "═══════════════════════════════════════════════════════";
     qDebug() << "AmbientApp Process Starting...";

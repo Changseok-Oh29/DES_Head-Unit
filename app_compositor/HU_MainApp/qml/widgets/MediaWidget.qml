@@ -1,27 +1,13 @@
 import QtQuick 2.12
-import QtQuick.Window 2.12
 import QtQuick.Controls 2.12
 import QtGraphicalEffects 1.0
 // HeadUnit 모듈 제거: C++ backend는 contextProperty로 노출됨
 
-// MediaApp 독립 실행용 메인 윈도우
-Window {
-    id: window
-    // Size controlled by Wayland Compositor
-    visible: true
-    title: "Media"  // Compositor will match this title
+Rectangle {
+    id: root
+    color: "transparent"  // 배경을 투명하게 하여 main.qml의 그라데이션 보이도록
     
-    Rectangle {
-        id: root
-        anchors.fill: parent
-        
-        // Ambient lighting 효과를 위한 그라데이션 배경
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: Qt.lighter("#3498db", 1.5) }
-            GradientStop { position: 1.0; color: "#34495e" }
-        }
-        
-        signal backClicked()
+    signal backClicked()
     
     // Use actual media manager properties
     property bool isPlaying: mediaManager.isPlaying
@@ -454,5 +440,4 @@ Window {
             }
         }
     }
-    } // Rectangle (root)
-} // Window
+}

@@ -7,9 +7,10 @@ import QtGraphicalEffects 1.0
 // MediaApp 독립 실행용 메인 윈도우
 Window {
     id: window
-    // Size controlled by Wayland Compositor
+    width: 1024
+    height: 600
     visible: true
-    title: "Media"  // Compositor will match this title
+    title: "MediaApp - USB Media Player"
     
     Rectangle {
         id: root
