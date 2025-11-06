@@ -9,8 +9,11 @@ int main(int argc, char *argv[])
     // Wayland Compositor 설정
     // HU_MainApp은 각 독립 앱의 화면을 합성하는 역할만 수행
     // ═══════════════════════════════════════════════════════
-    // Compositor는 네이티브 플랫폼(xcb/DRM)에서 실행되어야 함
-    // run_compositor.sh에서 QT_QPA_PLATFORM 설정하므로 여기서는 제거
+    // Compositor는 네이티브 플랫폼(xcb/DRM/eglfs)에서 실행되어야 함
+    // run_compositor.sh에서 QT_QPA_PLATFORM 설정
+    
+    // Wayland 소켓 이름 설정 (명시적으로 지정)
+    qputenv("WAYLAND_DISPLAY", "wayland-hu");
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

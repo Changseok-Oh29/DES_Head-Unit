@@ -10,12 +10,27 @@ echo "════════════════════════�
 echo "Running HU_MainApp - Wayland Compositor"
 echo "════════════════════════════════════════════════════════════"
 
-# Wayland Compositor 설정 (서버로 실행)
+# Wayland Compositor 설정 - 환경에 따라 자동 선택
 export XDG_RUNTIME_DIR=/run/user/$(id -u)
-export QT_QPA_PLATFORM=xcb  # Compositor는 X11에서 실행 (Wayland 서버 역할)
 export WAYLAND_DISPLAY=wayland-hu  # 커스텀 소켓 이름
+
+# 플랫폼 자동 선택
+if [ -n "$DISPLAY" ]; then
+    # X11이 있으면 xcb 사용
+    export QT_QPA_PLATFORM=xcb
+    echo "Platform: xcb (X11 detected: $DISPLAY)"
+elif [ -e "/dev/dri/card0" ]; then
+    # DRM 장치가 있으면 eglfs 사용
+    export QT_QPA_PLATFORM=eglfs
+    export QT_QPA_EGLFS_INTEGRATION=eglfs_kms
+    echo "Platform: eglfs (DRM/KMS mode)"
+else
+    # 마지막 대안: linuxfb
+    export QT_QPA_PLATFORM=linuxfb
+    echo "Platform: linuxfb (Fallback mode)"
+fi
+
 echo "XDG_RUNTIME_DIR: $XDG_RUNTIME_DIR"
-echo "QT_QPA_PLATFORM: $QT_QPA_PLATFORM (Compositor runs as X11 server)"
 echo "WAYLAND_DISPLAY: $WAYLAND_DISPLAY (Custom socket name)"
 echo ""
 
