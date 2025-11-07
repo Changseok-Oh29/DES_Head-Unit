@@ -14,16 +14,24 @@ echo "════════════════════════�
 export XDG_RUNTIME_DIR=/run/user/$(id -u)
 export WAYLAND_DISPLAY=wayland-hu  # 커스텀 소켓 이름
 
+# EGL 초기화 실패 방지 - 소프트웨어 렌더링 강제
+export QT_QUICK_BACKEND=software
+export LIBGL_ALWAYS_SOFTWARE=1
+export QT_OPENGL=software
+
 # 플랫폼 자동 선택
 if [ -n "$DISPLAY" ]; then
     # X11이 있으면 xcb 사용
     export QT_QPA_PLATFORM=xcb
     echo "Platform: xcb (X11 detected: $DISPLAY)"
+    echo "Rendering: Software (EGL crash prevention)"
 elif [ -e "/dev/dri/card0" ]; then
     # DRM 장치가 있으면 eglfs 사용
     export QT_QPA_PLATFORM=eglfs
     export QT_QPA_EGLFS_INTEGRATION=eglfs_kms
+    export QT_QPA_EGLFS_FORCE_SOFTWARE=1
     echo "Platform: eglfs (DRM/KMS mode)"
+    echo "Rendering: Software (Fallback)"
 else
     # 마지막 대안: linuxfb
     export QT_QPA_PLATFORM=linuxfb

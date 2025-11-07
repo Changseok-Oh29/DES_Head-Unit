@@ -9,13 +9,20 @@
 
 int main(int argc, char *argv[])
 {
-    // Set vsomeip application name BEFORE creating QApplication
+    // ═══════════════════════════════════════════════════════
+    // CRITICAL: Set environment BEFORE QGuiApplication
+    // ═══════════════════════════════════════════════════════
     qputenv("VSOMEIP_APPLICATION_NAME", "MediaApp");
+    qputenv("QT_QUICK_BACKEND", "software");
+    qputenv("LIBGL_ALWAYS_SOFTWARE", "1");
+    qputenv("QT_OPENGL", "software");
+    
+    // Set application metadata BEFORE creating QGuiApplication
+    QCoreApplication::setApplicationName("MediaApp");
+    QCoreApplication::setApplicationVersion("1.0");
+    QCoreApplication::setOrganizationName("SEA-ME");
 
     QGuiApplication app(argc, argv);
-    app.setApplicationName("MediaApp");
-    app.setApplicationVersion("1.0");
-    app.setOrganizationName("SEA-ME");
     app.setDesktopFileName("MediaApp");  // For Wayland appId
 
     qDebug() << "═══════════════════════════════════════════════════════";
@@ -86,6 +93,14 @@ int main(int argc, char *argv[])
 
     if (!engine.rootObjects().isEmpty()) {
         qDebug() << "✅ QML GUI loaded: MediaApp.qml";
+        
+        // Wayland용 Window title 명시적 설정
+        QObject *rootObject = engine.rootObjects().first();
+        if (rootObject) {
+            rootObject->setProperty("title", "Media");
+            qDebug() << "   Window title set to: Media";
+        }
+        
         qDebug() << "🖥️  Window should appear now!";
     }
 

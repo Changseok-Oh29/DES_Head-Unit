@@ -4,11 +4,11 @@ import QtQuick.Controls 2.12
 // HeadUnit 모듈 제거: C++ backend는 contextProperty로 노출됨
 
 // GearApp 독립 실행용 메인 윈도우
-Window {
+ApplicationWindow {
     id: window
     // Size controlled by Wayland Compositor
     visible: true
-    title: "Gear"  // Compositor will match this title
+    title: "Gear"  // Wayland appId will use this
     
     Rectangle {
         anchors.fill: parent
@@ -232,16 +232,16 @@ Window {
                 width: 180
                 height: 28
                 radius: 14
-                color: ipcManager.isConnected ? "#27ae60" : "#e74c3c"
+                color: vehicleControlClient.isConnected ? "#27ae60" : "#e74c3c"
                 anchors.horizontalCenter: parent.horizontalCenter
                 
                 Text {
                     anchors.centerIn: parent
-                    text: ipcManager.isConnected ? "✓ IC Connected" : "✗ IC Disconnected"
+                    text: vehicleControlClient.isConnected ? "✓ ECU Connected" : "✗ ECU Disconnected"
                     font.pixelSize: 11
                     color: "white"
                 }
             }
         } // Column (main layout)
     } // Rectangle
-} // Window
+} // ApplicationWindow

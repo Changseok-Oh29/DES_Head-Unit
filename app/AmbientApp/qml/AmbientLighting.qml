@@ -6,11 +6,11 @@ import QtGraphicalEffects 1.0
 // HeadUnit 모듈 제거: C++ backend는 contextProperty로 노출됨
 
 // AmbientApp 독립 실행용 메인 윈도우
-Window {
+ApplicationWindow {
     id: window
     // Size controlled by Wayland Compositor
     visible: true
-    title: "Ambient"  // Compositor will match this title
+    title: "Ambient"  // Wayland appId will use this
 
     Rectangle {
         id: root
@@ -232,4 +232,4 @@ Window {
     }
 
     } // Rectangle root
-} // Window
+} // ApplicationWindow

@@ -8,10 +8,19 @@
 
 int main(int argc, char *argv[])
 {
+    // ═══════════════════════════════════════════════════════
+    // CRITICAL: Set environment BEFORE QGuiApplication
+    // ═══════════════════════════════════════════════════════
+    qputenv("QT_QUICK_BACKEND", "software");
+    qputenv("LIBGL_ALWAYS_SOFTWARE", "1");
+    qputenv("QT_OPENGL", "software");
+    
+    // Set application metadata BEFORE creating QGuiApplication
+    QCoreApplication::setApplicationName("GearApp");
+    QCoreApplication::setApplicationVersion("1.0");
+    QCoreApplication::setOrganizationName("SEA-ME");
+    
     QGuiApplication app(argc, argv);
-    app.setApplicationName("GearApp");
-    app.setApplicationVersion("1.0");
-    app.setOrganizationName("SEA-ME");
     app.setDesktopFileName("GearApp");  // For Wayland appId
     
     qDebug() << "═══════════════════════════════════════════════════════";
@@ -95,6 +104,14 @@ int main(int argc, char *argv[])
     
     if (!engine.rootObjects().isEmpty()) {
         qDebug() << "✅ QML GUI loaded: GearSelectionWidget.qml";
+        
+        // Wayland용 Window title 명시적 설정
+        QObject *rootObject = engine.rootObjects().first();
+        if (rootObject) {
+            rootObject->setProperty("title", "Gear");
+            qDebug() << "   Window title set to: Gear";
+        }
+        
         qDebug() << "🖥️  Window should appear now!";
     }
     

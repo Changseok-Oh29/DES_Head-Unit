@@ -4,6 +4,7 @@ import QtWayland.Compositor 1.15
 
 WaylandCompositor {
     id: compositor
+    socketName: "wayland-hu"  // 명시적으로 소켓 이름 지정
     
     // Compositor window
     WaylandOutput {

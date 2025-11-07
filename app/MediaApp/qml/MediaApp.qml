@@ -5,11 +5,11 @@ import QtGraphicalEffects 1.0
 // HeadUnit 모듈 제거: C++ backend는 contextProperty로 노출됨
 
 // MediaApp 독립 실행용 메인 윈도우
-Window {
+ApplicationWindow {
     id: window
     // Size controlled by Wayland Compositor
     visible: true
-    title: "Media"  // Compositor will match this title
+    title: "Media"  // Wayland appId will use this
     
     Rectangle {
         id: root
@@ -455,4 +455,4 @@ Window {
         }
     }
     } // Rectangle (root)
-} // Window
+} // ApplicationWindow
