@@ -12,9 +12,13 @@ rm -rf build_compositor
 mkdir -p build_compositor
 cd build_compositor
 
-# CMake with compositor-only CMakeLists
+# CMake
 echo "Running CMake..."
 cmake -DCMAKE_BUILD_TYPE=Debug ..
+if [ $? -ne 0 ]; then
+    echo "❌ CMake configuration failed!"
+    exit 1
+fi
 if [ $? -ne 0 ]; then
     echo "❌ CMake configuration failed!"
     exit 1
