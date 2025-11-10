@@ -8,7 +8,13 @@ VehicleControlClient::VehicleControlClient(QObject *parent)
     , m_currentSpeed(0)
     , m_batteryLevel(0)
     , m_serviceAvailable(false)
+    , m_batteryHistoryIndex(0)
+    , m_batteryHistoryCount(0)
 {
+    // Initialize battery history buffer
+    for (int i = 0; i < BATTERY_FILTER_SIZE; i++) {
+        m_batteryHistory[i] = 0;
+    }
     qDebug() << "VehicleControlClient created";
 }
 
@@ -104,7 +110,8 @@ void VehicleControlClient::onVehicleStateChanged(std::string gear, uint16_t spee
     }
     
     if (m_batteryLevel != battery) {
-        m_batteryLevel = battery;
+        int smoothedBattery = smoothBatteryLevel(battery);
+        m_batteryLevel = smoothedBattery;
         emit batteryLevelChanged(m_batteryLevel);
         changed = true;
     }
@@ -152,4 +159,37 @@ void VehicleControlClient::onAvailabilityChanged(CommonAPI::AvailabilityStatus s
         qWarning() << "⚠️  VehicleControlECU service is not available";
         qWarning() << "   → Make sure VehicleControlECU is running on Raspberry Pi";
     }
+}
+
+// ═══════════════════════════════════════════════════════
+// Helper Functions: Battery Smoothing (Enhanced Stability)
+// ═══════════════════════════════════════════════════════
+
+int VehicleControlClient::smoothBatteryLevel(int rawLevel)
+{
+    // Add new value to circular buffer
+    m_batteryHistory[m_batteryHistoryIndex] = rawLevel;
+    m_batteryHistoryIndex = (m_batteryHistoryIndex + 1) % BATTERY_FILTER_SIZE;
+    
+    if (m_batteryHistoryCount < BATTERY_FILTER_SIZE) {
+        m_batteryHistoryCount++;
+    }
+    
+    // Calculate moving average
+    int sum = 0;
+    for (int i = 0; i < m_batteryHistoryCount; i++) {
+        sum += m_batteryHistory[i];
+    }
+    
+    int smoothed = sum / m_batteryHistoryCount;
+    
+    // Additional stability: only update if change is significant (>= 2%)
+    if (m_batteryHistoryCount >= BATTERY_FILTER_SIZE) {
+        int diff = abs(smoothed - m_batteryLevel);
+        if (diff < 2) {
+            return m_batteryLevel;  // Keep current value for small changes
+        }
+    }
+    
+    return smoothed;
 }

@@ -52,11 +52,20 @@ private:
     int m_batteryLevel;
     bool m_serviceAvailable;
     
+    // Smoothing filter for battery level (increased size for stability)
+    static const int BATTERY_FILTER_SIZE = 10;  // ← 10개 샘플 평균
+    int m_batteryHistory[BATTERY_FILTER_SIZE];
+    int m_batteryHistoryIndex;
+    int m_batteryHistoryCount;
+    
     // Event subscriptions
     void setupEventSubscriptions();
     void onVehicleStateChanged(std::string gear, uint16_t speed, uint8_t battery, uint64_t timestamp);
     void onGearChanged(std::string newGear, std::string oldGear, uint64_t timestamp);
     void onAvailabilityChanged(CommonAPI::AvailabilityStatus status);
+    
+    // Helper functions
+    int smoothBatteryLevel(int rawLevel);  // ← 배터리 레벨 스무딩
 };
 
 #endif // VEHICLECONTROLCLIENT_H

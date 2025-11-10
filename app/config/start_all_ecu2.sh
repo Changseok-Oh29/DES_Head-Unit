@@ -94,7 +94,7 @@ echo ""
 
 # 4단계: GearApp 시작
 echo "[4/6] Starting GearApp..."
-cd "${PROJECT_ROOT}/app/GearApp"
+cd "${PROJECT_ROOT}/GearApp"
 if [ ! -f "build/GearApp" ]; then
     echo "✗ GearApp not built! Run: ./build.sh"
     exit 1
@@ -107,7 +107,7 @@ echo ""
 
 # 5단계: AmbientApp 시작
 echo "[5/6] Starting AmbientApp..."
-cd "${PROJECT_ROOT}/app/AmbientApp"
+cd "${PROJECT_ROOT}/AmbientApp"
 if [ ! -f "build/AmbientApp" ]; then
     echo "✗ AmbientApp not built! Run: ./build.sh"
     exit 1
@@ -119,14 +119,27 @@ sleep 2
 echo ""
 
 # 6단계: IC_app 시작
-echo "[6/6] Starting IC_app..."
-cd "${PROJECT_ROOT}/app/IC_app"
+echo "[6/7] Starting IC_app..."
+cd "${PROJECT_ROOT}/IC_app"
 if [ ! -f "build/IC_app" ]; then
     echo "⚠ IC_app not built, skipping..."
 else
     ./run.sh &> /tmp/ic_app.log &
     IC_APP_PID=$!
     echo "✓ IC_app started (PID: ${IC_APP_PID})"
+fi
+sleep 2
+echo ""
+
+# 7단계: MediaApp 시작
+echo "[7/7] Starting MediaApp..."
+cd "${PROJECT_ROOT}/MediaApp"
+if [ ! -f "build/MediaApp" ]; then
+    echo "⚠ MediaApp not built, skipping..."
+else
+    ./run.sh &> /tmp/mediaapp.log &
+    MEDIAAPP_PID=$!
+    echo "✓ MediaApp started (PID: ${MEDIAAPP_PID})"
 fi
 echo ""
 
@@ -142,6 +155,9 @@ echo "  - AmbientApp:      PID ${AMBIENTAPP_PID}"
 if [ ! -z "$IC_APP_PID" ]; then
     echo "  - IC_app:          PID ${IC_APP_PID}"
 fi
+if [ ! -z "$MEDIAAPP_PID" ]; then
+    echo "  - MediaApp:        PID ${MEDIAAPP_PID}"
+fi
 echo ""
 echo "로그 파일:"
 echo "  - Routing Manager: /tmp/routing_manager.log"
@@ -150,10 +166,14 @@ echo "  - AmbientApp:      /tmp/ambientapp.log"
 if [ ! -z "$IC_APP_PID" ]; then
     echo "  - IC_app:          /tmp/ic_app.log"
 fi
+if [ ! -z "$MEDIAAPP_PID" ]; then
+    echo "  - MediaApp:        /tmp/mediaapp.log"
+fi
 echo ""
 echo "실시간 로그 확인:"
 echo "  tail -f /tmp/gearapp.log"
 echo "  tail -f /tmp/ambientapp.log"
+echo "  tail -f /tmp/mediaapp.log"
 echo ""
 echo "전체 종료:"
 echo "  killall -9 GearApp AmbientApp IC_app MediaApp routingmanagerd"

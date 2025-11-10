@@ -5,7 +5,7 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-VEHICLE_CONTROL_DIR="${PROJECT_ROOT}/app/VehicleControlECU"
+VEHICLE_CONTROL_DIR="${PROJECT_ROOT}/VehicleControlECU"
 
 echo "=========================================="
 echo "ECU1 VehicleControlECU 시작"

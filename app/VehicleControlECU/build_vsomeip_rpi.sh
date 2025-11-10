@@ -60,7 +60,8 @@ cd build
 cmake .. \
     -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX \
     -DCMAKE_BUILD_TYPE=Release \
-    -DENABLE_SIGNAL_HANDLING=1
+    -DENABLE_SIGNAL_HANDLING=1 \
+    -DBUILD_EXAMPLES=ON
 
 make -j$(nproc)
 make install

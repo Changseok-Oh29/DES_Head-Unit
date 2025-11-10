@@ -6,6 +6,7 @@
 #include <QStorageInfo>
 #include <QDebug>
 #include <QUrl>
+#include <QSet>
 
 const QStringList MediaManager::s_supportedFormats = { //지원하는 미디어 파일 확장자 목록
     "mp3", "wav", "flac", "m4a", "aac", "ogg", "wma"
@@ -22,6 +23,7 @@ MediaManager::MediaManager(QObject *parent)
     , m_playlist(new QMediaPlaylist(this))
 {
     // USB 디렉터리 감시
+    m_usbWatcher->addPath("/run/media");  // Raspberry Pi systemd mount point
     m_usbWatcher->addPath("/media");
     m_usbWatcher->addPath("/mnt");
     connect(m_usbWatcher, &QFileSystemWatcher::directoryChanged,
@@ -135,6 +137,9 @@ void MediaManager::playFile(int index)
 
 void MediaManager::play()
 {
+    qDebug() << "MediaManager: play() called. Current isPlaying:" << m_isPlaying;
+    qDebug() << "MediaManager: Playlist count:" << m_playlist->mediaCount();
+
     if (m_playlist->mediaCount() > 0) {
         if (m_currentIndex < 0) {
             m_currentIndex = 0;
@@ -142,13 +147,37 @@ void MediaManager::play()
             updateCurrentFile();
             emit currentIndexChanged();
         }
+
+        qDebug() << "MediaManager: Calling QMediaPlayer::play()";
         m_mediaPlayer->play();
+
+        // Manually update state for embedded systems where state signal might not fire
+        if (!m_isPlaying) {
+            m_isPlaying = true;
+            emit playbackStateChanged();
+            qDebug() << "MediaManager: State changed to PLAYING";
+        } else {
+            qDebug() << "MediaManager: Already in PLAYING state";
+        }
+    } else {
+        qDebug() << "MediaManager: Cannot play - playlist is empty";
     }
 }
 
 void MediaManager::pause()
 {
+    qDebug() << "MediaManager: pause() called. Current isPlaying:" << m_isPlaying;
+    qDebug() << "MediaManager: Calling QMediaPlayer::pause()";
     m_mediaPlayer->pause();
+
+    // Manually update state for embedded systems where state signal might not fire
+    if (m_isPlaying) {
+        m_isPlaying = false;
+        emit playbackStateChanged();
+        qDebug() << "MediaManager: State changed to PAUSED";
+    } else {
+        qDebug() << "MediaManager: Already in PAUSED state";
+    }
 }
 
 void MediaManager::stop()
@@ -255,20 +284,45 @@ void MediaManager::refreshUsbMounts()
 void MediaManager::refreshUsbMountsInternal()
 {
     m_usbMounts.clear();
+    QSet<QString> seenDevices;  // Track devices we've already added
     const auto vols = QStorageInfo::mountedVolumes();
 
     for (const auto& v : vols) {
         if (!v.isValid() || !v.isReady()) continue;
         QString root = v.rootPath();
         QString device = v.device();
+        QString fsType = v.fileSystemType();
 
-        bool isUsbDevice = root.startsWith("/run/media") ||
-                           root.startsWith("/media") ||
-                           root.startsWith("/mnt") ||
-                           (root != "/" && device.startsWith("/dev/sd"));
+        // Skip EFI partitions
+        if (root.contains("EFI", Qt::CaseInsensitive) ||
+            fsType == "vfat" && root.contains("sda1")) {
+            qDebug() << "MediaManager: Skipping EFI partition:" << root;
+            continue;
+        }
 
-        if (isUsbDevice)
+        // Skip SD card boot partition
+        if (root.contains("mmcblk0p1") || root.contains("boot")) {
+            qDebug() << "MediaManager: Skipping boot partition:" << root;
+            continue;
+        }
+
+        // Skip if we've already seen this device
+        if (seenDevices.contains(device)) {
+            qDebug() << "MediaManager: Skipping duplicate mount:" << root << "for device:" << device;
+            continue;
+        }
+
+        // Check if it's a USB device
+        bool isUsbDevice = (root.startsWith("/media/usb") ||
+                           root.startsWith("/run/media") ||
+                           root.startsWith("/mnt")) &&
+                           device.startsWith("/dev/sd");
+
+        if (isUsbDevice) {
             m_usbMounts << root;
+            seenDevices.insert(device);
+            qDebug() << "MediaManager: Added USB mount:" << root << "device:" << device;
+        }
     }
 
     m_usbMounts.removeDuplicates();

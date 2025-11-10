@@ -1,0 +1,31 @@
+[Unit]
+Description=Head Unit Wayland Compositor
+After=network.target
+StartLimitInterval=60s
+StartLimitBurst=3
+
+[Service]
+Type=simple
+# Create XDG_RUNTIME_DIR before starting
+ExecStartPre=/bin/mkdir -p /run/user/0
+ExecStartPre=/bin/chmod 700 /run/user/0
+ExecStart=/usr/bin/HU_MainApp_Compositor
+Restart=on-failure
+RestartSec=5
+
+# Set proper environment for Wayland and Qt5
+Environment="XDG_RUNTIME_DIR=/run/user/0"
+Environment="QT_QPA_PLATFORM=wayland"
+Environment="QT_WAYLAND_DISABLE_WINDOWDECORATION=1"
+Environment="QT_PLUGIN_PATH=/usr/lib/plugins"
+Environment="LD_LIBRARY_PATH=/usr/lib:/usr/local/lib"
+
+# Run as root
+User=root
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=HU_MainApp
+
+[Install]
+WantedBy=multi-user.target

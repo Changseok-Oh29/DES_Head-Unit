@@ -350,12 +350,13 @@ Window {
                             id: playPauseMouseArea
                             anchors.fill: parent
                             onClicked: {
+                                console.log("Play/Pause clicked. Current isPlaying state:", root.isPlaying)
                                 if (root.isPlaying) {
+                                    console.log("Calling pause()")
                                     mediaManager.pause()
-                                    console.log("Paused")
                                 } else {
+                                    console.log("Calling play()")
                                     mediaManager.play()
-                                    console.log("Playing")
                                 }
                             }
                             

@@ -10,16 +10,21 @@ GearManager::GearManager(QObject *parent)
 
 void GearManager::setGearPosition(const QString &position)
 {
-    // 같은 기어를 선택해도 항상 RPC 전송
-    // 이유: ECU1-ECU2 상태 동기화 보장, 사용자 의도 확실히 반영
-    qDebug() << "GearManager: Requesting gear change via vsomeip:" << m_gearPosition << "->" << position;
-    
+    // Update internal state immediately for instant UI feedback
+    if (m_gearPosition != position) {
+        m_gearPosition = position;
+        qDebug() << "GearManager: Setting gear position to:" << position;
+        emit gearPositionChanged(position);  // Emit signal for UI update
+    }
+
+    // Also request gear change via vsomeip
+    qDebug() << "GearManager: Requesting gear change via vsomeip:" << position;
+
     // ═══════════════════════════════════════════════════════════
     // vsomeip RPC 호출: VehicleControlECU에 기어 변경 요청
     // ═══════════════════════════════════════════════════════════
     emit gearChangeRequested(position);
-    
-    // 참고: 실제 기어 변경은 VehicleControlECU의 응답(이벤트)을 받은 후 적용됨
-    // VehicleControlClient::currentGearChanged → GearManager::setGearPosition으로
-    // 다시 호출되어 m_gearPosition이 업데이트됨
+
+    // Note: If VehicleControl service is available, it will broadcast the change
+    // and all clients will receive the gearChanged event for synchronization
 }

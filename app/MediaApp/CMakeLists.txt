@@ -1,4 +1,11 @@
-cmake_mif(NOT CMAKE_BUILD_TYPE)
+cmake_minimum_required(VERSION 3.16)
+
+project(MediaApp VERSION 1.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
 endif()
 
@@ -17,22 +24,6 @@ endif()
 # RPATH 설정 (vsomeip, CommonAPI 라이브러리 경로)
 set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${INSTALL_PREFIX}")
 set(CMAKE_INSTALL_RPATH "${INSTALL_PREFIX}/lib")
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--disable-new-dtags")uired(VERSION 3.16)
-
-project(MediaApp VERSION 1.0 LANGUAGES CXX)
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
-endif()
-
-# RPATH 설정 (vsomeip, CommonAPI 라이브러리 경로)
-set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/home/seam/DES_Head-Unit/install_folder")
-set(CMAKE_INSTALL_RPATH "/home/seam/DES_Head-Unit/install_folder/lib")
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--disable-new-dtags")
