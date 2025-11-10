@@ -1,0 +1,25 @@
+[Unit]
+Description=VehicleControl ECU Service
+Documentation=https://github.com/Changseok-Oh29/DES_Head-Unit
+After=network-online.target systemd-networkd-wait-online.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/usr/bin
+Environment="VSOMEIP_CONFIGURATION=/etc/vsomeip/vsomeip_ecu1.json"
+Environment="COMMONAPI_CONFIG=/etc/commonapi/commonapi_ecu1.ini"
+Environment="LD_LIBRARY_PATH=/usr/lib"
+ExecStartPre=/bin/sleep 3
+ExecStart=/usr/bin/VehicleControlECU
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Resource limits
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

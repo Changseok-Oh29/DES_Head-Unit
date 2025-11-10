@@ -1,14 +1,37 @@
 .claude
 .vscode
 *.user
-*build# Yocto build artifacts
+*build
+
+# Yocto build artifacts
 oe-logs/
 oe-workdir/
 **/oe-logs/
 **/oe-workdir/
+build-*/
+tmp/
+sstate-cache/
+downloads/
 
 # Application build directories (already covered by *build, but be explicit)
 **/build/
+
+# Yocto recipe work directories (prepared by prepare-sources.sh)
+meta-vehiclecontrol/recipes-vehiclecontrol/vehiclecontrol-ecu/files/src/
+meta-vehiclecontrol/recipes-vehiclecontrol/vehiclecontrol-ecu/files/lib/
+meta-vehiclecontrol/recipes-vehiclecontrol/vehiclecontrol-ecu/files/commonapi-generated/
+meta-vehiclecontrol/recipes-vehiclecontrol/vehiclecontrol-ecu/files/CMakeLists.txt
+meta-vehiclecontrol/recipes-vehiclecontrol/vehiclecontrol-ecu/files/config/
+
+# Keep documentation, tools, and recipe definitions
+!meta-vehiclecontrol/**/*.md
+!meta-vehiclecontrol/tools/
+!meta-vehiclecontrol/**/*.bb
+!meta-vehiclecontrol/**/*.bbappend
+!meta-vehiclecontrol/**/*.bbclass
+!meta-vehiclecontrol/**/files/*.service
+!meta-vehiclecontrol/**/files/*.network
+!meta-vehiclecontrol/COPYING.MIT
 
 # Temporary files
 *.tmp
