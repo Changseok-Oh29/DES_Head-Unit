@@ -24,10 +24,10 @@ do_install() {
 # Package split
 PACKAGES =+ "${PN}-daemon ${PN}-utils"
 
-FILES_${PN} = "${libdir}/libpigpio.so.* ${libdir}/libpigpiod_if*.so.*"
-FILES_${PN}-dev = "${includedir} ${libdir}/*.so"
-FILES_${PN}-daemon = "${bindir}/pigpiod"
-FILES_${PN}-utils = "${bindir}/pig2vcd ${bindir}/pigs"
+FILES:${PN} = "${libdir}/libpigpio.so.* ${libdir}/libpigpiod_if*.so.*"
+FILES:${PN}-dev = "${includedir} ${libdir}/*.so"
+FILES:${PN}-daemon = "${bindir}/pigpiod"
+FILES:${PN}-utils = "${bindir}/pig2vcd ${bindir}/pigs"
 
 # pigpio requires GPIO access
-RDEPENDS_${PN} = "kernel-module-i2c-dev"
+RDEPENDS:${PN} = "kernel-module-i2c-dev"

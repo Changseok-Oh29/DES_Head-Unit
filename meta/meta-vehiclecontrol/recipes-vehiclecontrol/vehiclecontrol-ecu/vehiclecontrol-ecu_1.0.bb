@@ -6,7 +6,6 @@ LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
 DEPENDS = " \
-    qtbase \
     commonapi-core \
     commonapi-someip \
     vsomeip \
@@ -27,7 +26,7 @@ SRC_URI = " \
 
 S = "${WORKDIR}"
 
-inherit cmake_qt5 systemd
+inherit cmake systemd
 
 # CMake configuration
 EXTRA_OECMAKE = " \
@@ -37,10 +36,10 @@ EXTRA_OECMAKE = " \
 "
 
 # Systemd service configuration
-SYSTEMD_SERVICE_${PN} = "vehiclecontrol-ecu.service"
-SYSTEMD_AUTO_ENABLE_${PN} = "enable"
+SYSTEMD_SERVICE:${PN} = "vehiclecontrol-ecu.service"
+SYSTEMD_AUTO_ENABLE:${PN} = "enable"
 
-do_install_append() {
+do_install:append() {
     # Install configuration files
     install -d ${D}${sysconfdir}/vsomeip
     install -d ${D}${sysconfdir}/commonapi
@@ -53,15 +52,14 @@ do_install_append() {
     install -m 0644 ${WORKDIR}/vehiclecontrol-ecu.service ${D}${systemd_system_unitdir}/
 }
 
-FILES_${PN} = " \
+FILES:${PN} = " \
     ${bindir}/VehicleControlECU \
     ${sysconfdir}/vsomeip/vsomeip_ecu1.json \
     ${sysconfdir}/commonapi/commonapi_ecu1.ini \
     ${systemd_system_unitdir}/vehiclecontrol-ecu.service \
 "
 
-RDEPENDS_${PN} = " \
-    qtbase \
+RDEPENDS:${PN} = " \
     commonapi-core \
     commonapi-someip \
     vsomeip \
@@ -74,4 +72,4 @@ RDEPENDS_${PN} = " \
 "
 
 # The application needs root access for GPIO
-INSANE_SKIP_${PN} += "ldflags"
+INSANE_SKIP:${PN} += "ldflags"

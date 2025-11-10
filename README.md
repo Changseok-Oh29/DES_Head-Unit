@@ -94,7 +94,35 @@ This project implements a distributed automotive infotainment system using **vso
    ./build/HU_app
    ```
 
-### Raspberry Pi Deployment (Yocto)
+### 🔧 Yocto Image Build
+
+#### ECU2 (Head-Unit) - Completed ✅
+```bash
+cd meta/meta-headunit
+# Follow meta-headunit/README.md
+./tools/build-all.sh
+```
+
+#### ECU1 (VehicleControl) - Ready to Build 🚀
+```bash
+cd meta/meta-vehiclecontrol
+# Quick automated build
+./tools/build-all.sh
+
+# Or follow step-by-step guide
+# See: meta/meta-vehiclecontrol/QUICKSTART.md
+```
+
+**Detailed Documentation**:
+- **ECU1**: `meta/meta-vehiclecontrol/QUICKSTART.md`
+- **ECU2**: `meta/meta-headunit/README-CONFIGURATION.md`
+- **Build Checklist**: `meta/meta-vehiclecontrol/BUILD_CHECKLIST.md`
+
+#### Build Times
+- First build: 2-4 hours (includes package downloads)
+- Rebuild: 10-30 minutes
+
+### Manual Raspberry Pi Deployment (Advanced)
 
 1. **Setup Yocto Environment**:
    ```bash

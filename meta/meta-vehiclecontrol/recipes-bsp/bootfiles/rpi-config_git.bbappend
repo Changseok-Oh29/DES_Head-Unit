@@ -1,4 +1,4 @@
-do_deploy_append_raspberrypi4-64() {
+do_deploy:append:raspberrypi4-64() {
     # Enable I2C for VehicleControl ECU hardware
     echo "" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     echo "# VehicleControl ECU - Enable I2C" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt

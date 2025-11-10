@@ -7,10 +7,10 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=9741c346eef56131163e13b9db1241b3"
 
 DEPENDS = "boost"
 
-# Use release tag for stable builds
-SRC_URI = "git://github.com/COVESA/vsomeip.git;protocol=https;branch=master;tag=3.5.8"
-SRCREV = "${AUTOREV}"
-PV = "3.5.8"
+# Use specific commit for stable 3.5.8 release
+SRC_URI = "git://github.com/COVESA/vsomeip.git;protocol=https;branch=master"
+SRCREV = "e89240c7d5d506505326987b6a2f848658230641"
+PV = "3.5.8+git${SRCPV}"
 
 S = "${WORKDIR}/git"
 
@@ -24,25 +24,25 @@ EXTRA_OECMAKE = " \
 # Package split for better modularity
 PACKAGES =+ "${PN}-tools ${PN}-examples"
 
-FILES_${PN} = " \
+FILES:${PN} = " \
     ${libdir}/libvsomeip3*.so.* \
 "
 
-FILES_${PN}-dev = " \
+FILES:${PN}-dev = " \
     ${includedir} \
     ${libdir}/libvsomeip3*.so \
     ${libdir}/pkgconfig \
     ${libdir}/cmake \
 "
 
-FILES_${PN}-tools = " \
+FILES:${PN}-tools = " \
     ${bindir}/routingmanagerd \
 "
 
-FILES_${PN}-examples = " \
+FILES:${PN}-examples = " \
     ${datadir}/vsomeip \
 "
 
-RDEPENDS_${PN} = "boost-system boost-thread boost-filesystem boost-log"
+RDEPENDS:${PN} = "boost-system boost-thread boost-filesystem boost-log"
 
 BBCLASSEXTEND = "native nativesdk"

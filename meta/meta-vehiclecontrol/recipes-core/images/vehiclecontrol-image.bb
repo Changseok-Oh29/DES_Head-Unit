@@ -20,10 +20,10 @@ IMAGE_INSTALL = " \
 "
 
 # Development and debugging tools (optional, can be removed for production)
-IMAGE_INSTALL_append = " \
+# Note: tcpdump requires meta-networking layer
+IMAGE_INSTALL:append = " \
     gdbserver \
     strace \
-    tcpdump \
     vim \
     htop \
 "
@@ -35,7 +35,7 @@ IMAGE_FEATURES += " \
 "
 
 # Use systemd as init manager
-DISTRO_FEATURES_append = " systemd"
+DISTRO_FEATURES:append = " systemd"
 VIRTUAL-RUNTIME_init_manager = "systemd"
 VIRTUAL-RUNTIME_initscripts = "systemd-compat-units"
 

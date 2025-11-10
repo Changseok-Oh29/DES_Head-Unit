@@ -26,52 +26,53 @@ vsomeip/CommonAPI 미들웨어를 사용하여 PiRacer 차량을 제어합니다
 - `meta-raspberrypi` - **kirkstone** 브랜치
 - `meta-openembedded/meta-oe` - **kirkstone** 브랜치
 
-## 빠른 시작
+## 🚀 빠른 시작 (3가지 방법)
 
-### 1. 소스 준비
+### 방법 1: 전체 자동화 (권장)
 ```bash
-cd /home/leo/SEA-ME/DES_Head-Unit/meta/meta-vehiclecontrol
+cd /home/seame/HU/DES_Head-Unit/meta/meta-vehiclecontrol
+./tools/build-all.sh
+```
+이 스크립트가 소스 준비와 빌드 환경 설정을 모두 수행합니다.
+
+### 방법 2: 단계별 실행
+```bash
+# 1. 소스 준비
+cd /home/seame/HU/DES_Head-Unit/meta/meta-vehiclecontrol
 ./tools/prepare-sources.sh
-```
 
-### 2. Yocto 레이어 클론 (처음 한 번만)
-```bash
-mkdir -p ~/yocto && cd ~/yocto
-git clone -b kirkstone git://git.yoctoproject.org/poky
-git clone -b kirkstone https://github.com/agherzan/meta-raspberrypi.git
-git clone -b kirkstone https://github.com/openembedded/meta-openembedded.git
-```
+# 2. 빌드 환경 설정 (Yocto 레이어 자동 클론 포함)
+./tools/setup-build-env.sh
 
-### 3. 빌드 환경 설정
-```bash
-cd ~/yocto
-source poky/oe-init-build-env build-ecu1
-
-bitbake-layers add-layer ../meta-raspberrypi
-bitbake-layers add-layer ../meta-openembedded/meta-oe
-bitbake-layers add-layer /home/leo/SEA-ME/DES_Head-Unit/meta/meta-vehiclecontrol
-```
-
-### 4. 설정 파일 수정
-`conf/local.conf`에 추가:
-```
-MACHINE = "raspberrypi4-64"
-DISTRO_FEATURES_append = " systemd"
-VIRTUAL-RUNTIME_init_manager = "systemd"
-```
-
-### 5. 이미지 빌드
-```bash
+# 3. 이미지 빌드 (위 스크립트 실행 후 자동으로 build 디렉토리에 위치)
 bitbake vehiclecontrol-image
 ```
-⏱️ 예상 시간: 2-4시간 (첫 빌드)
 
-### 6. SD 카드 플래싱
+### 방법 3: 수동 설정 (고급 사용자)
+
+상세한 수동 설정은 `빌드가이드.md`를 참조하세요.
+
+## 📦 빌드 결과
+
+빌드 완료 후:
 ```bash
-cd tmp/deploy/images/raspberrypi4-64
-sudo dd if=vehiclecontrol-image-raspberrypi4-64.rpi-sdimg \
-    of=/dev/sdX bs=4M status=progress && sync
+cd ~/yocto/build-ecu1/tmp/deploy/images/raspberrypi4-64/
+ls -lh *.rpi-sdimg
 ```
+
+## 💾 SD 카드 플래싱
+
+```bash
+# SD 카드 장치 확인
+lsblk
+
+# 이미지 플래싱 (⚠️ /dev/sdX를 실제 SD 카드 장치로 변경!)
+cd ~/yocto/build-ecu1/tmp/deploy/images/raspberrypi4-64/
+sudo dd if=vehiclecontrol-image-raspberrypi4-64.rootfs.rpi-sdimg \
+    of=/dev/sdX bs=4M status=progress conv=fsync && sync
+```
+
+⏱️ **빌드 시간**: 첫 빌드 2-4시간, 재빌드 10-30분
 
 ## 포함된 패키지
 
@@ -112,10 +113,25 @@ VehicleControl ECU는 systemd 서비스로 실행:
 - **자동 시작**: 활성화
 - **재시작 정책**: on-failure
 
-## 추가 문서
+## 📚 문서
 
-- **빌드가이드.md** - 상세 빌드 방법 및 설정
-- **문제해결.md** - 자주 발생하는 문제 및 해결 방법
+- **[QUICKSTART.md](QUICKSTART.md)** - 빠른 시작 가이드 (초보자 권장)
+- **[빌드가이드.md](빌드가이드.md)** - 상세 빌드 방법 및 설정
+- **[문제해결.md](문제해결.md)** - 자주 발생하는 문제 및 해결 방법
+
+## 🛠️ 유틸리티 스크립트
+
+### `tools/build-all.sh`
+전체 빌드 프로세스 자동화 (소스 준비 + 환경 설정)
+
+### `tools/prepare-sources.sh`
+VehicleControlECU 소스를 recipe로 복사
+
+### `tools/setup-build-env.sh`
+Yocto 빌드 환경 자동 설정 (레이어 클론 포함)
+
+### `tools/verify-layer.sh`
+레이어 설정 검증
 
 ## 라이센스
 
@@ -124,3 +140,4 @@ MIT License
 ## 개발팀
 
 SEA:ME DES Project Team
+```

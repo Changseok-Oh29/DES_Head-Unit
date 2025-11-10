@@ -3,13 +3,20 @@ DESCRIPTION = "Package group for VehicleControl ECU system dependencies"
 
 inherit packagegroup
 
-RDEPENDS_${PN} = " \
+PACKAGES = "\
+    ${PN} \
     ${PN}-connectivity \
     ${PN}-hardware \
     ${PN}-system \
 "
 
-RDEPENDS_${PN}-connectivity = " \
+RDEPENDS:${PN} = " \
+    ${PN}-connectivity \
+    ${PN}-hardware \
+    ${PN}-system \
+"
+
+RDEPENDS:${PN}-connectivity = " \
     vsomeip \
     commonapi-core \
     commonapi-someip \
@@ -19,14 +26,14 @@ RDEPENDS_${PN}-connectivity = " \
     boost-log \
 "
 
-RDEPENDS_${PN}-hardware = " \
+RDEPENDS:${PN}-hardware = " \
     pigpio \
     i2c-tools \
     kernel-module-i2c-dev \
     kernel-module-i2c-bcm2835 \
 "
 
-RDEPENDS_${PN}-system = " \
+RDEPENDS:${PN}-system = " \
     systemd \
     openssh \
     bash \
