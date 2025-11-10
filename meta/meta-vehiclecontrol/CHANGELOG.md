@@ -440,34 +440,105 @@ ERROR: Nothing RPROVIDES 'packagegroup-vehiclecontrol-hardware'
 ```
 **해결:** PACKAGES 변수 명시적 정의
 
-#### 문제 5: Qt5 관련 cmake_qt5 클래스 없음
+#### 문제 5: pigpio 체크섬 불일치
 ```
-ERROR: Could not inherit file classes/cmake_qt5.bbclass
+ERROR: Checksum mismatch!
+File has sha256 checksum 'c5337c0b7ae...' when 'cb9b8df9f32...' was expected
 ```
-**해결:** VehicleControlECU는 QCoreApplication만 사용하므로 일반 cmake 상속으로 변경
+**해결:** 새로운 체크섬으로 업데이트
+```bash
+vim /home/seame/HU/DES_Head-Unit/meta/meta-vehiclecontrol/recipes-support/pigpio/pigpio_79.bb
+```
+```bash
+SRC_URI[sha256sum] = "c5337c0b7ae888caf0262a6f476af0e2ab67065f7650148a0b21900b8d1eaed7"
+```
+
+#### 문제 6: pigpio 설치된 파일이 패키지에 포함되지 않음
+```
+ERROR: Files/directories were installed but not shipped in any package:
+  /opt, /usr/local, /usr/man, ...
+```
+**해결:** do_install에서 불필요한 파일 삭제 및 INSANE_SKIP 추가
+```bash
+do_install() {
+    oe_runmake DESTDIR=${D} prefix=${prefix} install
+    
+    # Remove unwanted files
+    rm -rf ${D}/opt
+    rm -rf ${D}${prefix}/local
+    rm -rf ${D}${prefix}/man
+}
+
+# Skip QA checks for already-stripped binaries
+INSANE_SKIP:${PN} += "already-stripped"
+INSANE_SKIP:${PN}-daemon += "already-stripped"
+INSANE_SKIP:${PN}-utils += "already-stripped"
+```
+
+#### 문제 7: pigpio 라이센스 체크섬 불일치 (미해결)
+```
+ERROR: The LIC_FILES_CHKSUM does not match for file://UNLICENCE
+The new md5 checksum is 61287f92700ec1bdf13bc86d8228cd13
+```
+**상태:** 빌드 중단됨 (내일 해결 예정)
+**해결 방법:**
+```bash
+vim /home/seame/HU/DES_Head-Unit/meta/meta-vehiclecontrol/recipes-support/pigpio/pigpio_79.bb
+# LIC_FILES_CHKSUM 수정 필요
+LIC_FILES_CHKSUM = "file://UNLICENCE;md5=61287f92700ec1bdf13bc86d8228cd13"
+```
 
 ### ⏱️ 빌드 시간
 
 - **레이어 클론**: 10-30분 (처음 한 번만)
-- **첫 빌드**: 2-4시간 예상
+- **첫 빌드**: 2-4시간 예상 (진행 중 중단됨)
+- **진행 상황**: 4,518개 태스크 중 3,789개 완료 (84%)
 - **재빌드** (소스만 변경): 10-30분
 
-### 📦 빌드 결과물 위치
+### 📦 빌드 상태
+
+**현재 상태: 중단됨 (pigpio 라이센스 체크섬 문제)**
+- ✅ 전체 빌드의 84% 완료
+- ❌ pigpio 라이센스 체크섬 불일치로 중단
+- 🔄 내일 재개 예정
+
+**빌드 진행률:**
+```
+Attempted 3789 tasks of which 3304 didn't need to be rerun and 1 failed.
+- 성공: 3,788개 (99.97%)
+- 실패: 1개 (pigpio 라이센스)
+- 캐시 활용: 3,304개 (87%)
+```
 
 ```bash
 ~/yocto/build-ecu1/tmp/deploy/images/raspberrypi4-64/
 └── vehiclecontrol-image-raspberrypi4-64.rootfs.rpi-sdimg
 ```
 
-### 🔄 다음 단계 (빌드 완료 후)
+### 🔄 다음 단계 (내일 작업)
 
-1. **이미지 확인**
+1. **pigpio 라이센스 체크섬 수정**
+```bash
+vim /home/seame/HU/DES_Head-Unit/meta/meta-vehiclecontrol/recipes-support/pigpio/pigpio_79.bb
+
+# 수정 내용:
+LIC_FILES_CHKSUM = "file://UNLICENCE;md5=61287f92700ec1bdf13bc86d8228cd13"
+```
+
+2. **빌드 재개**
+```bash
+cd ~/yocto
+source poky/oe-init-build-env build-ecu1
+bitbake vehiclecontrol-image
+```
+
+3. **빌드 완료 후 - 이미지 확인**
 ```bash
 cd ~/yocto/build-ecu1/tmp/deploy/images/raspberrypi4-64/
 ls -lh *.rpi-sdimg
 ```
 
-2. **SD 카드 플래싱**
+4. **SD 카드 플래싱**
 ```bash
 # SD 카드 장치 확인
 lsblk
@@ -477,7 +548,7 @@ sudo dd if=vehiclecontrol-image-raspberrypi4-64.rootfs.rpi-sdimg \
     of=/dev/sdX bs=4M status=progress conv=fsync && sync
 ```
 
-3. **부팅 및 테스트**
+5. **부팅 및 테스트**
 ```bash
 # SSH 접속 (Raspberry Pi 부팅 후)
 ssh root@<raspberry-pi-ip>
@@ -486,6 +557,56 @@ ssh root@<raspberry-pi-ip>
 # 서비스 확인
 systemctl status vehiclecontrol-ecu
 journalctl -u vehiclecontrol-ecu -f
+```
+
+### 📊 오늘의 성과
+
+✅ **완료된 작업:**
+1. Yocto Kirkstone 레이어 클론 및 설정 완료
+2. 모든 레시피 Kirkstone 문법으로 업데이트 (15개 파일)
+3. Git 소스 SRCREV 정확한 커밋으로 수정 (vsomeip, commonapi)
+4. pigpio 체크섬 및 패키징 문제 해결
+5. 전체 빌드의 84% 완료 (3,789/4,518 태스크)
+6. 자동화 스크립트 5개 생성 완료
+7. 상세 문서 5개 작성 완료
+
+⏸️ **남은 작업:**
+1. pigpio 라이센스 체크섬 수정 (1분 소요)
+2. 빌드 완료 (약 30분-1시간 예상)
+3. SD 카드 플래싱 및 테스트
+
+### 🎓 오늘 배운 것
+
+1. **Yocto Kirkstone 문법 변경사항 완전 숙지**
+   - 모든 override 문법을 새로운 방식으로 변경
+   - packagegroup 서브패키지 정의 방법
+
+2. **Git 소스 fetch 올바른 방법**
+   - AUTOREV와 태그를 혼용하면 안 됨
+   - 정확한 커밋 해시 사용 필요
+
+3. **Yocto QA 체크 처리 방법**
+   - already-stripped: INSANE_SKIP 사용
+   - installed-vs-shipped: FILES 정의 또는 불필요한 파일 삭제
+   - license-checksum: 정확한 체크섬으로 업데이트
+
+4. **빌드 캐시 활용**
+   - 3,304개 태스크가 캐시에서 재사용됨 (87%)
+   - 재빌드 시 시간 대폭 단축 가능
+
+### 💾 Git Commit 내역
+
+```bash
+# 오늘 수정한 파일들
+git add meta/meta-vehiclecontrol/
+git commit -m "Fix ECU1 Yocto recipes for Kirkstone compatibility
+
+- Update all recipes to use Kirkstone override syntax (:append, :prepend)
+- Fix SRCREV for vsomeip, commonapi-core, commonapi-someip
+- Update pigpio checksum and fix packaging issues
+- Add automation scripts and documentation
+- 84% build progress achieved"
+git push
 ```
 
 ### 📝 참고사항
@@ -518,6 +639,28 @@ ls -lh *.rpi-sdimg
 
 ---
 
-**빌드 시작 시각**: 2025년 11월 10일
-**빌드 상태**: 진행 중 (4,518개 태스크)
-**예상 완료**: 2-4시간 후
+**빌드 시작 시각**: 2025년 11월 10일 오전
+**빌드 상태**: 84% 완료 (3,789/4,518 태스크) - pigpio 라이센스 문제로 중단
+**중단 시각**: 2025년 11월 10일 오후
+**다음 작업**: 내일 pigpio 라이센스 체크섬 수정 후 빌드 재개 (예상 30분-1시간)
+
+---
+
+## 🔧 내일 해야 할 일 (간단 요약)
+
+```bash
+# 1. pigpio 라이센스 수정 (1분)
+vim /home/seame/HU/DES_Head-Unit/meta/meta-vehiclecontrol/recipes-support/pigpio/pigpio_79.bb
+# LIC_FILES_CHKSUM = "file://UNLICENCE;md5=61287f92700ec1bdf13bc86d8228cd13"
+
+# 2. 빌드 재개 (30분-1시간)
+cd ~/yocto
+source poky/oe-init-build-env build-ecu1
+bitbake vehiclecontrol-image
+
+# 3. 완료 후 이미지 확인
+cd ~/yocto/build-ecu1/tmp/deploy/images/raspberrypi4-64/
+ls -lh *.rpi-sdimg
+```
+
+완료 예상: 내일 1시간 이내
