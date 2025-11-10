@@ -1,0 +1,30 @@
+[Unit]
+Description=Ambient Lighting Application
+After=network.target weston.service
+Requires=weston.service
+StartLimitInterval=60s
+StartLimitBurst=3
+
+[Service]
+Type=simple
+ExecStartPre=/bin/sleep 2
+ExecStart=/usr/bin/AmbientApp
+Restart=on-failure
+RestartSec=5
+
+# Set proper environment for Qt5 Wayland client (weston auto-creates /run/user/1000)
+Environment="XDG_RUNTIME_DIR=/run/user/1000"
+Environment="QT_QPA_PLATFORM=wayland"
+Environment="WAYLAND_DISPLAY=wayland-1"
+Environment="QT_PLUGIN_PATH=/usr/lib/plugins"
+Environment="LD_LIBRARY_PATH=/usr/lib:/usr/local/lib"
+
+# Run as weston user (auto-login user)
+User=weston
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=AmbientApp
+
+[Install]
+WantedBy=multi-user.target
