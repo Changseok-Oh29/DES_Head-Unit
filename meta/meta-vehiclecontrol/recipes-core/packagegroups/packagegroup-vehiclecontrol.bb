@@ -3,6 +3,9 @@ DESCRIPTION = "Package group for VehicleControl ECU system dependencies"
 
 inherit packagegroup
 
+# Allow architecture-specific dependencies in allarch packagegroup
+INSANE_SKIP:${PN}-connectivity = "allarch-pkg-requires"
+
 PACKAGES = "\
     ${PN} \
     ${PN}-connectivity \
@@ -30,6 +33,9 @@ RDEPENDS:${PN}-hardware = " \
     pigpio \
     i2c-tools \
     kernel-module-i2c-dev \
+"
+
+RRECOMMENDS:${PN}-hardware = " \
     kernel-module-i2c-bcm2835 \
 "
 

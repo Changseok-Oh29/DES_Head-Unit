@@ -11,6 +11,7 @@ DEPENDS = " \
     vsomeip \
     boost \
     pigpio \
+    qtbase \
 "
 
 # Source files are included in the recipe
@@ -26,13 +27,14 @@ SRC_URI = " \
 
 S = "${WORKDIR}"
 
-inherit cmake systemd
+inherit cmake_qt5 systemd
 
 # CMake configuration
 EXTRA_OECMAKE = " \
     -DCOMMONAPI_GEN_DIR=${S}/commonapi-generated \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_FLAGS=-Wno-psabi \
+    -DQT_QMAKE_EXECUTABLE=${STAGING_BINDIR_NATIVE}/qmake \
 "
 
 # Systemd service configuration
@@ -50,6 +52,11 @@ do_install:append() {
     # Install systemd service
     install -d ${D}${systemd_system_unitdir}
     install -m 0644 ${WORKDIR}/vehiclecontrol-ecu.service ${D}${systemd_system_unitdir}/
+    
+    # Clean up /usr/etc if it exists (vsomeip might install here)
+    if [ -d ${D}${prefix}/etc ]; then
+        rm -rf ${D}${prefix}/etc
+    fi
 }
 
 FILES:${PN} = " \

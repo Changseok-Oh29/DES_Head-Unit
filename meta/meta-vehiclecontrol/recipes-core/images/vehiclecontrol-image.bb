@@ -45,8 +45,7 @@ hostname_pn-base-files = "vehiclecontrol-ecu"
 # Root password (development only)
 EXTRA_IMAGE_FEATURES += "debug-tweaks"
 
-# User configuration
-inherit extrausers
-EXTRA_USERS_PARAMS = " \
-    usermod -P raspberry root; \
-"
+# Note: debug-tweaks allows root login without password
+# For production, remove debug-tweaks and set proper password using:
+# inherit extrausers
+# EXTRA_USERS_PARAMS = "usermod -p '\$6\$...' root;"

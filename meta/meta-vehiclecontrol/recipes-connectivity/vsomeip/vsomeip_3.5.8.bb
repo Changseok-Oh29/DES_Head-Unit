@@ -21,11 +21,27 @@ EXTRA_OECMAKE = " \
     -DDIAGNOSIS_ADDRESS=0x10 \
 "
 
+do_install:append() {
+    # Move config files from /usr/etc to /etc
+    if [ -d ${D}${prefix}/etc ]; then
+        install -d ${D}${sysconfdir}
+        mv ${D}${prefix}/etc/* ${D}${sysconfdir}/
+        rm -rf ${D}${prefix}/etc
+    fi
+    
+    # Remove empty bin directory if exists
+    if [ -d ${D}${bindir} ] && [ -z "$(ls -A ${D}${bindir})" ]; then
+        rmdir ${D}${bindir}
+    fi
+}
+
 # Package split for better modularity
 PACKAGES =+ "${PN}-tools ${PN}-examples"
 
 FILES:${PN} = " \
     ${libdir}/libvsomeip3*.so.* \
+    ${sysconfdir}/vsomeip \
+    ${sysconfdir}/vsomeip/*.json \
 "
 
 FILES:${PN}-dev = " \
@@ -36,7 +52,7 @@ FILES:${PN}-dev = " \
 "
 
 FILES:${PN}-tools = " \
-    ${bindir}/routingmanagerd \
+    ${bindir}/* \
 "
 
 FILES:${PN}-examples = " \

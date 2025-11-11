@@ -1,5 +1,181 @@
 # ECU1 Yocto Build - 개발 일지
 
+## 2025년 11월 11일 - pigpio, vsomeip, Qt5 의존성 해결 및 빌드 98% 완료
+
+### 📋 작업 개요
+pigpio 크로스 컴파일, vsomeip 패키징, Qt5 레이어 추가 등 주요 의존성 문제를 체계적으로 해결하고 빌드를 98% 완료함.
+
+### ✅ 완료된 작업
+
+#### 1. pigpio 라이센스 체크섬 수정
+**문제:** `LIC_FILES_CHKSUM` 불일치
+```
+ERROR: pigpio-79-r0 do_populate_lic: QA Issue: 
+The LIC_FILES_CHKSUM does not match for file://UNLICENCE
+```
+
+**해결:**
+```bash
+# /home/seame/HU/DES_Head-Unit/meta/meta-vehiclecontrol/recipes-support/pigpio/pigpio_79.bb
+LIC_FILES_CHKSUM = "file://UNLICENCE;md5=61287f92700ec1bdf13bc86d8228cd13"
+```
+
+#### 2. pigpio 크로스 컴파일 설정
+**문제:** pigpio Makefile이 호스트 컴파일러(x86-64)를 사용하여 ARM64용 바이너리가 아닌 x86-64 바이너리 생성
+
+**해결:**
+```bitbake
+EXTRA_OEMAKE = " \
+    'CC=${CC}' \
+    'AR=${AR}' \
+    'RANLIB=${RANLIB}' \
+    'STRIP=${STRIP}' \
+    'CFLAGS=${CFLAGS} -fPIC' \
+    'LDFLAGS=${LDFLAGS}' \
+    'PREFIX=${prefix}' \
+"
+
+inherit pkgconfig
+```
+
+**결과:** ARM64용 바이너리 정상 생성
+
+#### 3. pigpio 설치 경로 수정
+**문제:** pigpio Makefile이 PREFIX를 무시하고 `/usr/local`에 설치
+
+**해결:**
+```bash
+do_install() {
+    oe_runmake DESTDIR=${D} PREFIX=${prefix} install ${EXTRA_OEMAKE}
+    
+    # Move from /usr/local to /usr
+    if [ -d "${D}${prefix}/local/include" ]; then
+        install -d ${D}${includedir}
+        cp -r ${D}${prefix}/local/include/* ${D}${includedir}/
+    fi
+    
+    if [ -d "${D}${prefix}/local/lib" ]; then
+        install -d ${D}${libdir}
+        cp -r ${D}${prefix}/local/lib/* ${D}${libdir}/
+    fi
+    
+    if [ -d "${D}${prefix}/local/bin" ]; then
+        install -d ${D}${bindir}
+        cp -r ${D}${prefix}/local/bin/* ${D}${bindir}/
+    fi
+    
+    # Remove unwanted directories
+    rm -rf ${D}/opt
+    rm -rf ${D}${prefix}/local
+    rm -rf ${D}${prefix}/man
+}
+```
+
+#### 4. pigpio QA 이슈 해결
+**문제:**
+- GNU_HASH 누락 (LDFLAGS 미전달)
+- kernel-module-i2c-dev 개발 의존성 경고
+
+**해결:**
+```bitbake
+RDEPENDS:${PN} = ""
+RRECOMMENDS:${PN} = "kernel-module-i2c-dev"
+
+INSANE_SKIP:${PN} += "already-stripped ldflags"
+INSANE_SKIP:${PN}-daemon += "already-stripped ldflags"
+INSANE_SKIP:${PN}-utils += "already-stripped ldflags"
+```
+
+#### 5. vsomeip 패키징 수정
+**문제:** 설정 파일이 `/usr/etc`에 설치되고, `/usr/bin` 빈 디렉토리 생성
+
+**해결:**
+```bash
+do_install:append() {
+    # Move config files from /usr/etc to /etc
+    if [ -d ${D}${prefix}/etc ]; then
+        install -d ${D}${sysconfdir}
+        mv ${D}${prefix}/etc/* ${D}${sysconfdir}/
+        rm -rf ${D}${prefix}/etc
+    fi
+    
+    # Remove empty bin directory if exists
+    if [ -d ${D}${bindir} ] && [ -z "$(ls -A ${D}${bindir})" ]; then
+        rmdir ${D}${bindir}
+    fi
+}
+
+FILES:${PN} = " \
+    ${libdir}/libvsomeip3*.so.* \
+    ${sysconfdir}/vsomeip \
+    ${sysconfdir}/vsomeip/*.json \
+"
+
+FILES:${PN}-tools = " \
+    ${bindir}/* \
+"
+```
+
+#### 6. meta-qt5 레이어 추가
+**문제:** VehicleControlECU가 QCoreApplication, QTimer, QObject를 사용하지만 Qt5가 없음
+
+**해결:**
+```bash
+cd ~/yocto
+git clone -b kirkstone https://github.com/meta-qt5/meta-qt5.git
+cd build-ecu1
+bitbake-layers add-layer ~/yocto/meta-qt5
+```
+
+**vehiclecontrol-ecu recipe 업데이트:**
+```bitbake
+DEPENDS = " \
+    commonapi-core \
+    commonapi-someip \
+    vsomeip \
+    boost \
+    pigpio \
+    qtbase \
+"
+```
+
+### 📊 빌드 진행 상황
+- **총 태스크:** 4,717개
+- **완료:** ~4,630개 (98%)
+- **남은 작업:** 이미지 생성 및 패키징
+
+### 🔧 해결한 주요 문제들
+1. ✅ pigpio 라이센스 체크섬 (3번째 시도에 성공)
+2. ✅ pigpio 크로스 컴파일 (x86-64 → ARM64)
+3. ✅ pigpio 설치 경로 (/usr/local → /usr)
+4. ✅ pigpio QA 검사 (ldflags, dev-deps)
+5. ✅ vsomeip 설정 파일 경로 (/usr/etc → /etc)
+6. ✅ vsomeip 빈 디렉토리 제거
+7. ✅ Qt5 의존성 추가
+
+### 🎯 학습한 내용
+1. **Yocto QA 시스템**: `INSANE_SKIP`으로 특정 검사 우회 가능
+2. **크로스 컴파일**: `CC`, `AR`, `RANLIB`, `STRIP` 변수를 명시적으로 전달해야 함
+3. **RDEPENDS vs RRECOMMENDS**: 
+   - `RDEPENDS`: 필수 런타임 의존성
+   - `RRECOMMENDS`: 권장 의존성 (설치 실패해도 빌드 계속)
+4. **do_install:append()**: 기존 install 함수 이후 추가 작업 수행
+5. **Qt minimal dependencies**: GUI 없이 QCoreApplication만 사용하면 qtbase만 필요
+
+### 📝 다음 단계
+```bash
+cd ~/yocto
+source poky/oe-init-build-env build-ecu1
+bitbake vehiclecontrol-image
+```
+
+**예상 소요 시간:** 10-20분 (남은 2% 완료)
+
+**생성될 이미지:**
+- `~/yocto/build-ecu1/tmp/deploy/images/raspberrypi4-64/vehiclecontrol-image-raspberrypi4-64.rootfs.rpi-sdimg`
+
+---
+
 ## 2025년 11월 10일 - ECU1 Yocto 이미지 빌드 환경 구축 완료
 
 ### 📋 작업 개요
