@@ -10,4 +10,10 @@ do_deploy:append:raspberrypi4-64() {
     echo "" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     echo "# GPIO configuration" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     echo "gpio=2-27=a0" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    
+    # Enable Bluetooth UART
+    echo "" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "# Bluetooth configuration" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "dtoverlay=pi3-miniuart-bt" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "enable_uart=1" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
 }

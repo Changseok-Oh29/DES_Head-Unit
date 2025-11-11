@@ -26,16 +26,32 @@ IMAGE_INSTALL:append = " \
     strace \
     vim \
     htop \
+    linux-firmware-bcm43430 \
+    pi-bluetooth \
+    bluez5 \
+    wpa-supplicant \
+    iw \
+    kernel-module-joydev \
+    kernel-module-hci-uart \
+    kernel-module-btbcm \
+    evtest \
 "
 
 # Image features
 IMAGE_FEATURES += " \
     ssh-server-openssh \
     debug-tweaks \
+    splash \
 "
 
+# Kernel features for Wi-Fi
+KERNEL_FEATURES:append = " cfg/wifi.scc"
+
+# Enable bluetooth hardware support
+MACHINE_FEATURES:append = " bluetooth wifi"
+
 # Use systemd as init manager
-DISTRO_FEATURES:append = " systemd"
+DISTRO_FEATURES:append = " systemd bluetooth wifi"
 VIRTUAL-RUNTIME_init_manager = "systemd"
 VIRTUAL-RUNTIME_initscripts = "systemd-compat-units"
 
