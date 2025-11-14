@@ -1578,3 +1578,118 @@ connect <MAC_ADDRESS>
 **상태**: 조이스틱 지원 추가 완료, 재빌드 진행 중
 **다음**: 재빌드 완료 후 두 번째 SD 카드 플래싱 및 하드웨어 테스트
 ```````
+
+---
+
+## 2025년 11월 11일 (밤) - 블루투스 게임패드 지원 추가 (선배 기수 참고)
+
+### 📋 작업 개요
+게임패드 제어를 위한 블루투스 스택 완전 구현. Team2 선배 기수 레포지토리를 참고하여 최적화된 설정 적용.
+
+### ✅ 완료된 작업
+
+#### 1. 선배 기수 레포지토리 분석
+- **GitHub:** `Team2-DES-Head-Unit/DES_Head-Unit` 분석
+- **발견 사항:**
+  - 게임패드 사용 확인 (`control.py`, `/dev/input/js0`)
+  - BlueZ5 PACKAGECONFIG: `hid-profiles`, `hog-profiles`, `udev`, `systemd`
+  - UART 전역 변수 사용: `ENABLE_UART = "1"`
+
+#### 2. Bluetooth 커널 드라이버 강화
+**파일:** `meta-vehiclecontrol/recipes-kernel/linux/files/bluetooth.cfg`
+
+**추가된 HID 지원 (게임패드 필수):**
+- `CONFIG_HID_BLUETOOTH=m`: 블루투스 HID 디바이스
+- `CONFIG_UHID=m`: Userspace HID 드라이버
+- `CONFIG_BT_LE=y`: Bluetooth Low Energy
+- `CONFIG_HIDRAW=y`: Raw HID device access
+
+#### 3. UART 설정 개선
+**파일:** `meta-vehiclecontrol/recipes-bsp/bootfiles/rpi-config_git.bbappend`
+
+**변경:**
+```bitbake
+ENABLE_UART = "1"  # 전역 UART 활성화
+```
+
+### 🔍 문제 진단 과정
+
+1. `systemctl status bluetooth` → `dead (inactive)`
+2. `ConditionPathIsDirectory=/sys/class/bluetooth` 실패
+3. `/sys/class/bluetooth` 디렉토리 없음
+4. `dmesg | grep bluetooth` → 메시지 없음
+5. **근본 원인:** 블루투스 커널 드라이버 미컴파일
+
+### 🎯 다음 단계 (내일 아침)
+
+#### 커널 재빌드
+```bash
+cd ~/yocto && source poky/oe-init-build-env build-ecu1
+bitbake -c cleansstate linux-raspberrypi
+bitbake linux-raspberrypi
+bitbake vehiclecontrol-image
+```
+
+#### 검증 체크리스트
+```bash
+# 1. 커널 모듈
+lsmod | grep -i bt  # bluetooth, btbcm, hci_uart 확인
+
+# 2. 커널 메시지  
+dmesg | grep -i bluetooth  # "Bluetooth: Core ver 2.22" 확인
+
+# 3. 컨트롤러
+ls /sys/class/bluetooth/  # hci0 확인
+
+# 4. 서비스
+systemctl status bluetooth  # active (running) 확인
+
+# 5. 페어링
+bluetoothctl
+power on
+scan on
+# (게임패드: Home+X 동시 누름)
+pair XX:XX:XX:XX:XX:XX
+
+# 6. Joystick
+ls /dev/input/js0
+evtest /dev/input/js0  # 버튼 이벤트 확인
+```
+
+### 📝 백업 플랜
+
+#### Plan A: 모듈 수동 로드
+```bash
+modprobe bluetooth && modprobe btbcm && modprobe hci_uart
+```
+
+#### Plan B: 커널 config 검증
+```bash
+zcat /proc/config.gz | grep -E "CONFIG_BT|CONFIG_HID"
+```
+
+#### Plan C: Raspberry Pi OS 비교
+```bash
+diff /boot/config.txt /mnt/boot/config.txt
+ls -la /lib/modules/$(uname -r)/kernel/net/bluetooth/
+```
+
+### 💡 기술 스택
+
+**Gamepad → Application 경로:**
+```
+Gamepad (BT HID) 
+  ↓ Bluetooth LE/Classic
+BCM43430 (firmware: /lib/firmware/brcm/)
+  ↓ UART (/dev/ttyS0)
+hci_uart.ko (CONFIG_BT_HCIUART_BCM)
+  ↓ HCI
+bluetooth.ko (CONFIG_BT)
+  ↓ HIDP
+hidp.ko (CONFIG_BT_HIDP)
+  ↓ Input
+/dev/input/js0 (CONFIG_INPUT_JOYDEV)
+  ↓
+ShanWanGamepad (VehicleControlECU)
+```
+

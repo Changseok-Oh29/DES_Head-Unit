@@ -16,25 +16,31 @@ IMAGE_INSTALL = " \
     packagegroup-core-boot \
     packagegroup-vehiclecontrol \
     vehiclecontrol-ecu \
+    can-setup \
     ${CORE_IMAGE_EXTRA_INSTALL} \
 "
 
-# Development and debugging tools (optional, can be removed for production)
-# Note: tcpdump requires meta-networking layer
+# Essential tools only (CAN + Bluetooth + WiFi)
 IMAGE_INSTALL:append = " \
-    gdbserver \
-    strace \
     vim \
-    htop \
-    linux-firmware-bcm43430 \
+    kmod \
+    linux-firmware \
+    linux-firmware-rpidistro-bcm43430 \
+    linux-firmware-rpidistro-bcm43455 \
     pi-bluetooth \
     bluez5 \
     wpa-supplicant \
+    dhcpcd \
+    wifi-autoconnect \
     iw \
+    wireless-regdb-static \
     kernel-module-joydev \
     kernel-module-hci-uart \
     kernel-module-btbcm \
-    evtest \
+    kernel-modules \
+    can-utils \
+    openssh \
+    openssh-sftp-server \
 "
 
 # Image features

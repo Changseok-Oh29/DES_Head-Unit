@@ -1,0 +1,12 @@
+# VehicleControl ECU CAN Configuration
+# Enable MCP2515 SPI CAN controller
+dtparam=spi=on
+dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25
+dtoverlay=spi-bcm2835-overlay
+
+# Enable I2C for INA219, PCA9685
+dtparam=i2c_arm=on
+dtparam=i2c_arm_baudrate=400000
+
+# Enable UART for debugging
+enable_uart=1

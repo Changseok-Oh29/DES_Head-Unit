@@ -8,6 +8,7 @@ Wants=network-online.target
 Type=simple
 User=root
 Group=root
+SupplementaryGroups=input i2c gpio
 
 # Working directory
 WorkingDirectory=/usr/bin

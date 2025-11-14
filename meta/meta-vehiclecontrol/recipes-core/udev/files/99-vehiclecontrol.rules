@@ -1,0 +1,13 @@
+# VehicleControl ECU udev rules
+# Allow access to input devices (gamepad/joystick)
+SUBSYSTEM=="input", KERNEL=="js[0-9]*", MODE="0660", GROUP="input"
+SUBSYSTEM=="input", KERNEL=="event[0-9]*", MODE="0660", GROUP="input"
+
+# Allow access to I2C devices (INA219, PCA9685)
+SUBSYSTEM=="i2c-dev", MODE="0660", GROUP="i2c"
+
+# Allow access to GPIO
+SUBSYSTEM=="gpio", MODE="0660", GROUP="gpio"
+
+# Allow access to CAN devices
+SUBSYSTEM=="net", KERNEL=="can[0-9]*", MODE="0660", GROUP="netdev"

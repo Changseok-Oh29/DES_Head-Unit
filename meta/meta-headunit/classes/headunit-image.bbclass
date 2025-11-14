@@ -77,7 +77,12 @@ HEADUNIT_NETWORK_INSTALL = " \
     openssh-sftp-server \
     wpa-supplicant \
     iw \
+    linux-firmware-rpidistro-bcm43430 \
     linux-firmware-rpidistro-bcm43455 \
+    linux-firmware-bcm43430 \
+    kernel-module-brcmfmac \
+    kernel-module-brcmutil \
+    kernel-module-cfg80211 \
 "
 
 # =====================================================================
@@ -129,7 +134,7 @@ IMAGE_FEATURES += " \
 # =====================================================================
 # DISTRO FEATURES
 # =====================================================================
-DISTRO_FEATURES:append = " systemd wayland pam"
+DISTRO_FEATURES:append = " systemd wayland pam bluetooth wifi"
 
 # Set systemd as the init manager
 VIRTUAL-RUNTIME_init_manager = "systemd"
@@ -214,8 +219,8 @@ ROOTFS_POSTPROCESS_COMMAND += "set_fossball_password; update_sudoers;"
 # =====================================================================
 # WiFi Configuration for wpa_supplicant
 # IMPORTANT: Update these with your actual WiFi SSID and password!
-WIFI_SSID ?= "YourWiFiSSID"
-WIFI_PASSWORD ?= "YourWiFiPassword"
+WIFI_SSID ?= "SEA:ME WiFi Access"
+WIFI_PASSWORD ?= "1fy0u534m3"
 
 configure_wifi() {
     # Create wpa_supplicant directory

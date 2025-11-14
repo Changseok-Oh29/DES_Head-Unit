@@ -3,8 +3,9 @@ DESCRIPTION = "Package group for VehicleControl ECU system dependencies"
 
 inherit packagegroup
 
-# Allow architecture-specific dependencies in allarch packagegroup
-INSANE_SKIP:${PN}-connectivity = "allarch-pkg-requires"
+# This packagegroup has architecture-specific dependencies
+# Do not use allarch
+PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 PACKAGES = "\
     ${PN} \
@@ -33,10 +34,18 @@ RDEPENDS:${PN}-hardware = " \
     pigpio \
     i2c-tools \
     kernel-module-i2c-dev \
+    can-utils \
 "
 
 RRECOMMENDS:${PN}-hardware = " \
     kernel-module-i2c-bcm2835 \
+    kernel-module-can \
+    kernel-module-can-raw \
+    kernel-module-can-bcm \
+    kernel-module-can-gw \
+    kernel-module-vcan \
+    kernel-module-slcan \
+    kernel-module-mcp251x \
 "
 
 RDEPENDS:${PN}-system = " \
@@ -46,4 +55,5 @@ RDEPENDS:${PN}-system = " \
     coreutils \
     iproute2 \
     iputils \
+    udev-rules-vehiclecontrol \
 "
