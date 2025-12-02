@@ -9,9 +9,13 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    
+
+    // Set application name for Wayland compositor identification
+    app.setApplicationName("IC_app");
+    app.setApplicationDisplayName("Instrument Cluster");
+
     qDebug() << "═══════════════════════════════════════════════════════";
-    qDebug() << "IC_app Starting (vsomeip mode)";
+    qDebug() << "IC_app Starting (vsomeip mode - Wayland client)";
     qDebug() << "═══════════════════════════════════════════════════════";
     
     QQmlApplicationEngine engine;

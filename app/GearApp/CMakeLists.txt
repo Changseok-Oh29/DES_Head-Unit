@@ -16,8 +16,7 @@ if(DEFINED ENV{DEPLOY_PREFIX})
     set(INSTALL_PREFIX $ENV{DEPLOY_PREFIX})
     message(STATUS "Using DEPLOY_PREFIX from environment: ${INSTALL_PREFIX}")
 else()
-    # 기본값: 사용자 홈 디렉토리 기준
-    set(INSTALL_PREFIX "$ENV{HOME}/DES_Head-Unit/install_folder")
+    set(INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../install_folder")
     message(STATUS "Using default DEPLOY_PREFIX: ${INSTALL_PREFIX}")
 endif()
 
@@ -43,7 +42,7 @@ if(NOT COMMONAPI_GEN_DIR)
     if(DEFINED ENV{COMMONAPI_GEN_DIR})
         set(COMMONAPI_GEN_DIR $ENV{COMMONAPI_GEN_DIR})
     else()
-        set(COMMONAPI_GEN_DIR "/home/seame2025/commonapi/generated")
+        set(COMMONAPI_GEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated")
     endif()
 endif()
 

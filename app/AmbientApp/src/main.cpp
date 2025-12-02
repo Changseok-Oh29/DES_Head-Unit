@@ -3,15 +3,41 @@
 #include <QQmlContext>
 #include <QDebug>
 #include <QTimer>
+#include <QDir>
 #include <CommonAPI/CommonAPI.hpp>
 #include "ambientmanager.h"
 #include "MediaControlClient.h"
 #include "VehicleControlClient.h"
+#include "AmbientControlStubImpl.h"
 
 int main(int argc, char *argv[])
 {
-    // Set vsomeip application name BEFORE creating QApplication
-    qputenv("VSOMEIP_APPLICATION_NAME", "AmbientApp");
+    // ═══════════════════════════════════════════════════════════
+    // Environment variables - use deployment paths if not already set
+    // ═══════════════════════════════════════════════════════════
+    if (qgetenv("VSOMEIP_APPLICATION_NAME").isEmpty()) {
+        qputenv("VSOMEIP_APPLICATION_NAME", "AmbientApp");
+    }
+    if (qgetenv("VSOMEIP_CONFIGURATION").isEmpty()) {
+        qputenv("VSOMEIP_CONFIGURATION", "/etc/vsomeip/vsomeip_ambient.json");
+    }
+    if (qgetenv("COMMONAPI_CONFIG").isEmpty()) {
+        qputenv("COMMONAPI_CONFIG", "/etc/commonapi/commonapi.ini");
+    }
+
+    // Wayland settings - only set if not already configured
+    if (qgetenv("XDG_RUNTIME_DIR").isEmpty()) {
+        qputenv("XDG_RUNTIME_DIR", "/run/user/0");
+    }
+    if (qgetenv("QT_QPA_PLATFORM").isEmpty()) {
+        qputenv("QT_QPA_PLATFORM", "wayland");
+    }
+    if (qgetenv("QT_WAYLAND_DISABLE_WINDOWDECORATION").isEmpty()) {
+        qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
+    }
+    if (qgetenv("WAYLAND_DISPLAY").isEmpty()) {
+        qputenv("WAYLAND_DISPLAY", "wayland-1");
+    }
 
     QGuiApplication app(argc, argv);
     app.setApplicationName("AmbientApp");
@@ -22,11 +48,42 @@ int main(int argc, char *argv[])
     qDebug() << "AmbientApp Process Starting...";
     qDebug() << "Service: AmbientManager (Ambient Lighting Control)";
     qDebug() << "═══════════════════════════════════════════════════════";
+    qDebug() << "📋 Environment Configuration:";
+    qDebug() << "   VSOMEIP_CONFIGURATION:" << qgetenv("VSOMEIP_CONFIGURATION");
+    qDebug() << "   COMMONAPI_CONFIG:" << qgetenv("COMMONAPI_CONFIG");
+    qDebug() << "   QT_QPA_PLATFORM:" << qgetenv("QT_QPA_PLATFORM");
+    qDebug() << "   WAYLAND_DISPLAY:" << qgetenv("WAYLAND_DISPLAY");
+    qDebug() << "═══════════════════════════════════════════════════════";
 
     // ═══════════════════════════════════════════════════════════
     // AmbientManager 생성
     // ═══════════════════════════════════════════════════════════
     AmbientManager ambientManager;
+
+    // ═══════════════════════════════════════════════════════════
+    // AmbientControl 서비스 등록 (다른 앱이 구독할 수 있도록)
+    // ═══════════════════════════════════════════════════════════
+    qDebug() << "";
+    qDebug() << "🔧 Registering AmbientControl Service...";
+
+    std::shared_ptr<CommonAPI::Runtime> runtime = CommonAPI::Runtime::get();
+    std::shared_ptr<v1::ambientcontrol::AmbientControlStubImpl> ambientControlService =
+        std::make_shared<v1::ambientcontrol::AmbientControlStubImpl>(&ambientManager);
+
+    const std::string domain = "local";
+    const std::string instance = "ambientcontrol.AmbientControl";
+
+    bool serviceRegistered = runtime->registerService(domain, instance, ambientControlService);
+
+    if (!serviceRegistered) {
+        qCritical() << "❌ Failed to register AmbientControl service!";
+        return -1;
+    }
+
+    qDebug() << "✅ AmbientControl service registered successfully";
+    qDebug() << "   Domain:" << QString::fromStdString(domain);
+    qDebug() << "   Instance:" << QString::fromStdString(instance);
+    qDebug() << "   Other apps can now subscribe to ambient color/brightness changes";
 
     // ═══════════════════════════════════════════════════════════
     // vSOMEIP 클라이언트 초기화

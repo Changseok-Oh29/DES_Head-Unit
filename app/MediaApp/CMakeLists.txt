@@ -16,8 +16,8 @@ if(DEFINED ENV{DEPLOY_PREFIX})
     set(INSTALL_PREFIX $ENV{DEPLOY_PREFIX})
     message(STATUS "Using DEPLOY_PREFIX from environment: ${INSTALL_PREFIX}")
 else()
-    # 기본값: 사용자 홈 디렉토리 기준
-    set(INSTALL_PREFIX "$ENV{HOME}/DES_Head-Unit/install_folder")
+    # 기본값: 상대 경로 기준 (app/MediaApp 기준으로 ../../install_folder)
+    set(INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../install_folder")
     message(STATUS "Using default DEPLOY_PREFIX: ${INSTALL_PREFIX}")
 endif()
 
@@ -48,9 +48,15 @@ include_directories(
 
 # Generated CommonAPI sources
 set(GENERATED_SOURCES
+    # MediaControl (MediaApp provides this service)
     ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPProxy.cpp
     ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPStubAdapter.cpp
     ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPDeployment.cpp
+
+    # AmbientControl (MediaApp subscribes to this service)
+    ../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPProxy.cpp
+    ../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPStubAdapter.cpp
+    ../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPDeployment.cpp
 )
 
 # Source files
@@ -58,12 +64,16 @@ set(SOURCES
     src/main.cpp
     src/mediamanager.cpp
     src/MediaControlStubImpl.cpp
+    src/AmbientControlClient.cpp
+    src/ambientthememanager.cpp
     ${GENERATED_SOURCES}
 )
 
 set(HEADERS
     src/mediamanager.h
     src/MediaControlStubImpl.h
+    src/AmbientControlClient.h
+    src/ambientthememanager.h
 )
 
 # QML resources

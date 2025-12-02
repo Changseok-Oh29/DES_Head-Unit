@@ -11,13 +11,16 @@ class GearManager : public QObject
 
 public:
     explicit GearManager(QObject *parent = nullptr);
-    
+
     QString gearPosition() const { return m_gearPosition; }
-    void setGearPosition(const QString &position);
+    void setGearPosition(const QString &position);                          // Called by QML when user clicks gear button
+
+    // FIX: Separate method for vsomeip event updates (prevents feedback loop)
+    void updateGearFromService(const QString &position);                    // Called by vsomeip event handler only
 
 signals:
-    void gearPositionChanged(const QString &gear);
-    void gearChangeRequested(const QString &gear);  // vsomeip RPC 호출용
+    void gearPositionChanged(const QString &gear);                          // Signal to update QML UI
+    void gearChangeRequested(const QString &gear);                          // Signal to trigger vsomeip RPC call
 
 private:
     QString m_gearPosition;

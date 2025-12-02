@@ -22,9 +22,13 @@ public:
 
     // RPC Method Implementation
     virtual void getVolume(const std::shared_ptr<CommonAPI::ClientId> _client, getVolumeReply_t _reply) override;
+    virtual void getCurrentMusic(const std::shared_ptr<CommonAPI::ClientId> _client, getCurrentMusicReply_t _reply) override;
 
     // Volume 변경 처리 (MediaManager 시그널과 연결)
     void onVolumeChanged(float volume);
+
+    // Track/Playback 변경 처리 (MediaManager 시그널과 연결)
+    void onTrackChanged();
 
 private:
     MediaManager* m_mediaManager;  // 기존 MediaManager 활용

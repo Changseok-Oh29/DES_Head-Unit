@@ -89,16 +89,16 @@ public:
      */
     virtual std::future<CommonAPI::CallStatus> getVolumeAsync(GetVolumeAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr);
     /**
-     * Calls setVolume with synchronous semantics.
+     * Calls getCurrentMusic with synchronous semantics.
      *
-     * All const parameters are input parameters to this method.
+     * All non-const parameters will be filled with the returned values.
      * The CallStatus will be filled when the method returns and indicate either
      * "SUCCESS" or which type of error has occurred. In case of an error, ONLY the CallStatus
      * will be set.
      */
-    virtual void setVolume(float _volume, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info = nullptr);
+    virtual void getCurrentMusic(CommonAPI::CallStatus &_internalCallStatus, std::string &_title, bool &_isPlaying, const CommonAPI::CallInfo *_info = nullptr);
     /**
-     * Calls setVolume with asynchronous semantics.
+     * Calls getCurrentMusic with asynchronous semantics.
      *
      * The provided callback will be called when the reply to this call arrives or
      * an error occurs during the call. The CallStatus will indicate either "SUCCESS"
@@ -107,12 +107,18 @@ public:
      * The std::future returned by this method will be fulfilled at arrival of the reply.
      * It will provide the same value for CallStatus as will be handed to the callback.
      */
-    virtual std::future<CommonAPI::CallStatus> setVolumeAsync(const float &_volume, SetVolumeAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr);
+    virtual std::future<CommonAPI::CallStatus> getCurrentMusicAsync(GetCurrentMusicAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr);
     /**
      * Returns the wrapper class that provides access to the broadcast volumeChanged.
      */
     virtual VolumeChangedEvent& getVolumeChangedEvent() {
         return delegate_->getVolumeChangedEvent();
+    }
+    /**
+     * Returns the wrapper class that provides access to the broadcast currentMusicChanged.
+     */
+    virtual CurrentMusicChangedEvent& getCurrentMusicChangedEvent() {
+        return delegate_->getCurrentMusicChangedEvent();
     }
 
 
@@ -147,13 +153,13 @@ std::future<CommonAPI::CallStatus> MediaControlProxy<_AttributeExtensions...>::g
     return delegate_->getVolumeAsync(_callback, _info);
 }
 template <typename ... _AttributeExtensions>
-void MediaControlProxy<_AttributeExtensions...>::setVolume(float _volume, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info) {
-    delegate_->setVolume(_volume, _internalCallStatus, _info);
+void MediaControlProxy<_AttributeExtensions...>::getCurrentMusic(CommonAPI::CallStatus &_internalCallStatus, std::string &_title, bool &_isPlaying, const CommonAPI::CallInfo *_info) {
+    delegate_->getCurrentMusic(_internalCallStatus, _title, _isPlaying, _info);
 }
 
 template <typename ... _AttributeExtensions>
-std::future<CommonAPI::CallStatus> MediaControlProxy<_AttributeExtensions...>::setVolumeAsync(const float &_volume, SetVolumeAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
-    return delegate_->setVolumeAsync(_volume, _callback, _info);
+std::future<CommonAPI::CallStatus> MediaControlProxy<_AttributeExtensions...>::getCurrentMusicAsync(GetCurrentMusicAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
+    return delegate_->getCurrentMusicAsync(_callback, _info);
 }
 
 template <typename ... _AttributeExtensions>

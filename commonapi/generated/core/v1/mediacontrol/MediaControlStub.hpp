@@ -52,6 +52,11 @@ class MediaControlStubAdapter
     * Instead, the "fire<broadcastName>Event" methods of the stub should be used.
     */
     virtual void fireVolumeChangedEvent(const float &_newVolume) = 0;
+    /**
+    * Sends a broadcast event for currentMusicChanged. Should not be called directly.
+    * Instead, the "fire<broadcastName>Event" methods of the stub should be used.
+    */
+    virtual void fireCurrentMusicChangedEvent(const std::string &_title, const bool &_isPlaying) = 0;
 
 
     virtual void deactivateManagedInstances() = 0;
@@ -95,24 +100,30 @@ class MediaControlStub
 {
 public:
     typedef std::function<void (float _volume)> getVolumeReply_t;
-    typedef std::function<void ()> setVolumeReply_t;
+    typedef std::function<void (std::string _title, bool _isPlaying)> getCurrentMusicReply_t;
 
     virtual ~MediaControlStub() {}
     void lockInterfaceVersionAttribute(bool _lockAccess) { static_cast<void>(_lockAccess); }
     bool hasElement(const uint32_t _id) const {
-        return (_id < 3);
+        return (_id < 4);
     }
     virtual const CommonAPI::Version& getInterfaceVersion(std::shared_ptr<CommonAPI::ClientId> _client) = 0;
 
     /// This is the method that will be called on remote calls on the method getVolume.
     virtual void getVolume(const std::shared_ptr<CommonAPI::ClientId> _client, getVolumeReply_t _reply) = 0;
-    /// This is the method that will be called on remote calls on the method setVolume.
-    virtual void setVolume(const std::shared_ptr<CommonAPI::ClientId> _client, float _volume, setVolumeReply_t _reply) = 0;
+    /// This is the method that will be called on remote calls on the method getCurrentMusic.
+    virtual void getCurrentMusic(const std::shared_ptr<CommonAPI::ClientId> _client, getCurrentMusicReply_t _reply) = 0;
     /// Sends a broadcast event for volumeChanged.
     virtual void fireVolumeChangedEvent(const float &_newVolume) {
         auto stubAdapter = CommonAPI::Stub<MediaControlStubAdapter, MediaControlStubRemoteEvent>::stubAdapter_.lock();
         if (stubAdapter)
             stubAdapter->fireVolumeChangedEvent(_newVolume);
+    }
+    /// Sends a broadcast event for currentMusicChanged.
+    virtual void fireCurrentMusicChangedEvent(const std::string &_title, const bool &_isPlaying) {
+        auto stubAdapter = CommonAPI::Stub<MediaControlStubAdapter, MediaControlStubRemoteEvent>::stubAdapter_.lock();
+        if (stubAdapter)
+            stubAdapter->fireCurrentMusicChangedEvent(_title, _isPlaying);
     }
 
 

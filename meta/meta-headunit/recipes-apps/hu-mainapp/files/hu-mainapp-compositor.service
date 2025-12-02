@@ -1,0 +1,41 @@
+[Unit]
+Description=Head Unit Wayland Compositor (EGLFS)
+After=systemd-udev-settle.service
+Requires=systemd-udev-settle.service
+StartLimitInterval=60s
+StartLimitBurst=3
+
+[Service]
+Type=simple
+# Create XDG_RUNTIME_DIR for compositor socket
+ExecStartPre=/bin/mkdir -p /run/user/0
+ExecStartPre=/bin/chmod 700 /run/user/0
+ExecStartPre=/bin/rm -f /run/user/0/wayland-1.lock
+ExecStartPre=/bin/rm -f /run/user/0/wayland-1
+ExecStart=/usr/bin/HU_MainApp_Compositor
+Restart=on-failure
+RestartSec=5
+
+# Set proper environment for EGLFS KMS compositor on HDMI
+Environment="XDG_RUNTIME_DIR=/run/user/0"
+Environment="WAYLAND_DISPLAY=wayland-1"
+Environment="QT_QPA_PLATFORM=eglfs"
+Environment="QT_QPA_EGLFS_INTEGRATION=eglfs_kms"
+Environment="QT_QPA_EGLFS_KMS_CONFIG=/etc/eglfs-kms-hdmi.json"
+Environment="QT_WAYLAND_DISABLE_WINDOWDECORATION=1"
+Environment="QT_AUTO_SCREEN_SCALE_FACTOR=0"
+Environment="QT_SCALE_FACTOR=1"
+Environment="QT_FONT_DPI=96"
+Environment="QT_PLUGIN_PATH=/usr/lib/plugins"
+Environment="LD_LIBRARY_PATH=/usr/lib:/usr/local/lib"
+
+# Run as root
+User=root
+SupplementaryGroups=video
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=HU_Compositor
+
+[Install]
+WantedBy=multi-user.target

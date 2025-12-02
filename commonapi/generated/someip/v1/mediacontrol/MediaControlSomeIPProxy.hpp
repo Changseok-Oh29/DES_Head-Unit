@@ -56,13 +56,15 @@ public:
 
     virtual VolumeChangedEvent& getVolumeChangedEvent();
 
+    virtual CurrentMusicChangedEvent& getCurrentMusicChangedEvent();
+
     virtual void getVolume(CommonAPI::CallStatus &_internalCallStatus, float &_volume, const CommonAPI::CallInfo *_info);
 
     virtual std::future<CommonAPI::CallStatus> getVolumeAsync(GetVolumeAsyncCallback _callback, const CommonAPI::CallInfo *_info);
 
-    virtual void setVolume(float _volume, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info);
+    virtual void getCurrentMusic(CommonAPI::CallStatus &_internalCallStatus, std::string &_title, bool &_isPlaying, const CommonAPI::CallInfo *_info);
 
-    virtual std::future<CommonAPI::CallStatus> setVolumeAsync(const float &_volume, SetVolumeAsyncCallback _callback, const CommonAPI::CallInfo *_info);
+    virtual std::future<CommonAPI::CallStatus> getCurrentMusicAsync(GetCurrentMusicAsyncCallback _callback, const CommonAPI::CallInfo *_info);
 
     virtual void getOwnVersion(uint16_t &_major, uint16_t &_minor) const;
 
@@ -70,6 +72,7 @@ public:
 
 private:
     CommonAPI::SomeIP::Event<VolumeChangedEvent, CommonAPI::Deployable< float, CommonAPI::EmptyDeployment >> volumeChanged_;
+    CommonAPI::SomeIP::Event<CurrentMusicChangedEvent, CommonAPI::Deployable< std::string, CommonAPI::SomeIP::StringDeployment >, CommonAPI::Deployable< bool, CommonAPI::EmptyDeployment >> currentMusicChanged_;
 
     std::promise<void> completed_;
 };

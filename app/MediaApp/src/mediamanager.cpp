@@ -88,8 +88,14 @@ void MediaManager::scanDirectory(const QString &path)
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QString filePath = it.next();
-        if (isMediaFile(filePath))
-            m_mediaFiles.append(filePath);
+        if (isMediaFile(filePath)) {
+            // Check for duplicates before adding
+            if (!m_mediaFiles.contains(filePath)) {
+                m_mediaFiles.append(filePath);
+            } else {
+                qDebug() << "MediaManager: Skipping duplicate file:" << filePath;
+            }
+        }
     }
 }
 
@@ -313,10 +319,19 @@ void MediaManager::refreshUsbMountsInternal()
         }
 
         // Check if it's a USB device
+        // Ubuntu: /media/<username>/<drive>
+        // Raspberry Pi: /media/usb*, /run/media/<username>/<drive>, /mnt/*
         bool isUsbDevice = (root.startsWith("/media/usb") ||
                            root.startsWith("/run/media") ||
-                           root.startsWith("/mnt")) &&
+                           root.startsWith("/mnt") ||
+                           root.startsWith("/media/")) &&
                            device.startsWith("/dev/sd");
+
+        // Additional filter: skip root filesystem and bare /media directory
+        if (root == "/" || root == "/media") {
+            qDebug() << "MediaManager: Skipping system partition:" << root;
+            continue;
+        }
 
         if (isUsbDevice) {
             m_usbMounts << root;

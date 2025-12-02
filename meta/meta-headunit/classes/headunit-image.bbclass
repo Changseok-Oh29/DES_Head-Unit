@@ -40,10 +40,12 @@ HEADUNIT_BASE_INSTALL = " \
 # =====================================================================
 HEADUNIT_QT5_INSTALL = " \
     qtbase \
+    qtbase-plugins \
     qtdeclarative \
     qtquickcontrols2 \
     qtmultimedia \
     qtwayland \
+    qtwayland-plugins \
 "
 
 # =====================================================================
@@ -98,10 +100,9 @@ HEADUNIT_MULTIMEDIA_INSTALL = " \
 "
 
 # =====================================================================
-# DISPLAY SERVER (WAYLAND)
+# DISPLAY SERVER (WAYLAND/EGLFS)
 # =====================================================================
-# Note: HU_MainApp_Compositor provides the Wayland compositor
-# Weston is not needed and causes auto-login conflicts
+# Qt Wayland Compositor (HU_MainApp as EGLFS compositor)
 HEADUNIT_DISPLAY_INSTALL = " \
 "
 
@@ -129,7 +130,7 @@ IMAGE_FEATURES += " \
 # =====================================================================
 # DISTRO FEATURES
 # =====================================================================
-DISTRO_FEATURES:append = " systemd wayland pam"
+DISTRO_FEATURES:append = " systemd wayland pam opengl"
 
 # Set systemd as the init manager
 VIRTUAL-RUNTIME_init_manager = "systemd"
@@ -148,8 +149,9 @@ IMAGE_LINGUAS = "${LINGUAS_KO_KR} ${LINGUAS_EN_US}"
 inherit extrausers
 
 # Create user with password 'fossball'
+# Password is hashed using: openssl passwd -6 fossball
 EXTRA_USERS_PARAMS = " \
-    useradd -m -s /bin/bash fossball; \
+    useradd -m -s /bin/bash -p '\$6\$fA7LvQuxAj1SVJvh\$VH8RvSyPug8LwhF7QfvIGH62u5JcN9KwubxzaLVEJxc4XYEvS1hoikejsEjhpJpzowj7uHDyCsbqALyBwsUnM.' fossball; \
     usermod -aG sudo,wheel fossball; \
 "
 
@@ -207,7 +209,7 @@ update_sudoers() {
     chmod 0440 ${IMAGE_ROOTFS}/etc/sudoers.d/fossball
 }
 
-ROOTFS_POSTPROCESS_COMMAND += "set_fossball_password; update_sudoers;"
+ROOTFS_POSTPROCESS_COMMAND += "update_sudoers;"
 
 # =====================================================================
 # NETWORK CONFIGURATION - WiFi Setup
@@ -285,9 +287,8 @@ KIRKSTONE_LOCAL_GETTY ?= " \
 # =====================================================================
 # QT ENVIRONMENT VARIABLES
 # =====================================================================
-# Configure Qt platform for Wayland display
-export QT_QPA_PLATFORM = "wayland"
-export QT_WAYLAND_DISABLE_WINDOWDECORATION = "1"
+# Configure Qt platform for EGLFS display
+export QT_QPA_PLATFORM = "eglfs"
 
 # =====================================================================
 # PACKAGING CONFIGURATION

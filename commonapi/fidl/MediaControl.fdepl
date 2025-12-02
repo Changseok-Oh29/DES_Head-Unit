@@ -4,16 +4,23 @@ import "MediaControl.fidl"
 define org.genivi.commonapi.someip.deployment for interface mediacontrol.MediaControl {
     SomeIpServiceID = 4661
     
+    // Methods
     method getVolume {
         SomeIpMethodID = 2001
     }
     
-    method setVolume {
-        SomeIpMethodID = 2002
+    method getCurrentMusic {
+        SomeIpMethodID = 2003
     }
     
+    // Broadcasts (Events)
     broadcast volumeChanged {
         SomeIpEventID = 40100
+        SomeIpEventGroups = { 4661 }
+    }
+    
+    broadcast currentMusicChanged {
+        SomeIpEventID = 40101
         SomeIpEventGroups = { 4661 }
     }
 }

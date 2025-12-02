@@ -16,8 +16,8 @@ if(DEFINED ENV{DEPLOY_PREFIX})
     set(INSTALL_PREFIX $ENV{DEPLOY_PREFIX})
     message(STATUS "Using DEPLOY_PREFIX from environment: ${INSTALL_PREFIX}")
 else()
-    # 기본값: 사용자 홈 디렉토리 기준
-    set(INSTALL_PREFIX "$ENV{HOME}/DES_Head-Unit/install_folder")
+    # 기본값: 상대 경로 기준 (app/AmbientApp 기준으로 ../../install_folder)
+    set(INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../install_folder")
     message(STATUS "Using default DEPLOY_PREFIX: ${INSTALL_PREFIX}")
 endif()
 
@@ -48,15 +48,20 @@ include_directories(
 
 # Generated CommonAPI sources
 set(GENERATED_SOURCES
-    # MediaControl (MediaApp 통신용)
+    # MediaControl (MediaApp 통신용 - Client)
     ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPProxy.cpp
     ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPStubAdapter.cpp
     ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPDeployment.cpp
-    
-    # VehicleControl (VehicleControlECU 통신용)
+
+    # VehicleControl (VehicleControlECU 통신용 - Client)
     ../../commonapi/generated/someip/v1/vehiclecontrol/VehicleControlSomeIPProxy.cpp
     ../../commonapi/generated/someip/v1/vehiclecontrol/VehicleControlSomeIPStubAdapter.cpp
     ../../commonapi/generated/someip/v1/vehiclecontrol/VehicleControlSomeIPDeployment.cpp
+
+    # AmbientControl (AmbientApp 서비스 제공 - Service)
+    ../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPProxy.cpp
+    ../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPStubAdapter.cpp
+    ../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPDeployment.cpp
 )
 
 # Source files
@@ -65,6 +70,7 @@ set(SOURCES
     src/ambientmanager.cpp
     src/MediaControlClient.cpp
     src/VehicleControlClient.cpp
+    src/AmbientControlStubImpl.cpp
     ${GENERATED_SOURCES}
 )
 
@@ -72,6 +78,7 @@ set(HEADERS
     src/ambientmanager.h
     src/MediaControlClient.h
     src/VehicleControlClient.h
+    src/AmbientControlStubImpl.h
 )
 
 # QML resources

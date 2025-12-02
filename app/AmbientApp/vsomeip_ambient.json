@@ -16,6 +16,13 @@
             "id": "0x0200"
         }
     ],
+    "services": [
+        {
+            "service": "0x1236",
+            "instance": "0x567a",
+            "unreliable": "30510"
+        }
+    ],
     "clients": [
         {
             "service": "0x1234",

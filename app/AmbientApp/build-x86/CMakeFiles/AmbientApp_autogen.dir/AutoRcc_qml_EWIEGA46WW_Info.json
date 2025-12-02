@@ -1,0 +1,23 @@
+{
+	"BUILD_DIR" : "/home/seame/HU/chang_new/DES_Head-Unit/app/AmbientApp/build-x86/AmbientApp_autogen",
+	"CMAKE_BINARY_DIR" : "/home/seame/HU/chang_new/DES_Head-Unit/app/AmbientApp/build-x86",
+	"CMAKE_CURRENT_BINARY_DIR" : "/home/seame/HU/chang_new/DES_Head-Unit/app/AmbientApp/build-x86",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/home/seame/HU/chang_new/DES_Head-Unit/app/AmbientApp",
+	"CMAKE_SOURCE_DIR" : "/home/seame/HU/chang_new/DES_Head-Unit/app/AmbientApp",
+	"INCLUDE_DIR" : "/home/seame/HU/chang_new/DES_Head-Unit/app/AmbientApp/build-x86/AmbientApp_autogen/include",
+	"INPUTS" : 
+	[
+		"/home/seame/HU/chang_new/DES_Head-Unit/app/AmbientApp/qml/AmbientLighting.qml",
+		"/home/seame/HU/chang_new/DES_Head-Unit/app/AmbientApp/images/car.svg"
+	],
+	"LOCK_FILE" : "/home/seame/HU/chang_new/DES_Head-Unit/app/AmbientApp/build-x86/CMakeFiles/AmbientApp_autogen.dir/AutoRcc_qml_EWIEGA46WW_Lock.lock",
+	"MULTI_CONFIG" : false,
+	"OPTIONS" : [ "-name", "qml" ],
+	"OUTPUT_CHECKSUM" : "EWIEGA46WW",
+	"OUTPUT_NAME" : "qrc_qml.cpp",
+	"RCC_EXECUTABLE" : "/usr/lib/qt5/bin/rcc",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "/home/seame/HU/chang_new/DES_Head-Unit/app/AmbientApp/build-x86/CMakeFiles/AmbientApp_autogen.dir/AutoRcc_qml_EWIEGA46WW_Used.txt",
+	"SOURCE" : "/home/seame/HU/chang_new/DES_Head-Unit/app/AmbientApp/qml.qrc",
+	"VERBOSITY" : 0
+}

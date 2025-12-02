@@ -108,7 +108,7 @@ The image includes various systemd services for:
 - SSH server (openssh)
 - WiFi management (wpa_supplicant@wlan0)
 - Network management (systemd-networkd)
-- Display server (weston)
+- Display server (HU_MainApp Wayland compositor)
 - Audio (pulseaudio)
 - System utilities (dbus, systemd-logind, etc.)
 

@@ -6,11 +6,28 @@
 int main(int argc, char *argv[])
 {
     // ═══════════════════════════════════════════════════════
-    // Wayland Compositor 설정
-    // HU_MainApp은 각 독립 앱의 화면을 합성하는 역할만 수행
+    // HU_MainApp - Wayland Compositor (EGLFS mode)
     // ═══════════════════════════════════════════════════════
-    qputenv("QT_QPA_PLATFORM", "wayland");
+    // IMPORTANT: HU_MainApp runs as a Wayland compositor using EGLFS backend
+    // - Direct hardware access via EGLFS
+    // - Provides compositor for other Wayland clients
+    // - Manages window layout and surface routing
+
+    // Set platform to EGLFS
+    qputenv("QT_QPA_PLATFORM", "eglfs");
+
+    // Disable window decorations
     qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
+
+    // Create XDG_RUNTIME_DIR if not set
+    if (qgetenv("XDG_RUNTIME_DIR").isEmpty()) {
+        qputenv("XDG_RUNTIME_DIR", "/run/user/0");
+    }
+
+    // Set wayland socket name for this compositor
+    if (qgetenv("WAYLAND_DISPLAY").isEmpty()) {
+        qputenv("WAYLAND_DISPLAY", "wayland-1");
+    }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -18,37 +35,31 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
     app.setApplicationName("HeadUnit-Compositor");
-    app.setApplicationVersion("2.0");
+    app.setApplicationVersion("2.0-EGLFS");
     app.setOrganizationName("SEA-ME");
 
     qDebug() << "═══════════════════════════════════════════════════════";
-    qDebug() << "HU_MainApp - Wayland Compositor Only";
+    qDebug() << "HU_MainApp - Wayland Compositor (EGLFS mode)";
     qDebug() << "═══════════════════════════════════════════════════════";
-    qDebug() << "Display Server:" << app.platformName();
+    qDebug() << "Display Platform:" << app.platformName();
+    qDebug() << "Wayland Display:" << qgetenv("WAYLAND_DISPLAY");
     qDebug() << "";
-    qDebug() << "📋 Role: Window Compositor";
-    qDebug() << "   - Composites independent app windows";
-    qDebug() << "   - No business logic";
-    qDebug() << "   - No vsomeip communication";
-    qDebug() << "";
-    qDebug() << "🖼️  Expected Apps:";
-    qDebug() << "   - GearApp (Gear selection UI)";
-    qDebug() << "   - AmbientApp (Ambient lighting control)";
-    qDebug() << "   - MediaApp (Media playback)";
-    qDebug() << "";
-    qDebug() << "💡 Apps communicate via vsomeip (not through compositor)";
+    qDebug() << "📋 Role: Wayland Compositor";
+    qDebug() << "   - Provides compositor surface";
+    qDebug() << "   - Manages app window embedding";
+    qDebug() << "   - Direct EGLFS hardware access";
     qDebug() << "═══════════════════════════════════════════════════════";
 
     // ═══════════════════════════════════════════════════════
-    // QML Engine - Layout Only
+    // QML Engine - Compositor UI
     // ═══════════════════════════════════════════════════════
     QQmlApplicationEngine engine;
 
-    // No backend managers - only Wayland window composition
-    // All business logic is in independent apps (GearApp, MediaApp, AmbientApp)
+    // Add QML import path for Qt modules
+    engine.addImportPath("/usr/lib/qml");
 
     // Load compositor QML
-    const QUrl url(QStringLiteral("qrc:/qml/compositor.qml"));
+    const QUrl url(QStringLiteral("qrc:/qml/compositor_modular.qml"));
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreated,
@@ -59,8 +70,8 @@ int main(int argc, char *argv[])
                 QCoreApplication::exit(-1);
             } else {
                 qDebug() << "";
-                qDebug() << "✅ Wayland Compositor UI loaded";
-                qDebug() << "   Waiting for app windows...";
+                qDebug() << "✅ Compositor UI loaded";
+                qDebug() << "   Ready to embed app windows";
                 qDebug() << "";
             }
         },
@@ -74,7 +85,7 @@ int main(int argc, char *argv[])
     }
 
     qDebug() << "🚀 Compositor running...";
-    qDebug() << "   Apps can now connect and display their windows";
+    qDebug() << "   Waiting for HU apps to connect...";
     qDebug() << "";
 
     return app.exec();

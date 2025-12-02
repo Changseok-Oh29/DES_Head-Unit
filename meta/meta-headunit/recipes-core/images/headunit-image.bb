@@ -1,15 +1,29 @@
 SUMMARY = "Head Unit Linux Image"
-DESCRIPTION = "Custom Linux image for Raspberry Pi with Head Unit applications"
+DESCRIPTION = "Custom Linux image for Raspberry Pi with dual-display support (HDMI-1: Head Unit, HDMI-2: Instrument Cluster)"
 
 # Inherit all common headunit image configuration from custom class
 inherit headunit-image
 
-# Application-specific packages (built by this project)
+# ECU2 Applications for dual-display setup
 IMAGE_INSTALL:append = " \
+    vehiclecontrolmock \
     hu-mainapp \
-    ic-app \
     ambientapp \
     gearapp \
     mediaapp \
+    homescreenapp \
+    ic-app \
     vsomeip-config \
+    systemd-network-config \
+    udev-touchscreen-calibration \
+    \
+    fontconfig \
+    fontconfig-utils \
+    ttf-dejavu-sans \
+    ttf-dejavu-sans-mono \
+    ttf-dejavu-serif \
+    liberation-fonts \
+    qtsvg \
+    qtsvg-plugins \
+    qtimageformats-plugins \
 "

@@ -19,8 +19,8 @@ endif()
 # 이 Compositor는 단순히 각 앱의 창을 배치하고 합성만 수행합니다.
 # ════════════════════════════════════════════════════════════
 
-# Qt packages - GUI만 필요
-find_package(Qt5 REQUIRED COMPONENTS Core Quick Qml)
+# Qt packages - GUI + WaylandCompositor
+find_package(Qt5 REQUIRED COMPONENTS Core Quick Qml WaylandCompositor)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -29,7 +29,7 @@ set(CMAKE_AUTORCC ON)
 # Source files - Compositor Only
 # ════════════════════════════════════════════════════════════
 set(SOURCES
-    src/main.cpp
+    src/main_compositor.cpp
 )
 
 # QML resources
@@ -47,6 +47,7 @@ target_link_libraries(HU_MainApp_Compositor
     Qt5::Core
     Qt5::Quick
     Qt5::Qml
+    Qt5::WaylandCompositor
 )
 
 # Install
