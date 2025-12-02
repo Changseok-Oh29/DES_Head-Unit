@@ -34,10 +34,21 @@ bool PiRacerController::initialize()
         m_batteryMonitor = std::make_unique<BatteryMonitor>();
         m_batteryMonitor->initialize();
         
+        // Initialize CAN interface
+        m_canInterface = std::make_unique<CANInterface>();
+        if (m_canInterface->initialize("can0")) {
+            qDebug() << "✅ CAN interface initialized";
+            connect(m_canInterface.get(), &CANInterface::speedDataReceived,
+                    this, &PiRacerController::onSpeedDataReceived);
+        } else {
+            qWarning() << "⚠️  CAN interface failed - speed will be unavailable";
+        }
+        
         qDebug() << "✅ PiRacerController initialized";
         qDebug() << "   - Steering Controller: 0x40";
         qDebug() << "   - Throttle Controller: 0x60";
         qDebug() << "   - Battery Monitor: INA219";
+        qDebug() << "   - CAN Interface: can0 (1000kbps)";
         
         warmUp();
         return true;
@@ -113,8 +124,13 @@ void PiRacerController::setThrottlePercent(float percent)
     m_throttleController->setPWM(PWM_THROTTLE_CHANNEL_LEFT_MOTOR_IN_PWM, 0, pwmRawValue);
     m_throttleController->setPWM(PWM_THROTTLE_CHANNEL_RIGHT_MOTOR_IN_PWM, 0, pwmRawValue);
     
-    // Update speed (simplified - in real implementation this would come from sensors)
-    m_currentSpeed = static_cast<uint16_t>(std::abs(percent) * 100);  // 0-100 km/h range
+    // Speed is now updated from CAN (not calculated from PWM)
+}
+
+void PiRacerController::onSpeedDataReceived(float speedCms)
+{
+    // Store speed in cm/s (no conversion)
+    m_currentSpeed = static_cast<uint16_t>(speedCms);
 }
 
 uint8_t PiRacerController::getBatteryLevel() const

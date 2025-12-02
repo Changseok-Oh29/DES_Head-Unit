@@ -27,14 +27,13 @@ SRC_URI = " \
 
 S = "${WORKDIR}"
 
-inherit cmake_qt5 systemd
+inherit cmake systemd pkgconfig cmake_qt5
 
 # CMake configuration
 EXTRA_OECMAKE = " \
     -DCOMMONAPI_GEN_DIR=${S}/commonapi-generated \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CXX_FLAGS=-Wno-psabi \
-    -DQT_QMAKE_EXECUTABLE=${STAGING_BINDIR_NATIVE}/qmake \
 "
 
 # Systemd service configuration

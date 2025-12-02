@@ -21,11 +21,13 @@ do_deploy:append:raspberrypi4-64() {
     echo "enable_uart=1" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     
     # ========================================
-    # MCP2518FD CAN Controller (Team2 방식)
+    # Waveshare 2-CH CAN FD HAT (MCP2518FD)
     # ========================================
-    # 중요: ENABLE_CAN=1은 MCP2515용이므로 사용하지 않음
-    # 대신 meta-raspberrypi의 built-in mcp251xfd overlay 사용
     echo "" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
-    echo "# MCP2518FD CAN Controller" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
-    echo "dtoverlay=mcp251xfd,spi0-0,interrupt=25,oscillator=40000000" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "# VehicleControl ECU CAN Configuration" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "# Waveshare 2-CH CAN FD HAT (MCP2518FD)" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "dtparam=spi=on" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "dtoverlay=spi1-3cs" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "dtoverlay=mcp251xfd,spi0-0,interrupt=25" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "dtoverlay=mcp251xfd,spi1-0,interrupt=24" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
 }

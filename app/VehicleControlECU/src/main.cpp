@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     qDebug() << "";
     qDebug() << "📌 Current State:";
     qDebug() << "   - Gear:" << piracerController.getCurrentGear();
-    qDebug() << "   - Speed:" << piracerController.getCurrentSpeed() << "km/h";
+    qDebug() << "   - Speed:" << piracerController.getCurrentSpeed() << "cm/s";
     qDebug() << "   - Battery:" << piracerController.getBatteryLevel() << "%";
     qDebug() << "";
     qDebug() << "🎮 Gamepad Controls:";

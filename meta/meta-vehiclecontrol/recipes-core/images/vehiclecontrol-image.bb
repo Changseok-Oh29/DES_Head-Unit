@@ -4,6 +4,9 @@ LICENSE = "MIT"
 
 inherit core-image
 
+# Add mcp251xfd overlay (already exists in rpi-bootfiles firmware)
+RPI_KERNEL_DEVICETREE_OVERLAYS:append = " overlays/mcp251xfd.dtbo"
+
 # Image file system types
 IMAGE_FSTYPES = "tar.bz2 ext4 rpi-sdimg"
 
@@ -24,6 +27,11 @@ IMAGE_INSTALL = " \
 IMAGE_INSTALL:append = " \
     vim \
     kmod \
+    tar \
+    gzip \
+    wget \
+    curl \
+    ca-certificates \
     linux-firmware \
     linux-firmware-rpidistro-bcm43430 \
     linux-firmware-rpidistro-bcm43455 \
@@ -31,7 +39,6 @@ IMAGE_INSTALL:append = " \
     bluez5 \
     wpa-supplicant \
     dhcpcd \
-    wifi-autoconnect \
     iw \
     wireless-regdb-static \
     kernel-module-joydev \
@@ -40,6 +47,7 @@ IMAGE_INSTALL:append = " \
     kernel-modules \
     can-utils \
     openssh \
+    openssh-sshd \
     openssh-sftp-server \
 "
 

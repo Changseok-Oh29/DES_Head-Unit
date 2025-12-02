@@ -46,6 +46,7 @@ include_directories(
 set(SOURCES
     src/main.cpp
     src/BatteryMonitor.cpp
+    src/CANInterface.cpp
     src/GamepadHandler.cpp
     src/PiRacerController.cpp
     src/VehicleControlStubImpl.cpp

@@ -56,9 +56,9 @@ void GamepadHandler::pollGamepad()
     handleGearButtons(input);
     
     // Emit steering and throttle changes
-    float steering = input.analog_stick_left.x;
+    float steering = -input.analog_stick_left.x;  // Inverted steering direction
     float throttle = input.analog_stick_right.y * 0.5f;  // Limit to 50% for safety
-    
+
     emit steeringChanged(steering);
     emit throttleChanged(throttle);
 }

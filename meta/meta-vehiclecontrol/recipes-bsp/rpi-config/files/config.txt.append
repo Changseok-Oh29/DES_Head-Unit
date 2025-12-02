@@ -1,8 +1,9 @@
 # VehicleControl ECU CAN Configuration
-# Enable MCP2515 SPI CAN controller
+# Waveshare 2-CH CAN FD HAT (MCP2518FD)
 dtparam=spi=on
-dtoverlay=mcp2515-can0,oscillator=16000000,interrupt=25
-dtoverlay=spi-bcm2835-overlay
+dtoverlay=spi1-3cs
+dtoverlay=mcp251xfd,spi0-0,interrupt=25
+dtoverlay=mcp251xfd,spi1-0,interrupt=24
 
 # Enable I2C for INA219, PCA9685
 dtparam=i2c_arm=on
