@@ -77,7 +77,7 @@ void VehicleControlStubImpl::onVehicleStateChanged(QString gear, uint16_t speed,
     if (++callCount % 10 == 0) {
         qDebug() << "📡 [Event] vehicleStateChanged:"
                  << "Gear:" << gear
-                 << "Speed:" << speed
+                 << "Speed:" << speed << "cm/s"
                  << "Battery:" << battery << "%";
     }
 }

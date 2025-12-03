@@ -6,6 +6,7 @@
 #include <memory>
 #include "../lib/Adafruit_PCA9685.hpp"
 #include "BatteryMonitor.h"
+#include "CANInterface.h"
 
 class PiRacerController : public QObject
 {
@@ -30,12 +31,16 @@ public:
 signals:
     void gearChanged(QString newGear, QString oldGear);
     void vehicleStateChanged(QString gear, uint16_t speed, uint8_t battery);
+
+private slots:
+    void onSpeedDataReceived(float speedCms);
     
 private:
     // Hardware
     std::unique_ptr<PCA9685> m_steeringController;
     std::unique_ptr<PCA9685> m_throttleController;
     std::unique_ptr<BatteryMonitor> m_batteryMonitor;
+    std::unique_ptr<CANInterface> m_canInterface;
     
     // PWM Configuration
     const int PWM_RESOLUTION = 12;
@@ -54,7 +59,7 @@ private:
     
     // State
     QString m_currentGear;
-    uint16_t m_currentSpeed;
+    uint16_t m_currentSpeed;  // Real speed from CAN in cm/s
     float m_currentThrottle;
     
     // Helper functions
