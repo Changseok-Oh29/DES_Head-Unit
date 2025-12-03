@@ -49,6 +49,8 @@ IMAGE_INSTALL:append = " \
     openssh \
     openssh-sshd \
     openssh-sftp-server \
+    iproute2 \
+    iputils-ping \
 "
 
 # Image features
@@ -68,6 +70,9 @@ MACHINE_FEATURES:append = " bluetooth wifi"
 DISTRO_FEATURES:append = " systemd bluetooth wifi"
 VIRTUAL-RUNTIME_init_manager = "systemd"
 VIRTUAL-RUNTIME_initscripts = "systemd-compat-units"
+
+# Enable systemd-networkd for network management
+PACKAGECONFIG:append:pn-systemd = " networkd resolved"
 
 # Set hostname
 hostname_pn-base-files = "vehiclecontrol-ecu"
