@@ -3,19 +3,29 @@
 #include <QQmlContext>
 #include <QtQml>
 #include <QTimer>
+#include <QWindow>
 #include "caninterface.h"
 #include "vehiclecontrolclient.h"
 
 int main(int argc, char *argv[])
 {
+    // Set app_id BEFORE creating QGuiApplication
+    // This ensures Qt Wayland uses it from the start
+    qputenv("QT_WAYLAND_SHELL_INTEGRATION", "xdg-shell");
+
     QGuiApplication app(argc, argv);
 
-    // Set application name for Wayland compositor identification
-    app.setApplicationName("IC_app");
+    // ═══════════════════════════════════════════════════════
+    // KIOSK SHELL: Set application name for display routing
+    // ═══════════════════════════════════════════════════════
+    // This name must match the app-ids in weston.ini
+    app.setApplicationName("appIC");  // ← Routes to HDMI-A-2 output
     app.setApplicationDisplayName("Instrument Cluster");
+    app.setDesktopFileName("appIC");  // Critical for Wayland app_id
 
     qDebug() << "═══════════════════════════════════════════════════════";
-    qDebug() << "IC_app Starting (vsomeip mode - Wayland client)";
+    qDebug() << "IC_app Starting (Kiosk Shell - DSI Display)";
+    qDebug() << "App ID: appIC → DSI-1 (400x1280)";
     qDebug() << "═══════════════════════════════════════════════════════";
     
     QQmlApplicationEngine engine;

@@ -100,10 +100,17 @@ HEADUNIT_MULTIMEDIA_INSTALL = " \
 "
 
 # =====================================================================
-# DISPLAY SERVER (WAYLAND/EGLFS)
+# DISPLAY SERVER (WESTON WAYLAND COMPOSITOR)
 # =====================================================================
-# Qt Wayland Compositor (HU_MainApp as EGLFS compositor)
+# Weston compositor for dual display management
+# HU_MainApp runs as nested compositor on wayland-1
 HEADUNIT_DISPLAY_INSTALL = " \
+    weston \
+    weston-init \
+    weston-examples \
+    wayland \
+    wayland-protocols \
+    libxkbcommon \
 "
 
 # =====================================================================
@@ -287,8 +294,8 @@ KIRKSTONE_LOCAL_GETTY ?= " \
 # =====================================================================
 # QT ENVIRONMENT VARIABLES
 # =====================================================================
-# Configure Qt platform for EGLFS display
-export QT_QPA_PLATFORM = "eglfs"
+# Configure Qt platform for Wayland (Weston compositor)
+export QT_QPA_PLATFORM = "wayland"
 
 # =====================================================================
 # PACKAGING CONFIGURATION

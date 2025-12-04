@@ -1,7 +1,7 @@
 [Unit]
 Description=Instrument Cluster Application
-After=systemd-udev-settle.service hu-mainapp-compositor.service
-Requires=systemd-udev-settle.service
+After=systemd-udev-settle.service weston.service
+Requires=systemd-udev-settle.service weston.service
 StartLimitInterval=60s
 StartLimitBurst=3
 
@@ -12,16 +12,16 @@ ExecStart=/usr/bin/IC_app
 Restart=on-failure
 RestartSec=5
 
-# Set proper environment for EGLFS KMS on DSI display
-Environment="QT_QPA_PLATFORM=eglfs"
-Environment="QT_QPA_EGLFS_INTEGRATION=eglfs_kms"
-Environment="QT_QPA_EGLFS_KMS_CONFIG=/etc/eglfs-kms-dsi.json"
-Environment="XDG_RUNTIME_DIR=/run/user/0"
+# Set proper environment for Wayland client (connects to Weston)
+Environment="QT_QPA_PLATFORM=wayland"
+Environment="WAYLAND_DISPLAY=wayland-0"
+Environment="QT_WAYLAND_DISABLE_WINDOWDECORATION=1"
+Environment="XDG_RUNTIME_DIR=/run"
 Environment="QT_PLUGIN_PATH=/usr/lib/plugins"
 Environment="LD_LIBRARY_PATH=/usr/lib:/usr/local/lib"
 
 # Run as root
-User=root
+User=weston
 
 StandardOutput=journal
 StandardError=journal
