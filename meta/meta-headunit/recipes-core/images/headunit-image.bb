@@ -6,7 +6,6 @@ inherit headunit-image
 
 # ECU2 Applications for dual-display setup
 IMAGE_INSTALL:append = " \
-    vehiclecontrolmock \
     hu-mainapp \
     ambientapp \
     gearapp \
@@ -14,6 +13,7 @@ IMAGE_INSTALL:append = " \
     homescreenapp \
     ic-app \
     vsomeip-config \
+    vsomeip-routingmanager \
     systemd-network-config \
     udev-touchscreen-calibration \
     \

@@ -9,7 +9,7 @@ DEPENDS = "qtbase qtdeclarative qtquickcontrols2 qtwayland"
 SRC_URI = "file://hu-mainapp-compositor.service \
            file://start-compositor.sh \
            file://eglfs-kms-hdmi.json"
-EXTERNALSRC = "/home/seame/HU/chang_new/DES_Head-Unit/app/HU_MainApp"
+EXTERNALSRC = "/home/seame/ChangGit2/DES_Head-Unit/app/HU_MainApp"
 EXTERNALSRC_BUILD = "${EXTERNALSRC}/build"
 
 inherit cmake_qt5 systemd externalsrc

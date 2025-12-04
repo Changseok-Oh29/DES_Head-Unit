@@ -4,8 +4,8 @@
 #include <QtQml>
 #include <QTimer>
 #include <QWindow>
-#include "caninterface.h"
 #include "vehiclecontrolclient.h"
+#include "caninterface.h"
 
 int main(int argc, char *argv[])
 {
@@ -45,19 +45,18 @@ int main(int argc, char *argv[])
     // ═══════════════════════════════════════════════════════
     // Register C++ objects to QML context
     // ═══════════════════════════════════════════════════════
-    
-    // CAN Interface (Arduino Speed/RPM)
+    // VehicleControlClient (vsomeip - Gear/Speed/Battery)
+    VehicleControlClient vehicleClient;
+    engine.rootContext()->setContextProperty("vehicleClient", &vehicleClient);
+
+    // CanInterface (Arduino CAN - Speed/RPM)
     CanInterface canInterface;
     engine.rootContext()->setContextProperty("canInterface", &canInterface);
 
-    // VehicleControlClient (vsomeip - Gear/Battery)
-    VehicleControlClient vehicleClient;
-    engine.rootContext()->setContextProperty("vehicleClient", &vehicleClient);
-    
     qDebug() << "";
-    qDebug() << "✅ C++ backends created:";
-    qDebug() << "   - CanInterface (CAN Bus)";
+    qDebug() << "✅ C++ backend created:";
     qDebug() << "   - VehicleControlClient (vsomeip)";
+    qDebug() << "   - CanInterface (CAN)";
     qDebug() << "";
     
     // Initialize vsomeip connection

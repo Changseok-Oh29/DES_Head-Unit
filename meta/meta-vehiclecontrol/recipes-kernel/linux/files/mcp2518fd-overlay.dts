@@ -1,0 +1,35 @@
+// Device Tree Overlay for MCP2518FD CAN Controller
+// Based on mcp251xfd Linux kernel driver
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";
+
+    fragment@0 {
+        target = <&spi0>;
+        __overlay__ {
+            status = "okay";
+
+            mcp2518fd: mcp2518fd@0 {
+                compatible = "microchip,mcp2518fd";
+                reg = <0>;
+                spi-max-frequency = <20000000>;
+                interrupt-parent = <&gpio>;
+                interrupts = <25 8>; /* IRQ_TYPE_LEVEL_LOW */
+                clocks = <&mcp2518fd_osc>;
+            };
+        };
+    };
+
+    fragment@1 {
+        target-path = "/";
+        __overlay__ {
+            mcp2518fd_osc: mcp2518fd_osc {
+                compatible = "fixed-clock";
+                #clock-cells = <0>;
+                clock-frequency = <40000000>;
+            };
+        };
+    };
+};

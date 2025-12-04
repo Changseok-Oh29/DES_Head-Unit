@@ -7,13 +7,13 @@ DEPENDS = "qtbase qtdeclarative qtquickcontrols2 qtmultimedia commonapi-core com
 
 # Use external source directory for local development
 SRC_URI = "file://gearapp.service"
-EXTERNALSRC = "/home/seame/HU/chang_new/DES_Head-Unit/app/GearApp"
+EXTERNALSRC = "/home/seame/ChangGit2/DES_Head-Unit/app/GearApp"
 EXTERNALSRC_BUILD = "${EXTERNALSRC}/build"
 
 inherit cmake_qt5 systemd externalsrc
 
 # CommonAPI generated code path
-EXTRA_OECMAKE += "-DCOMMONAPI_GEN_DIR=/home/seame/HU/chang_new/DES_Head-Unit/commonapi/generated"
+EXTRA_OECMAKE += "-DCOMMONAPI_GEN_DIR=/home/seame/ChangGit2/DES_Head-Unit/commonapi/generated"
 EXTRA_OECMAKE += "-DQT_QMAKE_EXECUTABLE=${STAGING_BINDIR_NATIVE}/qmake"
 
 # Systemd service configuration

@@ -1,0 +1,12 @@
+[Unit]
+Description=Setup CAN interface
+After=network.target
+Before=vehiclecontrol-ecu.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/setup-can.sh
+
+[Install]
+WantedBy=multi-user.target

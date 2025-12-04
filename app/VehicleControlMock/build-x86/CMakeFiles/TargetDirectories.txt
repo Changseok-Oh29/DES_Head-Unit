@@ -1,8 +1,0 @@
-/home/seame/HU/chang_new/DES_Head-Unit/app/VehicleControlMock/build-x86/CMakeFiles/VehicleControlMock.dir
-/home/seame/HU/chang_new/DES_Head-Unit/app/VehicleControlMock/build-x86/CMakeFiles/edit_cache.dir
-/home/seame/HU/chang_new/DES_Head-Unit/app/VehicleControlMock/build-x86/CMakeFiles/rebuild_cache.dir
-/home/seame/HU/chang_new/DES_Head-Unit/app/VehicleControlMock/build-x86/CMakeFiles/list_install_components.dir
-/home/seame/HU/chang_new/DES_Head-Unit/app/VehicleControlMock/build-x86/CMakeFiles/install.dir
-/home/seame/HU/chang_new/DES_Head-Unit/app/VehicleControlMock/build-x86/CMakeFiles/install/local.dir
-/home/seame/HU/chang_new/DES_Head-Unit/app/VehicleControlMock/build-x86/CMakeFiles/install/strip.dir
-/home/seame/HU/chang_new/DES_Head-Unit/app/VehicleControlMock/build-x86/CMakeFiles/VehicleControlMock_autogen.dir

@@ -17,10 +17,20 @@ inherit cmake
 EXTRA_OECMAKE = " \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
     -DENABLE_SIGNAL_HANDLING=1 \
+    -DBUILD_EXAMPLES=ON \
 "
+
+do_install:append() {
+    # Install routingmanagerd from examples
+    install -d ${D}${bindir}
+    if [ -f ${B}/examples/routingmanagerd/routingmanagerd ]; then
+        install -m 0755 ${B}/examples/routingmanagerd/routingmanagerd ${D}${bindir}/
+    fi
+}
 
 FILES:${PN} += " \
     ${libdir}/libvsomeip3*.so.* \
+    ${bindir}/routingmanagerd \
 "
 
 # Skip QA check for unshipped config files (example/template files only)

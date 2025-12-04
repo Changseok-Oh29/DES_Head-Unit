@@ -1,0 +1,4 @@
+define KFEATURE_DESCRIPTION "Enable SPI and CAN support for VehicleControl ECU"
+define KFEATURE_COMPATIBILITY board
+
+kconf hardware ${THISDIR}/spi-can.cfg
