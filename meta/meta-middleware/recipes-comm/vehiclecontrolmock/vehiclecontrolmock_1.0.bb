@@ -19,7 +19,7 @@ RDEPENDS:${PN} = " \
 
 # Use external source directory for local development
 SRC_URI = "file://vehiclecontrolmock.service"
-EXTERNALSRC = "/home/seame/ChangGit2/DES_Head-Unit/app/VehicleControlMock"
+EXTERNALSRC = "/home/seame/HU/chang/DES_Head-Unit/app/VehicleControlMock"
 EXTERNALSRC_BUILD = "${EXTERNALSRC}/build"
 
 inherit cmake_qt5 systemd externalsrc

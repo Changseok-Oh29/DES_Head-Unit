@@ -7,7 +7,7 @@ DEPENDS = "qtbase qtdeclarative qtquickcontrols2 qtmultimedia qtgraphicaleffects
 
 # Use external source directory for local development
 SRC_URI = "file://mediaapp.service"
-EXTERNALSRC = "/home/seame/ChangGit2/DES_Head-Unit/app/MediaApp"
+EXTERNALSRC = "/home/seame/HU/chang/DES_Head-Unit/app/MediaApp"
 EXTERNALSRC_BUILD = "${EXTERNALSRC}/build"
 
 inherit cmake_qt5 systemd externalsrc
