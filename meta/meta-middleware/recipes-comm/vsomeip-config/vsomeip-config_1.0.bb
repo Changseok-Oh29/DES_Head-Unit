@@ -12,10 +12,13 @@ do_install() {
     # Create configuration directories
     install -d ${D}${sysconfdir}/vsomeip
     install -d ${D}${sysconfdir}/commonapi
-    install -d ${D}${bindir}
 
-    # Install Raspberry Pi run script (from root directory)
-    install -m 0755 ${EXTERNALSRC}/../run-rpi-all.sh ${D}${bindir}/run-rpi-all.sh
+    # Install Raspberry Pi run script (from root directory) - optional
+    # Only create bindir if script exists
+    if [ -f ${EXTERNALSRC}/../run-rpi-all.sh ]; then
+        install -d ${D}${bindir}
+        install -m 0755 ${EXTERNALSRC}/../run-rpi-all.sh ${D}${bindir}/run-rpi-all.sh
+    fi
 
     # Install routingmanagerd configuration
     [ -f ${EXTERNALSRC}/config/routing_manager_ecu2.json ] && \
@@ -49,7 +52,6 @@ do_install() {
 FILES:${PN} = " \
     ${sysconfdir}/vsomeip/* \
     ${sysconfdir}/commonapi/* \
-    ${bindir}/run-rpi-all.sh \
 "
 
 RDEPENDS:${PN} = "vsomeip commonapi-core commonapi-someip-runtime bash"

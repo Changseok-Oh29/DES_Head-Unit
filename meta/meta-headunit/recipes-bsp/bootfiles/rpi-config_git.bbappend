@@ -1,5 +1,11 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
+# Add Waveshare DSI panel overlay to the device tree overlays list
+# This ensures the .dtbo file is built and deployed
+RPI_KERNEL_DEVICETREE_OVERLAYS:append = " \
+    overlays/vc4-kms-dsi-waveshare-panel.dtbo \
+"
+
 do_deploy:append() {
     # Waveshare 7" HDMI LCD 1024x600 Configuration
     # Need to update BOTH bootfiles directories used by meta-raspberrypi
@@ -11,6 +17,13 @@ do_deploy:append() {
         # Ensure config.txt exists
         if [ ! -f ${DEPLOYDIR}/${bootdir}/config.txt ]; then
             touch ${DEPLOYDIR}/${bootdir}/config.txt
+        fi
+
+        # Enable VC4 KMS graphics driver (required for both HDMI and DSI)
+        if ! grep -q "dtoverlay=vc4-kms-v3d" ${DEPLOYDIR}/${bootdir}/config.txt; then
+            echo "" >> ${DEPLOYDIR}/${bootdir}/config.txt
+            echo "# Enable VC4 KMS Graphics Driver" >> ${DEPLOYDIR}/${bootdir}/config.txt
+            echo "dtoverlay=vc4-kms-v3d" >> ${DEPLOYDIR}/${bootdir}/config.txt
         fi
 
         # Add Waveshare HDMI display configuration

@@ -4,8 +4,8 @@ import QtQuick.Window 2.15
 
 Window {
     id: mainWindow
-    width: 1024  // HDMI display width
-    height: 600  // HDMI display height
+    width: Constants.width   // DSI display width (400)
+    height: Constants.height // DSI display height (1280)
     visible: true
     visibility: "FullScreen"      // fullscreen
     flags: Qt.FramelessWindowHint // fullscreen
@@ -14,18 +14,9 @@ Window {
 
     Component.onCompleted: Qt.inputMethod.hide()
 
-    // Container with scaling to fit 1280x400 design into 1024x600 display
-    Item {
-        anchors.centerIn: parent
-        width: parent.width
-        height: parent.height
-
-        Screen01Form {
-            id: mainScreen
-            anchors.centerIn: parent
-            // Scale down to fit: 1024/1280 = 0.8
-            scale: 0.8
-            transformOrigin: Item.Center
-        }
+    // Native 1:1 scaling for DSI display (400x1280 portrait)
+    Screen01Form {
+        id: mainScreen
+        anchors.fill: parent
     }
 }
