@@ -388,3 +388,23 @@ RPI_EXTRA_CONFIG:append = " \n\
 dtoverlay=vc4-kms-dsi-waveshare-panel,7_9_inch \n\
 "
 ```
+
+# Build Command
+```text
+cd /home/seame/HU/chang/yocto-build/poky
+source oe-init-build-env build-headunit
+bitbake headunit-image
+```
+
+# SD card flash Command
+```text
+lsblk
+
+sudo umount /media/seame/rpi4-64
+sudo umount /media/seame/b46d13d6-d864-48e8-883b-b0ba4181467c
+
+sudo dd if=/home/seame/HU/chang/yocto-build/poky/build-headunit/tmp/deploy/images/raspberrypi4-64/headunit-image-raspberrypi4-64.rpi-sdimg of=/dev/sda bs=4M status=progress conv=fsync
+
+sync
+sudo eject /dev/sda
+```
