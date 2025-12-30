@@ -163,8 +163,8 @@ Rectangle {
 
             Image {
                 id: bottomPanel
-                anchors.centerIn: parent
-                anchors.verticalCenterOffset: 140
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: 209
                 width: 697
                 height: 298
                 source: "images/BottomPanel.png"
@@ -173,8 +173,8 @@ Rectangle {
 
             TextInput {
                 id: speedText
-                anchors.centerIn: parent
-                anchors.verticalCenterOffset: 172
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: 332
                 width: 188
                 height: 81
                 color: "#ffffff"
@@ -229,12 +229,11 @@ Rectangle {
 
             Rectangle {
                 id: battery_fill
-                width: 70
-                height: 116 * vehicleClient.batteryLevel / 100
-                x: 105
-                y: 261 - height
-                border.color: "#ffffff"
-                z: 10
+                width: 68
+                height: 110 * vehicleClient.batteryLevel / 100
+                x: 103
+                y: 258 - height
+                z: 1
 
                 color: vehicleClient.batteryLevel <= 20 ? "#ff4444"
                      : vehicleClient.batteryLevel <= 60 ? "#ffaa33"
@@ -248,6 +247,7 @@ Rectangle {
                 width: 120
                 source: "images/battery_outline_icon.png"
                 fillMode: Image.PreserveAspectFit
+                z: 2
             }
 
             Text {
@@ -257,6 +257,7 @@ Rectangle {
                 font.bold: true
                 color: "white"
                 text: vehicleClient.batteryLevel + "%"
+                z: 3
             }
         }
     }
