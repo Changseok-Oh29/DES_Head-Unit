@@ -27,6 +27,7 @@ chang/
 
 # bblayer.conf
 
+```text
 # POKY_BBLAYERS_CONF_VERSION is increased each time build/conf/bblayers.conf
 # changes incompatibly
 POKY_BBLAYERS_CONF_VERSION = "2"
@@ -48,9 +49,11 @@ BBLAYERS ?= " \
   /home/seame/HU/chang/DES_Head-Unit/meta/meta-headunit \
   /home/seame/HU/chang/DES_Head-Unit/meta/meta-instrumentcluster \
   "
+```
 
 # local.conf
 
+```text
 #
 # This file is your local configuration file and is where all local user settings
 # are placed. The comments in this file give some guide to the options a new user
@@ -384,3 +387,4 @@ RPI_KERNEL_DEVICETREE_OVERLAYS:append = " overlays/vc4-kms-dsi-waveshare-panel.d
 RPI_EXTRA_CONFIG:append = " \n\
 dtoverlay=vc4-kms-dsi-waveshare-panel,7_9_inch \n\
 "
+```
