@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QDebug>
+#include <QSurfaceFormat>
 
 int main(int argc, char *argv[])
 {
@@ -31,6 +32,14 @@ int main(int argc, char *argv[])
     // This app connects to Weston's wayland-0
     // And creates its own compositor socket wayland-1 for HU apps
     // Note: The nested compositor socket name will be set by Qt Wayland Compositor
+
+    // ═══════════════════════════════════════════════════════
+    // Configure OpenGL surface format for compositor
+    // ═══════════════════════════════════════════════════════
+    QSurfaceFormat format = QSurfaceFormat::defaultFormat();
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    QSurfaceFormat::setDefaultFormat(format);
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

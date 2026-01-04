@@ -12,6 +12,13 @@ Window {
     visible: true
     title: "GearApp"
     color: "#1a1a1a"
+    
+    // Wayland App ID 설정
+    Component.onCompleted: {
+        if (Qt.platform.pluginName === "wayland") {
+            window.flags = Qt.Window
+        }
+    }
 
     // 재사용 가능한 기어 선택 위젯 컴포넌트
     Column {

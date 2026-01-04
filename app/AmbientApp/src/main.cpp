@@ -4,6 +4,8 @@
 #include <QDebug>
 #include <QTimer>
 #include <QDir>
+#include <QWindow>
+#include <QQuickWindow>
 #include <CommonAPI/CommonAPI.hpp>
 #include "ambientmanager.h"
 #include "MediaControlClient.h"
@@ -43,6 +45,9 @@ int main(int argc, char *argv[])
     app.setApplicationName("AmbientApp");
     app.setApplicationVersion("1.0");
     app.setOrganizationName("SEA-ME");
+    
+    // Wayland App ID 설정 (Compositor가 앱을 식별하는데 사용)
+    app.setDesktopFileName("AmbientApp.desktop");
 
     qDebug() << "═══════════════════════════════════════════════════════";
     qDebug() << "AmbientApp Process Starting...";
@@ -168,6 +173,18 @@ int main(int argc, char *argv[])
     if (!engine.rootObjects().isEmpty()) {
         qDebug() << "✅ QML GUI loaded: AmbientLighting.qml";
         qDebug() << "   Window should appear now!";
+        
+        // Set Wayland app_id for the window
+        QObject *rootObject = engine.rootObjects().first();
+        if (rootObject) {
+            QQuickWindow *window = qobject_cast<QQuickWindow*>(rootObject);
+            if (window) {
+                window->setProperty("_q_waylandAppId", "AmbientApp");
+                qDebug() << "✅ Wayland App ID set: AmbientApp";
+            } else {
+                qWarning() << "⚠️  Failed to cast to QQuickWindow";
+            }
+        }
     }
 
     qDebug() << "";

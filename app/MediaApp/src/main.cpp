@@ -3,6 +3,8 @@
 #include <QQmlContext>
 #include <QDebug>
 #include <QTimer>
+#include <QWindow>
+#include <QQuickWindow>
 #include <CommonAPI/CommonAPI.hpp>
 #include "mediamanager.h"
 #include "MediaControlStubImpl.h"
@@ -42,6 +44,9 @@ int main(int argc, char *argv[])
     app.setApplicationName("MediaApp");
     app.setApplicationVersion("1.0");
     app.setOrganizationName("SEA-ME");
+    
+    // Wayland App ID 설정 (Compositor가 앱을 식별하는데 사용)
+    app.setDesktopFileName("MediaApp.desktop");
 
     qDebug() << "═══════════════════════════════════════════════════════";
     qDebug() << "MediaApp (vsomeip Service) Starting...";
@@ -147,6 +152,18 @@ int main(int argc, char *argv[])
     if (!engine.rootObjects().isEmpty()) {
         qDebug() << "✅ QML GUI loaded: MediaApp.qml";
         qDebug() << "🖥️  Window should appear now!";
+        
+        // Set Wayland app_id for the window
+        QObject *rootObject = engine.rootObjects().first();
+        if (rootObject) {
+            QQuickWindow *window = qobject_cast<QQuickWindow*>(rootObject);
+            if (window) {
+                window->setProperty("_q_waylandAppId", "MediaApp");
+                qDebug() << "✅ Wayland App ID set: MediaApp";
+            } else {
+                qWarning() << "⚠️  Failed to cast to QQuickWindow";
+            }
+        }
     }
 
     qDebug() << "";

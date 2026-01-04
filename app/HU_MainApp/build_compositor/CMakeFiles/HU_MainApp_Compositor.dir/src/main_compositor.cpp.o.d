@@ -286,4 +286,6 @@ CMakeFiles/HU_MainApp_Compositor.dir/src/main_compositor.cpp.o: \
  /usr/include/aarch64-linux-gnu/qt5/QtQml/QQmlContext \
  /usr/include/aarch64-linux-gnu/qt5/QtQml/qqmlcontext.h \
  /usr/include/aarch64-linux-gnu/qt5/QtCore/QDebug \
- /usr/include/aarch64-linux-gnu/qt5/QtCore/qdebug.h
+ /usr/include/aarch64-linux-gnu/qt5/QtCore/qdebug.h \
+ /usr/include/aarch64-linux-gnu/qt5/QtGui/QSurfaceFormat \
+ /usr/include/aarch64-linux-gnu/qt5/QtGui/qsurfaceformat.h

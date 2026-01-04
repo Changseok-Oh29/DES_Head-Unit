@@ -82,6 +82,10 @@ WaylandCompositor {
         ShellSurfaceItem {
             id: chrome
             autoCreatePopupItems: true
+            
+            // Set initial size to prevent 0x0 configure
+            width: 800
+            height: 600
 
             onSurfaceDestroyed: {
                 console.log("🗑️  Surface destroyed")
@@ -137,6 +141,18 @@ WaylandCompositor {
             // Initial routing
             var identifier = appId || title
             surfaceRouter.routeSurface(chrome, identifier)
+            
+            // CRITICAL: Send initial configure with size to client
+            // This prevents 0x0 configure which causes EGL errors
+            if (chrome.shellSurface && chrome.shellSurface.toplevel) {
+                // Send suggested size based on app type
+                var suggestedSize = Qt.size(800, 520)
+                if (identifier === "GearApp" || identifier.toLowerCase().includes("gear")) {
+                    suggestedSize = Qt.size(130, 520)
+                }
+                chrome.shellSurface.toplevel.sendConfigure(suggestedSize, [])
+                console.log("📐 Sent configure:", suggestedSize.width, "x", suggestedSize.height)
+            }
 
             console.log("✅ Surface routed successfully")
             console.log("═══════════════════════════════════════")
