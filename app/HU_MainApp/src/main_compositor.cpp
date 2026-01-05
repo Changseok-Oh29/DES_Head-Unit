@@ -39,10 +39,14 @@ int main(int argc, char *argv[])
     QSurfaceFormat format = QSurfaceFormat::defaultFormat();
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
+    format.setVersion(2, 0);  // OpenGL ES 2.0 for embedded systems
+    format.setRenderableType(QSurfaceFormat::OpenGLES);
+    format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
     QSurfaceFormat::setDefaultFormat(format);
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);  // Share GL context between surfaces
 #endif
 
     QGuiApplication app(argc, argv);

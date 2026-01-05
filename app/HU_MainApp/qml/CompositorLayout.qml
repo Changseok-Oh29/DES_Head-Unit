@@ -34,6 +34,7 @@ Item {
         // Container for GearApp window
         Item {
             id: gearAppContainer
+            objectName: "gearAppContainer"
             anchors.fill: parent
         }
     }

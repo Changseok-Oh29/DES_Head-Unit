@@ -97,6 +97,11 @@ if [ ! -e /tmp/vsomeip-0 ]; then
     sudo pkill -9 weston
     exit 1
 fi
+
+# Fix vsomeip.lck permission for client apps
+sudo touch /tmp/vsomeip.lck
+sudo chmod 666 /tmp/vsomeip.lck
+
 echo "✓ Routing Manager ready"
 echo ""
 
@@ -129,15 +134,21 @@ echo "   GearApp PID: $GEAR_PID"
 sleep 2
 
 cd "${PROJECT_ROOT}/app/AmbientApp"
-sudo -E XDG_RUNTIME_DIR=/tmp/xdg WAYLAND_DISPLAY=wayland-1 QT_LOGGING_RULES="qt.qpa*=true;qt.wayland*=true" LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" ./build/AmbientApp > /tmp/ambientapp.log 2>&1 &
+sudo -E XDG_RUNTIME_DIR=/tmp/xdg WAYLAND_DISPLAY=wayland-1 VSOMEIP_APPLICATION_NAME=AmbientApp QT_LOGGING_RULES="qt.qpa*=true;qt.wayland*=true" LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" ./build/AmbientApp > /tmp/ambientapp.log 2>&1 &
 AMBIENT_PID=$!
 echo "   AmbientApp PID: $AMBIENT_PID"
 sleep 2
 
 cd "${PROJECT_ROOT}/app/MediaApp"
-sudo -E XDG_RUNTIME_DIR=/tmp/xdg WAYLAND_DISPLAY=wayland-1 QT_LOGGING_RULES="qt.qpa*=true;qt.wayland*=true" LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" ./build/MediaApp > /tmp/mediaapp.log 2>&1 &
+sudo -E XDG_RUNTIME_DIR=/tmp/xdg WAYLAND_DISPLAY=wayland-1 VSOMEIP_APPLICATION_NAME=MediaApp QT_LOGGING_RULES="qt.qpa*=true;qt.wayland*=true" LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" ./build/MediaApp > /tmp/mediaapp.log 2>&1 &
 MEDIA_PID=$!
 echo "   MediaApp PID: $MEDIA_PID"
+sleep 2
+
+cd "${PROJECT_ROOT}/app/HomeScreenApp"
+sudo -E XDG_RUNTIME_DIR=/tmp/xdg WAYLAND_DISPLAY=wayland-1 QT_LOGGING_RULES="qt.qpa*=true;qt.wayland*=true" LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" ./build/HomeScreenApp > /tmp/homescreenapp.log 2>&1 &
+HOMESCREEN_PID=$!
+echo "   HomeScreenApp PID: $HOMESCREEN_PID"
 echo ""
 
 # 상태 확인
@@ -149,6 +160,7 @@ ps -p $COMPOSITOR_PID > /dev/null && echo "   ✓ Compositor" || echo "   ✓ Co
 ps -p $GEAR_PID > /dev/null && echo "   ✓ GearApp" || echo "   ✗ GearApp"
 ps -p $AMBIENT_PID > /dev/null && echo "   ✓ AmbientApp" || echo "   ✗ AmbientApp"
 ps -p $MEDIA_PID > /dev/null && echo "   ✓ MediaApp" || echo "   ✗ MediaApp"
+ps -p $HOMESCREEN_PID > /dev/null && echo "   ✓ HomeScreenApp" || echo "   ✗ HomeScreenApp"
 echo ""
 echo "📋 Logs:"
 echo "   Weston:     sudo cat /tmp/weston.log"

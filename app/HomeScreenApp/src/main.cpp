@@ -3,6 +3,7 @@
 #include <QQmlContext>
 #include <QDebug>
 #include <QTimer>
+#include <QQuickWindow>
 #include <CommonAPI/CommonAPI.hpp>
 #include "homescreenmanager.h"
 #include "MediaControlClient.h"
@@ -41,6 +42,7 @@ int main(int argc, char *argv[])
     app.setApplicationName("HomeScreenApp");
     app.setApplicationVersion("1.0");
     app.setOrganizationName("SEA-ME");
+    app.setDesktopFileName("HomeScreenApp.desktop");  // Wayland App ID
 
     qDebug() << "═══════════════════════════════════════════════════════";
     qDebug() << "HomeScreenApp (Multi-Service Client) Starting...";
@@ -132,6 +134,16 @@ int main(int argc, char *argv[])
     if (!engine.rootObjects().isEmpty()) {
         qDebug() << "✅ QML GUI loaded: HomeScreen.qml";
         qDebug() << "🖥️  Dashboard should appear now!";
+        
+        // Set Wayland app_id for the window
+        QObject *rootObject = engine.rootObjects().first();
+        if (rootObject) {
+            QQuickWindow *window = qobject_cast<QQuickWindow*>(rootObject);
+            if (window) {
+                window->setProperty("_q_waylandAppId", "HomeScreenApp");
+                qDebug() << "✅ Wayland App ID set: HomeScreenApp";
+            }
+        }
     }
 
     qDebug() << "";
