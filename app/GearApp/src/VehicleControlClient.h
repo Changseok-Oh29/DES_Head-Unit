@@ -22,6 +22,7 @@ class VehicleControlClient : public QObject
     Q_PROPERTY(QString currentGear READ currentGear NOTIFY currentGearChanged)
     Q_PROPERTY(int currentSpeed READ currentSpeed NOTIFY currentSpeedChanged)
     Q_PROPERTY(int batteryLevel READ batteryLevel NOTIFY batteryLevelChanged)
+    Q_PROPERTY(int currentDistance READ currentDistance NOTIFY currentDistanceChanged)
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
 
 public:
@@ -32,6 +33,7 @@ public:
     QString currentGear() const { return m_currentGear; }
     int currentSpeed() const { return m_currentSpeed; }
     int batteryLevel() const { return m_batteryLevel; }
+    int currentDistance() const { return m_currentDistance; }
     bool connected() const { return m_isConnected; }
 
 public slots:
@@ -46,6 +48,7 @@ signals:
     void currentGearChanged(const QString& gear);
     void currentSpeedChanged(int speed);
     void batteryLevelChanged(int level);
+    void currentDistanceChanged(int distance);
     void connectedChanged(bool connected);
     
     void gearChangeSuccess(const QString& newGear);
@@ -60,11 +63,12 @@ private:
     QString m_currentGear;
     int m_currentSpeed;
     int m_batteryLevel;
+    int m_currentDistance;
     bool m_isConnected;
     
     // Event subscriptions
     void setupEventSubscriptions();
-    void onGearChanged(std::string newGear, std::string oldGear, uint64_t timestamp);
+    void onGearDistanceChanged(std::string newGear, std::string oldGear, uint16_t distance, uint64_t timestamp);
     void onVehicleStateChanged(std::string gear, uint16_t speed, uint8_t battery, uint64_t timestamp);
     void onAvailabilityChanged(CommonAPI::AvailabilityStatus status);
 };

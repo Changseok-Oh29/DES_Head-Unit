@@ -8,6 +8,7 @@ VehicleControlClient::VehicleControlClient(QObject *parent)
     , m_currentGear("P")
     , m_currentSpeed(0)
     , m_batteryLevel(0)
+    , m_currentDistance(200)
     , m_isConnected(false)
 {
     qDebug() << "VehicleControlClient created";
@@ -78,10 +79,10 @@ void VehicleControlClient::setupEventSubscriptions()
     
     qDebug() << "📡 Subscribing to VehicleControl events...";
     
-    // Subscribe to gearChanged event
-    m_proxy->getGearChangedEvent().subscribe(
-        [this](std::string newGear, std::string oldGear, uint64_t timestamp) {
-            this->onGearChanged(newGear, oldGear, timestamp);
+    // Subscribe to gearDistanceChanged event
+    m_proxy->getGearDistanceChangedEvent().subscribe(
+        [this](std::string newGear, std::string oldGear, uint16_t distance, uint64_t timestamp) {
+            this->onGearDistanceChanged(newGear, oldGear, distance, timestamp);
         }
     );
     
@@ -137,18 +138,24 @@ void VehicleControlClient::requestGearChange(const QString& gear)
     emit gearChangeSuccess(gear);
 }
 
-void VehicleControlClient::onGearChanged(std::string newGear, std::string oldGear, uint64_t timestamp)
+void VehicleControlClient::onGearDistanceChanged(std::string newGear, std::string oldGear, uint16_t distance, uint64_t timestamp)
 {
     QString qNewGear = QString::fromStdString(newGear);
     QString qOldGear = QString::fromStdString(oldGear);
-    
-    qDebug() << "📡 [Event] gearChanged received:"
-             << qOldGear << "→" << qNewGear
-             << "@ timestamp:" << timestamp;
-    
-    // 같은 기어여도 항상 emit (ECU1에서 확인한 상태를 GUI에 반영)
-    m_currentGear = qNewGear;
-    emit currentGearChanged(m_currentGear);
+
+    // Update gear if changed
+    if (m_currentGear != qNewGear) {
+        m_currentGear = qNewGear;
+        emit currentGearChanged(m_currentGear);
+        qDebug() << "📡 [Event] gearDistanceChanged - Gear:"
+                 << qOldGear << "→" << qNewGear;
+    }
+
+    // Update distance
+    if (m_currentDistance != static_cast<int>(distance)) {
+        m_currentDistance = static_cast<int>(distance);
+        emit currentDistanceChanged(m_currentDistance);
+    }
 }
 
 void VehicleControlClient::onVehicleStateChanged(std::string gear, uint16_t speed, uint8_t battery, uint64_t timestamp)

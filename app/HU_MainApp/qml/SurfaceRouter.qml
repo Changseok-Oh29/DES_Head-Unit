@@ -13,6 +13,10 @@ QtObject {
     property var homeScreenAppContainer: null
     property var mediaAppContainer: null
     property var ambientAppContainer: null
+    property var pdcAppContainer: null
+
+    // Callback for gear change detection (to notify layout)
+    signal gearChanged(string gear)
 
     // Helper function to clear container and add new surface
     function assignToContainer(chrome, container, containerName) {
@@ -75,6 +79,14 @@ QtObject {
                 assignToContainer(chrome, ambientAppContainer, "Ambient Page")
             } else {
                 console.error("   ❌ ambientAppContainer is null!")
+            }
+            return
+
+        } else if (identifier === "PDCApp" || idLower.includes("pdc") || idLower.includes("park")) {
+            if (pdcAppContainer) {
+                assignToContainer(chrome, pdcAppContainer, "PDC Overlay")
+            } else {
+                console.error("   ❌ pdcAppContainer is null!")
             }
             return
 

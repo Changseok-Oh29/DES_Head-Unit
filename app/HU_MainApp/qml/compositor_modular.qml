@@ -73,6 +73,13 @@ WaylandCompositor {
         homeScreenAppContainer: layout.homeScreenAppContainer
         mediaAppContainer: layout.mediaAppContainer
         ambientAppContainer: layout.ambientAppContainer
+        pdcAppContainer: layout.pdcAppContainer
+
+        // Connect gear change signal to layout
+        onGearChanged: {
+            layout.isReverseGear = (gear === "R")
+            console.log("🚗 Gear changed to:", gear, "- PDC overlay:", layout.isReverseGear ? "VISIBLE" : "HIDDEN")
+        }
     }
 
     // Component to wrap each wayland surface
@@ -132,6 +139,17 @@ WaylandCompositor {
                 console.log("   Re-routing HU app based on new title...")
                 surfaceRouter.routeSurface(chrome, newTitle)
                 console.log("═══════════════════════════════════════")
+
+                // Detect gear change from GearApp title (e.g., "GearApp - R" or "Gear: R")
+                // Check title since appId may be empty on some platforms
+                if (appId === "GearApp" || appId.toLowerCase().includes("gear") ||
+                    newTitle.toLowerCase().includes("gearapp") || newTitle.toLowerCase().includes("gear")) {
+                    var gearMatch = newTitle.match(/- ([PRND])$/)  // Match "GearApp - R" format
+                    if (gearMatch) {
+                        console.log("🚗 Detected gear change from title:", gearMatch[1])
+                        surfaceRouter.gearChanged(gearMatch[1])
+                    }
+                }
             })
 
             // Initial routing
@@ -156,6 +174,7 @@ WaylandCompositor {
         console.log("       [0] HOME - HomeScreenApp window")
         console.log("       [1] MEDIA - MediaApp window")
         console.log("       [2] AMBIENT - AmbientApp window")
+        console.log("   • PDC Overlay: Shows when gear is 'R' (Reverse)")
         console.log("   • Bottom Bar (80px): [Home] [Media] [Ambient]")
         console.log("")
         console.log("⏳ Waiting for client apps to connect...")
@@ -164,6 +183,7 @@ WaylandCompositor {
         console.log("     - 'HomeScreenApp' → Home page")
         console.log("     - 'MediaApp' → Media page")
         console.log("     - 'AmbientApp' → Ambient page")
+        console.log("     - 'PDCApp' → PDC overlay (when gear=R)")
         console.log("")
         console.log("🔌 Sub-compositor socket: $XDG_RUNTIME_DIR/wayland-1")
         console.log("   Parent compositor: Weston (wayland-0)")

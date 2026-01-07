@@ -68,10 +68,10 @@ void VehicleControlClient::setupEventSubscriptions()
     
     qDebug() << "📡 [AmbientApp] Subscribing to VehicleControl events...";
     
-    // Subscribe to gearChanged event
-    m_proxy->getGearChangedEvent().subscribe(
-        [this](std::string newGear, std::string oldGear, uint64_t timestamp) {
-            this->onGearChanged(newGear, oldGear, timestamp);
+    // Subscribe to gearDistanceChanged event
+    m_proxy->getGearDistanceChangedEvent().subscribe(
+        [this](std::string newGear, std::string oldGear, uint16_t distance, uint64_t timestamp) {
+            this->onGearDistanceChanged(newGear, oldGear, distance, timestamp);
         }
     );
     
@@ -85,16 +85,15 @@ void VehicleControlClient::setupEventSubscriptions()
     qDebug() << "✅ Event subscriptions setup complete";
 }
 
-void VehicleControlClient::onGearChanged(std::string newGear, std::string oldGear, uint64_t timestamp)
+void VehicleControlClient::onGearDistanceChanged(std::string newGear, std::string oldGear, uint16_t distance, uint64_t timestamp)
 {
     QString qNewGear = QString::fromStdString(newGear);
     QString qOldGear = QString::fromStdString(oldGear);
-    
-    qDebug() << "📡 [AmbientApp] gearChanged event:"
-             << qOldGear << "→" << qNewGear
-             << "@ timestamp:" << timestamp;
-    
+
+    // AmbientApp only cares about gear changes (not distance)
     if (m_currentGear != qNewGear) {
+        qDebug() << "📡 [AmbientApp] gearDistanceChanged event:"
+                 << qOldGear << "→" << qNewGear;
         m_currentGear = qNewGear;
         emit currentGearChanged(m_currentGear);
     }

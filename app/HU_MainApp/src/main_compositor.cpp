@@ -14,14 +14,22 @@ int main(int argc, char *argv[])
     // - Creates sub-compositor socket (wayland-1) for HU apps
     // - Manages window layout and surface routing for HU apps
 
-    // Set platform to Wayland (connect to Weston)
-    qputenv("QT_QPA_PLATFORM", "wayland");
+    // Set platform - allow override from environment for local testing
+    // On Raspberry Pi: wayland (connects to Weston)
+    // On local x86: xcb (runs standalone on X11)
+    if (qgetenv("QT_QPA_PLATFORM").isEmpty()) {
+        qputenv("QT_QPA_PLATFORM", "wayland");
+    }
 
     // Disable window decorations
-    qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
+    if (qgetenv("QT_WAYLAND_DISABLE_WINDOWDECORATION").isEmpty()) {
+        qputenv("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1");
+    }
 
-    // Ensure XDG shell is used
-    qputenv("QT_WAYLAND_SHELL_INTEGRATION", "xdg-shell");
+    // Ensure XDG shell is used (only relevant for Wayland)
+    if (qgetenv("QT_WAYLAND_SHELL_INTEGRATION").isEmpty()) {
+        qputenv("QT_WAYLAND_SHELL_INTEGRATION", "xdg-shell");
+    }
 
     // Create XDG_RUNTIME_DIR if not set
     if (qgetenv("XDG_RUNTIME_DIR").isEmpty()) {

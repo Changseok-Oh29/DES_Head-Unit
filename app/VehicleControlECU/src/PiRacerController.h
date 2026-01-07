@@ -26,14 +26,16 @@ public:
     // Vehicle state
     QString getCurrentGear() const { return m_currentGear; }
     uint16_t getCurrentSpeed() const { return m_currentSpeed; }
+    uint16_t getCurrentDistance() const { return m_currentDistance; }
     uint8_t getBatteryLevel() const;
-    
+
 signals:
-    void gearChanged(QString newGear, QString oldGear);
+    void gearDistanceChanged(QString newGear, QString oldGear, uint16_t distance);
     void vehicleStateChanged(QString gear, uint16_t speed, uint8_t battery);
 
 private slots:
     void onSpeedDataReceived(float speedCms);
+    void onDistanceDataReceived(float distanceCm);
     
 private:
     // Hardware
@@ -59,7 +61,8 @@ private:
     
     // State
     QString m_currentGear;
-    uint16_t m_currentSpeed;  // Real speed from CAN in cm/s
+    uint16_t m_currentSpeed;     // Real speed from CAN in cm/s
+    uint16_t m_currentDistance;  // Distance from ultrasonic sensor in cm
     float m_currentThrottle;
     
     // Helper functions

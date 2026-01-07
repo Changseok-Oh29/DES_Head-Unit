@@ -15,10 +15,14 @@ Item {
     property alias homeScreenAppContainer: homeScreenAppContainer
     property alias mediaAppContainer: mediaAppContainer
     property alias ambientAppContainer: ambientAppContainer
+    property alias pdcAppContainer: pdcAppContainer
     property alias surfaceCount: surfaceCountText.text
 
     // Current page control
     property int currentPage: 0
+
+    // PDC (Park Distance Control) - shows when gear is "R"
+    property bool isReverseGear: false
 
     // ═══════════════════════════════════════════════════════
     // Left Side Panel - Permanent GearApp Display
@@ -48,6 +52,7 @@ Item {
         anchors.top: parent.top
         anchors.bottom: navigationBar.top
         anchors.margins: 10
+        z: root.isReverseGear ? 0 : 1  // Behind PDC when in reverse
 
         // ───────────────────────────────────────────────────
         // Page 0: HOME (HomeScreenApp window container)
@@ -95,6 +100,37 @@ Item {
                 id: ambientAppContainer
                 anchors.fill: parent
             }
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // PDC Overlay - Shows when gear is "R" (Reverse)
+    // Same size as main content area (MediaApp, AmbientApp, etc.)
+    // ═══════════════════════════════════════════════════════
+    Rectangle {
+        id: pdcOverlay
+        anchors.left: leftGearPanel.right
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: navigationBar.top
+        anchors.margins: 10
+        color: "transparent"
+        z: root.isReverseGear ? 1 : 0  // On top when in reverse
+        visible: root.isReverseGear
+        opacity: root.isReverseGear ? 1.0 : 0.0
+
+        // Smooth fade animation
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.InOutQuad
+            }
+        }
+
+        // Container for PDCApp window
+        Item {
+            id: pdcAppContainer
+            anchors.fill: parent
         }
     }
 

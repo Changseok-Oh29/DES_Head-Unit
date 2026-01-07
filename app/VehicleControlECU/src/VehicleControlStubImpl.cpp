@@ -7,12 +7,12 @@ VehicleControlStubImpl::VehicleControlStubImpl(PiRacerController* piracerControl
 {
     // Connect PiRacerController signals to vsomeip event broadcasters
     if (m_piracerController) {
-        QObject::connect(m_piracerController, &PiRacerController::gearChanged,
-                        this, &VehicleControlStubImpl::onGearChanged);
-        
+        QObject::connect(m_piracerController, &PiRacerController::gearDistanceChanged,
+                        this, &VehicleControlStubImpl::onGearDistanceChanged);
+
         QObject::connect(m_piracerController, &PiRacerController::vehicleStateChanged,
                         this, &VehicleControlStubImpl::onVehicleStateChanged);
-        
+
         qDebug() << "✅ VehicleControlStubImpl initialized";
     } else {
         qCritical() << "❌ PiRacerController is null!";
@@ -51,16 +51,22 @@ void VehicleControlStubImpl::setGearPosition(const std::shared_ptr<CommonAPI::Cl
     qDebug() << "✅ Gear position set to:" << gear;
 }
 
-void VehicleControlStubImpl::onGearChanged(QString newGear, QString oldGear)
+void VehicleControlStubImpl::onGearDistanceChanged(QString newGear, QString oldGear, uint16_t distance)
 {
-    qDebug() << "📡 [Event] Broadcasting gearChanged:"
-             << oldGear << "→" << newGear;
-    
     uint64_t timestamp = QDateTime::currentMSecsSinceEpoch();
-    
-    fireGearChangedEvent(newGear.toStdString(),
-                        oldGear.toStdString(),
-                        timestamp);
+
+    fireGearDistanceChangedEvent(newGear.toStdString(),
+                                 oldGear.toStdString(),
+                                 distance,
+                                 timestamp);
+
+    // Log periodically (every 10 calls to avoid spam)
+    static int callCount = 0;
+    if (++callCount % 10 == 0) {
+        qDebug() << "📡 [Event] gearDistanceChanged:"
+                 << "Gear:" << newGear
+                 << "Distance:" << distance << "cm";
+    }
 }
 
 void VehicleControlStubImpl::onVehicleStateChanged(QString gear, uint16_t speed, uint8_t battery)

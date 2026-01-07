@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/BatteryWidget.qml</file>
+        <file>images/GaugeSpeedometer_Ticks1.png</file>
+        <file>images/GaugeSpeedometer_Ticks2.png</file>
+        <file>images/battery_outline_icon.png</file>
+    </qresource>
+</RCC>

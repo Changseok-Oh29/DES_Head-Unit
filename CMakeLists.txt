@@ -17,12 +17,18 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "═══════════════════════════════════════════════════════")
 message(STATUS "")
 
-# Options
+# Options - Head Unit Apps
 option(BUILD_MEDIA_APP "Build MediaApp process" ON)
 option(BUILD_GEAR_APP "Build GearApp process" ON)
 option(BUILD_AMBIENT_APP "Build AmbientApp process" ON)
 option(BUILD_MAIN_APP "Build HU_MainApp (UI integration)" ON)
 option(BUILD_LEGACY_APP "Build legacy HU_app (single process)" ON)
+
+# Options - Instrument Cluster Apps
+option(BUILD_IC_MAIN_APP "Build IC_MainApp (IC Compositor)" ON)
+option(BUILD_SPEED_APP "Build SpeedApp process" ON)
+option(BUILD_BATTERY_APP "Build BatteryApp process" ON)
+option(BUILD_IC_GEAR_APP "Build ICGearApp process" ON)
 
 # Subdirectories
 if(BUILD_MEDIA_APP)
@@ -48,6 +54,27 @@ endif()
 if(BUILD_LEGACY_APP)
     message(STATUS "✅ Legacy HU_app will be built (for reference)")
     # HU_app has its own build system
+endif()
+
+# Instrument Cluster Apps
+if(BUILD_IC_MAIN_APP)
+    message(STATUS "✅ IC_MainApp (IC Compositor) will be built")
+    add_subdirectory(app/IC_MainApp)
+endif()
+
+if(BUILD_SPEED_APP)
+    message(STATUS "✅ SpeedApp will be built")
+    add_subdirectory(app/SpeedApp)
+endif()
+
+if(BUILD_BATTERY_APP)
+    message(STATUS "✅ BatteryApp will be built")
+    add_subdirectory(app/BatteryApp)
+endif()
+
+if(BUILD_IC_GEAR_APP)
+    message(STATUS "✅ ICGearApp will be built")
+    add_subdirectory(app/ICGearApp)
 endif()
 
 message(STATUS "")

@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/ic_compositor.qml</file>
+        <file>qml/ICCompositorLayout.qml</file>
+        <file>qml/ICSurfaceRouter.qml</file>
+    </qresource>
+</RCC>

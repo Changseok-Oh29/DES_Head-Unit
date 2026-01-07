@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/SpeedWidget.qml</file>
+        <file>images/Gauge_Speed.png</file>
+        <file>images/GaugeSpeedometer_Ticks2.png</file>
+        <file>images/gaugeNeedleBig.png</file>
+        <file>images/BottomPanel.png</file>
+    </qresource>
+</RCC>

@@ -13,7 +13,7 @@ define org.genivi.commonapi.someip.deployment for interface vehiclecontrol.Vehic
         SomeIpEventGroups = { 4660 }
     }
     
-    broadcast gearChanged {
+    broadcast gearDistanceChanged {
         SomeIpEventID = 40001
         SomeIpEventGroups = { 4660 }
     }

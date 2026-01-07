@@ -3,7 +3,7 @@ package vehiclecontrol
 interface VehicleControl {
     version { major 1 minor 0 }
     
-    // RPC Methods (HU → ECU1)
+    // RPC Methods (gearApp → ECU1)
     method setGearPosition {
         in {
             String gear
@@ -24,11 +24,12 @@ interface VehicleControl {
         }
     }
     
-    //ECU1 --> ambientlight
-    broadcast gearChanged {
+    // ECU1 --> ambientlight, gearApp, PDCApp, RemoteSpeaker
+    broadcast gearDistanceChanged {
         out {
             String newGear
             String oldGear
+            UInt16 distance      // Distance from ultrasonic sensor in cm (0-200)
             UInt64 timestamp
         }
     }

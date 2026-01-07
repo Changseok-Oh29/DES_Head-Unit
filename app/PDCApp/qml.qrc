@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/PDCDisplay.qml</file>
+        <file>asset/car.png</file>
+        <file>asset/green.svg</file>
+        <file>asset/yellow.svg</file>
+        <file>asset/red.svg</file>
+    </qresource>
+</RCC>

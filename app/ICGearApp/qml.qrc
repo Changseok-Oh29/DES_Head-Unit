@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/ICGearWidget.qml</file>
+        <file>images/GaugeSpeedometer_Ticks1.png</file>
+        <file>images/GaugeSpeedometer_Ticks2.png</file>
+    </qresource>
+</RCC>

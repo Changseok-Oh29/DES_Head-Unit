@@ -10,7 +10,8 @@ Window {
     width: 130
     height: 520  // Match compositor: 600 (screen) - 80 (nav bar) = 520
     visible: true
-    title: "GearApp"
+    // Title includes gear status for compositor to detect gear changes
+    title: "GearApp - " + root.currentGear
     color: "#1a1a1a"
 
     // 재사용 가능한 기어 선택 위젯 컴포넌트
