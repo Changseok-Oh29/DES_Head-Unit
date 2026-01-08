@@ -39,19 +39,9 @@ fi
 cd "$BUILD_DIR"
 
 # ───────────────────────────────────────────────────────────────────────────────
-# Launch VehicleControlMock
+# VehicleControlECU runs on Raspberry Pi (192.168.1.100)
+# No need to start it here
 # ───────────────────────────────────────────────────────────────────────────────
-echo "Starting VehicleControlMock..."
-cd VehicleControlMock
-export VSOMEIP_APPLICATION_NAME=VehicleControlMock
-export VSOMEIP_CONFIGURATION=$BASE_DIR/app/VehicleControlMock/config/vsomeip_mock.json
-export COMMONAPI_CONFIG=$BASE_DIR/commonapi/commonapi.ini
-nohup ./VehicleControlMock > /tmp/VehicleControlMock.log 2>&1 &
-VCM_PID=$!
-echo "  PID: $VCM_PID"
-cd ..
-
-sleep 2
 
 # ───────────────────────────────────────────────────────────────────────────────
 # Launch HU_MainApp Compositor
@@ -94,7 +84,7 @@ export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
 export WAYLAND_DISPLAY=wayland-1
 export VSOMEIP_APPLICATION_NAME=GearApp
 export VSOMEIP_CONFIGURATION=$BASE_DIR/app/GearApp/config/vsomeip_ecu2.json
-export COMMONAPI_CONFIG=$BASE_DIR/commonapi/commonapi.ini
+export COMMONAPI_CONFIG=$BASE_DIR/app/GearApp/config/commonapi_ecu2.ini
 nohup ./GearApp > /tmp/GearApp.log 2>&1 &
 GEAR_PID=$!
 echo "  PID: $GEAR_PID"
@@ -112,7 +102,7 @@ export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
 export WAYLAND_DISPLAY=wayland-1
 export VSOMEIP_APPLICATION_NAME=HomeScreenApp
 export VSOMEIP_CONFIGURATION=$BASE_DIR/app/GearApp/config/vsomeip_ecu2.json
-export COMMONAPI_CONFIG=$BASE_DIR/commonapi/commonapi.ini
+export COMMONAPI_CONFIG=$BASE_DIR/app/HomeScreenApp/commonapi_homescreen.ini
 nohup ./HomeScreenApp > /tmp/HomeScreenApp.log 2>&1 &
 HS_PID=$!
 echo "  PID: $HS_PID"
@@ -130,7 +120,7 @@ export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
 export WAYLAND_DISPLAY=wayland-1
 export VSOMEIP_APPLICATION_NAME=MediaApp
 export VSOMEIP_CONFIGURATION=$BASE_DIR/app/GearApp/config/vsomeip_ecu2.json
-export COMMONAPI_CONFIG=$BASE_DIR/commonapi/commonapi.ini
+export COMMONAPI_CONFIG=$BASE_DIR/app/MediaApp/commonapi.ini
 nohup ./MediaApp > /tmp/MediaApp.log 2>&1 &
 MEDIA_PID=$!
 echo "  PID: $MEDIA_PID"
@@ -148,7 +138,7 @@ export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
 export WAYLAND_DISPLAY=wayland-1
 export VSOMEIP_APPLICATION_NAME=PDCApp
 export VSOMEIP_CONFIGURATION=$BASE_DIR/app/PDCApp/config/vsomeip_pdc.json
-export COMMONAPI_CONFIG=$BASE_DIR/commonapi/commonapi.ini
+export COMMONAPI_CONFIG=$BASE_DIR/app/PDCApp/config/commonapi_pdc.ini
 nohup ./PDCApp > /tmp/PDCApp.log 2>&1 &
 PDC_PID=$!
 echo "  PID: $PDC_PID"
@@ -163,7 +153,7 @@ echo "Starting RemoteSpeakerApp..."
 cd RemoteSpeakerApp
 export VSOMEIP_APPLICATION_NAME=RemoteSpeakerApp
 export VSOMEIP_CONFIGURATION=$BASE_DIR/app/RemoteSpeakerApp/config/vsomeip_speaker.json
-export COMMONAPI_CONFIG=$BASE_DIR/commonapi/commonapi.ini
+export COMMONAPI_CONFIG=$BASE_DIR/app/RemoteSpeakerApp/config/commonapi_speaker.ini
 nohup ./RemoteSpeakerApp > /tmp/RemoteSpeakerApp.log 2>&1 &
 SPEAKER_PID=$!
 echo "  PID: $SPEAKER_PID"
@@ -182,7 +172,7 @@ if [ -d "AmbientApp" ] && [ -f "AmbientApp/AmbientApp" ]; then
     export WAYLAND_DISPLAY=wayland-1
     export VSOMEIP_APPLICATION_NAME=AmbientApp
     export VSOMEIP_CONFIGURATION=$BASE_DIR/app/GearApp/config/vsomeip_ecu2.json
-    export COMMONAPI_CONFIG=$BASE_DIR/commonapi/commonapi.ini
+    export COMMONAPI_CONFIG=$BASE_DIR/app/AmbientApp/commonapi_ambient.ini
     nohup ./AmbientApp > /tmp/AmbientApp.log 2>&1 &
     AMBIENT_PID=$!
     echo "  PID: $AMBIENT_PID"
@@ -195,7 +185,6 @@ echo "All apps started!"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
 echo "Process IDs:"
-echo "  VehicleControlMock:    $VCM_PID"
 echo "  HU_MainApp Compositor: $COMP_PID"
 echo "  GearApp:               $GEAR_PID"
 echo "  HomeScreenApp:         $HS_PID"
@@ -206,8 +195,9 @@ if [ -n "$AMBIENT_PID" ]; then
     echo "  AmbientApp:            $AMBIENT_PID"
 fi
 echo ""
+echo "VehicleControlECU should be running on Raspberry Pi (192.168.1.100)"
 echo "Logs are in /tmp/*.log"
 echo ""
 echo "To stop all apps, run:"
-echo "  pkill -f 'VehicleControlMock|HU_MainApp|GearApp|HomeScreenApp|MediaApp|PDCApp|RemoteSpeakerApp|AmbientApp'"
+echo "  pkill -f 'HU_MainApp|GearApp|HomeScreenApp|MediaApp|PDCApp|RemoteSpeakerApp|AmbientApp'"
 echo ""
