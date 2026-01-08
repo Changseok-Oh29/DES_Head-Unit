@@ -48,6 +48,8 @@ public:
 
     void fireVolumeChangedEvent(const float &_newVolume);
 
+    void fireCurrentMusicChangedEvent(const std::string &_title, const bool &_isPlaying);
+
     void deactivateManagedInstances() {}
     
     CommonAPI::SomeIP::GetAttributeStubDispatcher<
@@ -65,11 +67,11 @@ public:
     
     CommonAPI::SomeIP::MethodWithReplyStubDispatcher<
         ::v1::mediacontrol::MediaControlStub,
-        std::tuple< float>,
         std::tuple< >,
-        std::tuple< CommonAPI::EmptyDeployment>,
-        std::tuple< >
-    > setVolumeStubDispatcher;
+        std::tuple< std::string, bool>,
+        std::tuple< >,
+        std::tuple< CommonAPI::SomeIP::StringDeployment, CommonAPI::EmptyDeployment>
+    > getCurrentMusicStubDispatcher;
     
     MediaControlSomeIPStubAdapterInternal(
         const CommonAPI::SomeIP::Address &_address,
@@ -89,21 +91,26 @@ public:
             std::make_tuple(static_cast< CommonAPI::EmptyDeployment* >(nullptr)))
         
         ,
-        setVolumeStubDispatcher(
-            &MediaControlStub::setVolume,
+        getCurrentMusicStubDispatcher(
+            &MediaControlStub::getCurrentMusic,
             false,
             _stub->hasElement(1),
-            std::make_tuple(static_cast< CommonAPI::EmptyDeployment* >(nullptr)),
-            std::make_tuple())
+            std::make_tuple(),
+            std::make_tuple(static_cast< CommonAPI::SomeIP::StringDeployment* >(nullptr), static_cast< CommonAPI::EmptyDeployment* >(nullptr)))
         
     {
         MediaControlSomeIPStubAdapterHelper::addStubDispatcher( { CommonAPI::SomeIP::method_id_t(0x7d1) }, &getVolumeStubDispatcher );
-        MediaControlSomeIPStubAdapterHelper::addStubDispatcher( { CommonAPI::SomeIP::method_id_t(0x7d2) }, &setVolumeStubDispatcher );
+        MediaControlSomeIPStubAdapterHelper::addStubDispatcher( { CommonAPI::SomeIP::method_id_t(0x7d3) }, &getCurrentMusicStubDispatcher );
         // Provided events/fields
         {
             std::set<CommonAPI::SomeIP::eventgroup_id_t> itsEventGroups;
             itsEventGroups.insert(CommonAPI::SomeIP::eventgroup_id_t(0x1235));
             CommonAPI::SomeIP::StubAdapter::registerEvent(CommonAPI::SomeIP::event_id_t(0x9ca4), itsEventGroups, CommonAPI::SomeIP::event_type_e::ET_EVENT, CommonAPI::SomeIP::reliability_type_e::RT_UNRELIABLE);
+        }
+        {
+            std::set<CommonAPI::SomeIP::eventgroup_id_t> itsEventGroups;
+            itsEventGroups.insert(CommonAPI::SomeIP::eventgroup_id_t(0x1235));
+            CommonAPI::SomeIP::StubAdapter::registerEvent(CommonAPI::SomeIP::event_id_t(0x9ca5), itsEventGroups, CommonAPI::SomeIP::event_type_e::ET_EVENT, CommonAPI::SomeIP::reliability_type_e::RT_UNRELIABLE);
         }
     }
 
@@ -122,6 +129,21 @@ void MediaControlSomeIPStubAdapterInternal<_Stub, _Stubs...>::fireVolumeChangedE
             CommonAPI::SomeIP::event_id_t(0x9ca4),
             false,
             _newVolume
+    );
+}
+
+template <typename _Stub, typename... _Stubs>
+void MediaControlSomeIPStubAdapterInternal<_Stub, _Stubs...>::fireCurrentMusicChangedEvent(const std::string &_title, const bool &_isPlaying) {
+    CommonAPI::Deployable< std::string, CommonAPI::SomeIP::StringDeployment> deployed_title(_title, static_cast< CommonAPI::SomeIP::StringDeployment* >(nullptr));
+    CommonAPI::SomeIP::StubEventHelper<CommonAPI::SomeIP::SerializableArguments<  CommonAPI::Deployable< std::string, CommonAPI::SomeIP::StringDeployment > 
+    ,  bool
+    >>
+        ::sendEvent(
+            *this,
+            CommonAPI::SomeIP::event_id_t(0x9ca5),
+            false,
+             deployed_title 
+            , _isPlaying
     );
 }
 

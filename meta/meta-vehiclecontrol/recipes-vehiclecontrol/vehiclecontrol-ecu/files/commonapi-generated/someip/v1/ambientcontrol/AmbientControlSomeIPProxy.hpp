@@ -7,10 +7,10 @@
  * If a copy of the MPL was not distributed with this file, You can obtain one at
  * http://mozilla.org/MPL/2.0/.
  */
-#ifndef V1_MEDIACONTROL_MEDIA_CONTROL_SOMEIP_PROXY_HPP_
-#define V1_MEDIACONTROL_MEDIA_CONTROL_SOMEIP_PROXY_HPP_
+#ifndef V1_AMBIENTCONTROL_AMBIENT_CONTROL_SOMEIP_PROXY_HPP_
+#define V1_AMBIENTCONTROL_AMBIENT_CONTROL_SOMEIP_PROXY_HPP_
 
-#include <v1/mediacontrol/MediaControlProxyBase.hpp>
+#include <v1/ambientcontrol/AmbientControlProxyBase.hpp>
 
 #if !defined (COMMONAPI_INTERNAL_COMPILATION)
 #define COMMONAPI_INTERNAL_COMPILATION
@@ -42,42 +42,42 @@
 # endif
 
 namespace v1 {
-namespace mediacontrol {
+namespace ambientcontrol {
 
-class MediaControlSomeIPProxy
-    : virtual public MediaControlProxyBase,
+class AmbientControlSomeIPProxy
+    : virtual public AmbientControlProxyBase,
       virtual public CommonAPI::SomeIP::Proxy {
 public:
-    MediaControlSomeIPProxy(
+    AmbientControlSomeIPProxy(
         const CommonAPI::SomeIP::Address &_address,
         const std::shared_ptr<CommonAPI::SomeIP::ProxyConnection> &_connection);
 
-    virtual ~MediaControlSomeIPProxy();
+    virtual ~AmbientControlSomeIPProxy();
 
-    virtual VolumeChangedEvent& getVolumeChangedEvent();
+    virtual AmbientColorChangedEvent& getAmbientColorChangedEvent();
 
-    virtual CurrentMusicChangedEvent& getCurrentMusicChangedEvent();
+    virtual BrightnessChangedEvent& getBrightnessChangedEvent();
 
-    virtual void getVolume(CommonAPI::CallStatus &_internalCallStatus, float &_volume, const CommonAPI::CallInfo *_info);
+    virtual void getAmbientColor(CommonAPI::CallStatus &_internalCallStatus, std::string &_color, const CommonAPI::CallInfo *_info);
 
-    virtual std::future<CommonAPI::CallStatus> getVolumeAsync(GetVolumeAsyncCallback _callback, const CommonAPI::CallInfo *_info);
+    virtual std::future<CommonAPI::CallStatus> getAmbientColorAsync(GetAmbientColorAsyncCallback _callback, const CommonAPI::CallInfo *_info);
 
-    virtual void getCurrentMusic(CommonAPI::CallStatus &_internalCallStatus, std::string &_title, bool &_isPlaying, const CommonAPI::CallInfo *_info);
+    virtual void getBrightness(CommonAPI::CallStatus &_internalCallStatus, float &_brightness, const CommonAPI::CallInfo *_info);
 
-    virtual std::future<CommonAPI::CallStatus> getCurrentMusicAsync(GetCurrentMusicAsyncCallback _callback, const CommonAPI::CallInfo *_info);
+    virtual std::future<CommonAPI::CallStatus> getBrightnessAsync(GetBrightnessAsyncCallback _callback, const CommonAPI::CallInfo *_info);
 
     virtual void getOwnVersion(uint16_t &_major, uint16_t &_minor) const;
 
     virtual std::future<void> getCompletionFuture();
 
 private:
-    CommonAPI::SomeIP::Event<VolumeChangedEvent, CommonAPI::Deployable< float, CommonAPI::EmptyDeployment >> volumeChanged_;
-    CommonAPI::SomeIP::Event<CurrentMusicChangedEvent, CommonAPI::Deployable< std::string, CommonAPI::SomeIP::StringDeployment >, CommonAPI::Deployable< bool, CommonAPI::EmptyDeployment >> currentMusicChanged_;
+    CommonAPI::SomeIP::Event<AmbientColorChangedEvent, CommonAPI::Deployable< std::string, CommonAPI::SomeIP::StringDeployment >> ambientColorChanged_;
+    CommonAPI::SomeIP::Event<BrightnessChangedEvent, CommonAPI::Deployable< float, CommonAPI::EmptyDeployment >> brightnessChanged_;
 
     std::promise<void> completed_;
 };
 
-} // namespace mediacontrol
+} // namespace ambientcontrol
 } // namespace v1
 
-#endif // V1_MEDIACONTROL_Media_Control_SOMEIP_PROXY_HPP_
+#endif // V1_AMBIENTCONTROL_Ambient_Control_SOMEIP_PROXY_HPP_

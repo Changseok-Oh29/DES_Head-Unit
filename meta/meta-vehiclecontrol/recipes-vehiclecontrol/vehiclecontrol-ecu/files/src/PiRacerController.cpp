@@ -7,6 +7,7 @@ PiRacerController::PiRacerController(QObject *parent)
     : QObject(parent)
     , m_currentGear("P")
     , m_currentSpeed(0)
+    , m_currentDistance(200)  // Default to max distance (no obstacle)
     , m_currentThrottle(0.0f)
 {
 }
@@ -40,8 +41,10 @@ bool PiRacerController::initialize()
             qDebug() << "✅ CAN interface initialized";
             connect(m_canInterface.get(), &CANInterface::speedDataReceived,
                     this, &PiRacerController::onSpeedDataReceived);
+            connect(m_canInterface.get(), &CANInterface::distanceDataReceived,
+                    this, &PiRacerController::onDistanceDataReceived);
         } else {
-            qWarning() << "⚠️  CAN interface failed - speed will be unavailable";
+            qWarning() << "⚠️  CAN interface failed - speed/distance will be unavailable";
         }
         
         qDebug() << "✅ PiRacerController initialized";
@@ -62,15 +65,15 @@ bool PiRacerController::initialize()
 void PiRacerController::setGearPosition(const QString& gear)
 {
     QString oldGear = m_currentGear;
-    
+
     if (gear != oldGear) {
         m_currentGear = gear;
         qDebug() << "⚙️  Gear changed:" << oldGear << "→" << gear;
-        
+
         // Stop throttle when changing gears
         setThrottlePercent(0.0f);
-        
-        emit gearChanged(gear, oldGear);
+
+        emit gearDistanceChanged(gear, oldGear, m_currentDistance);
     }
 }
 
@@ -131,6 +134,22 @@ void PiRacerController::onSpeedDataReceived(float speedCms)
 {
     // Store speed in cm/s (no conversion)
     m_currentSpeed = static_cast<uint16_t>(speedCms);
+}
+
+void PiRacerController::onDistanceDataReceived(float distanceCm)
+{
+    // Store distance in cm
+    uint16_t newDistance = static_cast<uint16_t>(distanceCm);
+
+    // Always emit when in Reverse gear (for PDC continuous updates)
+    // or when distance changes significantly
+    if (m_currentGear == "R" || qAbs(static_cast<int>(newDistance) - static_cast<int>(m_currentDistance)) > 2) {
+        m_currentDistance = newDistance;
+        // Emit with current gear so PDCApp/RemoteSpeaker can receive continuous updates
+        emit gearDistanceChanged(m_currentGear, m_currentGear, m_currentDistance);
+    } else {
+        m_currentDistance = newDistance;
+    }
 }
 
 uint8_t PiRacerController::getBatteryLevel() const

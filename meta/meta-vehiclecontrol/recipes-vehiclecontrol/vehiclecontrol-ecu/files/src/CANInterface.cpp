@@ -8,6 +8,10 @@ CANInterface::CANInterface(QObject *parent)
     , m_isConnected(false)
     , m_receiveTimer(new QTimer(this))
     , m_currentSpeedCms(0.0f)
+    , m_currentDistanceCm(0.0f)
+    , m_previousRawDistance(0.0f)
+    , m_emaDistance(0.0f)
+    , m_distanceFilterInitialized(false)
 {
     // Timer to check CAN messages every 10ms
     m_receiveTimer->setSingleShot(false);
@@ -157,22 +161,30 @@ void CANInterface::receiveCANMessages()
 void CANInterface::processCANFrame(const struct can_frame &frame)
 {
     if (frame.can_id == ARDUINO_SPEED_ID) {
+        // Parse speed data (bytes 0-2) - UNCHANGED
         float speedCms = parseSpeedData(frame.data);
+
+        // NEW: Parse distance data (bytes 3-6)
+        float rawDistance = parseDistanceData(frame.data);
+        float filteredDistance = filterDistance(rawDistance);
 
         {
             QMutexLocker locker(&m_dataMutex);
             m_currentSpeedCms = speedCms;
+            m_currentDistanceCm = filteredDistance;  // NEW: Store filtered distance
         }
 
         // Debug log
         static int logCount = 0;
-        if (++logCount % 100 == 0) {  // 매 1초마다 로그 (10ms * 100)
-            qDebug() << "📡 CAN Speed:"
-                     << "raw[" << frame.data[0] << frame.data[1] << frame.data[2] << "]"
-                     << speedCms << "cm/s";
+        if (++logCount % 100 == 0) {  // Every 1 second (10ms * 100)
+            qDebug() << "📡 CAN Data:"
+                     << "Speed:" << speedCms << "cm/s"
+                     << "| Distance (raw):" << rawDistance << "cm"
+                     << "| Distance (filtered):" << filteredDistance << "cm";
         }
 
         emit speedDataReceived(speedCms);
+        emit distanceDataReceived(filteredDistance);  // NEW: Emit filtered distance
     }
 }
 
@@ -200,4 +212,94 @@ float CANInterface::getCurrentSpeedKmh() const
     QMutexLocker locker(&m_dataMutex);
     // Convert cm/s to km/h: (cm/s * 3600) / 100000 = cm/s * 0.036
     return m_currentSpeedCms * 0.036f;
+}
+
+// ============================================================================
+// NEW: Distance Parsing and Filtering Methods
+// ============================================================================
+
+float CANInterface::parseDistanceData(const uint8_t *data)
+{
+    // Parse Arduino distance format from bytes 3-6 (float, 4 bytes, little-endian)
+    // Arduino sends: distanceData.bytes[0-3] in bytes 3-6 of CAN message
+    union {
+        float value;
+        uint8_t bytes[4];
+    } distanceUnion;
+
+    // Copy bytes 3-6 to float union
+    memcpy(distanceUnion.bytes, &data[3], 4);
+
+    return distanceUnion.value;
+}
+
+float CANInterface::filterDistance(float rawDistance)
+{
+    // Step 1: Validate reading (check range and special values)
+    if (!isValidDistance(rawDistance)) {
+        qDebug() << "⚠️  Invalid distance reading:" << rawDistance << "cm (ignored)";
+        return m_currentDistanceCm;  // Return last valid filtered value
+    }
+
+    // Step 2: Initialize filter on first valid reading
+    if (!m_distanceFilterInitialized) {
+        m_emaDistance = rawDistance;
+        m_previousRawDistance = rawDistance;
+        m_currentDistanceCm = rawDistance;
+        m_distanceFilterInitialized = true;
+        qDebug() << "🔧 Distance filter initialized with:" << rawDistance << "cm";
+        return rawDistance;
+    }
+
+    // Step 3: Reject outliers (sudden unrealistic jumps)
+    if (isOutlier(rawDistance)) {
+        qDebug() << "⚠️  Outlier detected:" << rawDistance << "cm"
+                 << "(jump from" << m_previousRawDistance << "cm, ignored)";
+        return m_currentDistanceCm;  // Return last filtered value
+    }
+
+    // Step 4: Apply EMA filter (Exponential Moving Average)
+    // Formula: filtered = alpha * new + (1 - alpha) * old
+    m_emaDistance = DISTANCE_EMA_ALPHA * rawDistance + (1.0f - DISTANCE_EMA_ALPHA) * m_emaDistance;
+
+    // Step 5: Update previous raw value for next outlier check
+    m_previousRawDistance = rawDistance;
+
+    return m_emaDistance;
+}
+
+bool CANInterface::isValidDistance(float distance) const
+{
+    // Check for Arduino sensor failure flag (-1.0)
+    if (distance < 0.0f) {
+        return false;
+    }
+
+    // Check physical sensor limits (HC-SR04: 2cm - 400cm, but we limit to 200cm for PDC)
+    if (distance < DISTANCE_MIN_VALID || distance > DISTANCE_MAX_VALID) {
+        return false;
+    }
+
+    return true;
+}
+
+bool CANInterface::isOutlier(float distance) const
+{
+    // Don't check outliers if filter not initialized
+    if (!m_distanceFilterInitialized) {
+        return false;
+    }
+
+    // Calculate absolute difference from previous raw reading
+    float delta = qAbs(distance - m_previousRawDistance);
+
+    // For PDC at 100ms update rate, 30cm jump means 3 m/s velocity
+    // This is unrealistic for parking scenarios (typical < 1 m/s)
+    return delta > DISTANCE_OUTLIER_THRESHOLD;
+}
+
+float CANInterface::getCurrentDistanceCm() const
+{
+    QMutexLocker locker(&m_dataMutex);
+    return m_currentDistanceCm;
 }

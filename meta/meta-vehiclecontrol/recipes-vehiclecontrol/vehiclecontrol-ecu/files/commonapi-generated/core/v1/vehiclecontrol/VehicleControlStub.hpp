@@ -53,10 +53,10 @@ class VehicleControlStubAdapter
     */
     virtual void fireVehicleStateChangedEvent(const std::string &_gear, const uint16_t &_speed, const uint8_t &_batteryLevel, const uint64_t &_timestamp) = 0;
     /**
-    * Sends a broadcast event for gearChanged. Should not be called directly.
+    * Sends a broadcast event for gearDistanceChanged. Should not be called directly.
     * Instead, the "fire<broadcastName>Event" methods of the stub should be used.
     */
-    virtual void fireGearChangedEvent(const std::string &_newGear, const std::string &_oldGear, const uint64_t &_timestamp) = 0;
+    virtual void fireGearDistanceChangedEvent(const std::string &_newGear, const std::string &_oldGear, const uint16_t &_distance, const uint64_t &_timestamp) = 0;
 
 
     virtual void deactivateManagedInstances() = 0;
@@ -116,11 +116,11 @@ public:
         if (stubAdapter)
             stubAdapter->fireVehicleStateChangedEvent(_gear, _speed, _batteryLevel, _timestamp);
     }
-    /// Sends a broadcast event for gearChanged.
-    virtual void fireGearChangedEvent(const std::string &_newGear, const std::string &_oldGear, const uint64_t &_timestamp) {
+    /// Sends a broadcast event for gearDistanceChanged.
+    virtual void fireGearDistanceChangedEvent(const std::string &_newGear, const std::string &_oldGear, const uint16_t &_distance, const uint64_t &_timestamp) {
         auto stubAdapter = CommonAPI::Stub<VehicleControlStubAdapter, VehicleControlStubRemoteEvent>::stubAdapter_.lock();
         if (stubAdapter)
-            stubAdapter->fireGearChangedEvent(_newGear, _oldGear, _timestamp);
+            stubAdapter->fireGearDistanceChangedEvent(_newGear, _oldGear, _distance, _timestamp);
     }
 
 

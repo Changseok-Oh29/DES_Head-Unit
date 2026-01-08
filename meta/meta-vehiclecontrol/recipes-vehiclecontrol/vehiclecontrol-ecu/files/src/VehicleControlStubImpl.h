@@ -22,7 +22,7 @@ public:
                                  setGearPositionReply_t _reply) override;
     
 private slots:
-    void onGearChanged(QString newGear, QString oldGear);
+    void onGearDistanceChanged(QString newGear, QString oldGear, uint16_t distance);
     void onVehicleStateChanged(QString gear, uint16_t speed, uint8_t battery);
     
 private:

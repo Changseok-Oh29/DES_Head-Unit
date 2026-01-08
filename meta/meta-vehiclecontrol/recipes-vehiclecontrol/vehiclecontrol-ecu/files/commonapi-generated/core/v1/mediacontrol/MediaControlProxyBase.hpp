@@ -40,15 +40,19 @@ public:
     typedef CommonAPI::Event<
         float
     > VolumeChangedEvent;
+    typedef CommonAPI::Event<
+        std::string, bool
+    > CurrentMusicChangedEvent;
 
     typedef std::function<void(const CommonAPI::CallStatus&, const float&)> GetVolumeAsyncCallback;
-    typedef std::function<void(const CommonAPI::CallStatus&)> SetVolumeAsyncCallback;
+    typedef std::function<void(const CommonAPI::CallStatus&, const std::string&, const bool&)> GetCurrentMusicAsyncCallback;
 
     virtual void getVolume(CommonAPI::CallStatus &_internalCallStatus, float &_volume, const CommonAPI::CallInfo *_info = nullptr) = 0;
     virtual std::future<CommonAPI::CallStatus> getVolumeAsync(GetVolumeAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr) = 0;
-    virtual void setVolume(float _volume, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info = nullptr) = 0;
-    virtual std::future<CommonAPI::CallStatus> setVolumeAsync(const float &_volume, SetVolumeAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr) = 0;
+    virtual void getCurrentMusic(CommonAPI::CallStatus &_internalCallStatus, std::string &_title, bool &_isPlaying, const CommonAPI::CallInfo *_info = nullptr) = 0;
+    virtual std::future<CommonAPI::CallStatus> getCurrentMusicAsync(GetCurrentMusicAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr) = 0;
     virtual VolumeChangedEvent& getVolumeChangedEvent() = 0;
+    virtual CurrentMusicChangedEvent& getCurrentMusicChangedEvent() = 0;
 
     virtual std::future<void> getCompletionFuture() = 0;
 };

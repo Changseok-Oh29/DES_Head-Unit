@@ -47,7 +47,8 @@ MediaControlSomeIPProxy::MediaControlSomeIPProxy(
     const CommonAPI::SomeIP::Address &_address,
     const std::shared_ptr<CommonAPI::SomeIP::ProxyConnection> &_connection)
         : CommonAPI::SomeIP::Proxy(_address, _connection),
-          volumeChanged_(*this, 0x1235, CommonAPI::SomeIP::event_id_t(0x9ca4), CommonAPI::SomeIP::event_type_e::ET_EVENT , CommonAPI::SomeIP::reliability_type_e::RT_UNRELIABLE, false, std::make_tuple(static_cast< CommonAPI::EmptyDeployment* >(nullptr)))
+          volumeChanged_(*this, 0x1235, CommonAPI::SomeIP::event_id_t(0x9ca4), CommonAPI::SomeIP::event_type_e::ET_EVENT , CommonAPI::SomeIP::reliability_type_e::RT_UNRELIABLE, false, std::make_tuple(static_cast< CommonAPI::EmptyDeployment* >(nullptr))),
+          currentMusicChanged_(*this, 0x1235, CommonAPI::SomeIP::event_id_t(0x9ca5), CommonAPI::SomeIP::event_type_e::ET_EVENT , CommonAPI::SomeIP::reliability_type_e::RT_UNRELIABLE, false, std::make_tuple(static_cast< CommonAPI::SomeIP::StringDeployment* >(nullptr), static_cast< CommonAPI::EmptyDeployment* >(nullptr)))
 {
 }
 
@@ -58,6 +59,9 @@ MediaControlSomeIPProxy::~MediaControlSomeIPProxy() {
 
 MediaControlSomeIPProxy::VolumeChangedEvent& MediaControlSomeIPProxy::getVolumeChangedEvent() {
     return volumeChanged_;
+}
+MediaControlSomeIPProxy::CurrentMusicChangedEvent& MediaControlSomeIPProxy::getCurrentMusicChangedEvent() {
+    return currentMusicChanged_;
 }
 
 void MediaControlSomeIPProxy::getVolume(CommonAPI::CallStatus &_internalCallStatus, float &_volume, const CommonAPI::CallInfo *_info) {
@@ -106,50 +110,61 @@ std::future<CommonAPI::CallStatus> MediaControlSomeIPProxy::getVolumeAsync(GetVo
         std::make_tuple(deploy_volume));
 }
 
-void MediaControlSomeIPProxy::setVolume(float _volume, CommonAPI::CallStatus &_internalCallStatus, const CommonAPI::CallInfo *_info) {
-    CommonAPI::Deployable< float, CommonAPI::EmptyDeployment> deploy_volume(_volume, static_cast< CommonAPI::EmptyDeployment* >(nullptr));
+void MediaControlSomeIPProxy::getCurrentMusic(CommonAPI::CallStatus &_internalCallStatus, std::string &_title, bool &_isPlaying, const CommonAPI::CallInfo *_info) {
+    CommonAPI::Deployable< std::string, CommonAPI::SomeIP::StringDeployment> deploy_title(static_cast< CommonAPI::SomeIP::StringDeployment* >(nullptr));
+    CommonAPI::Deployable< bool, CommonAPI::EmptyDeployment> deploy_isPlaying(static_cast< CommonAPI::EmptyDeployment* >(nullptr));
     CommonAPI::SomeIP::ProxyHelper<
         CommonAPI::SomeIP::SerializableArguments<
-            CommonAPI::Deployable<
-                float,
-                CommonAPI::EmptyDeployment
-            >
         >,
         CommonAPI::SomeIP::SerializableArguments<
+            CommonAPI::Deployable<
+                std::string,
+                CommonAPI::SomeIP::StringDeployment
+            >,
+            CommonAPI::Deployable<
+                bool,
+                CommonAPI::EmptyDeployment
+            >
         >
     >::callMethodWithReply(
         *this,
-        CommonAPI::SomeIP::method_id_t(0x7d2),
+        CommonAPI::SomeIP::method_id_t(0x7d3),
         false,
         false,
         (_info ? _info : &CommonAPI::SomeIP::defaultCallInfo),
-        deploy_volume,
-        _internalCallStatus);
+        _internalCallStatus,
+        deploy_title, deploy_isPlaying);
+    _title = deploy_title.getValue();
+    _isPlaying = deploy_isPlaying.getValue();
 }
 
-std::future<CommonAPI::CallStatus> MediaControlSomeIPProxy::setVolumeAsync(const float &_volume, SetVolumeAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
-    CommonAPI::Deployable< float, CommonAPI::EmptyDeployment> deploy_volume(_volume, static_cast< CommonAPI::EmptyDeployment* >(nullptr));
+std::future<CommonAPI::CallStatus> MediaControlSomeIPProxy::getCurrentMusicAsync(GetCurrentMusicAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
+    CommonAPI::Deployable< std::string, CommonAPI::SomeIP::StringDeployment> deploy_title(static_cast< CommonAPI::SomeIP::StringDeployment* >(nullptr));
+    CommonAPI::Deployable< bool, CommonAPI::EmptyDeployment> deploy_isPlaying(static_cast< CommonAPI::EmptyDeployment* >(nullptr));
     return CommonAPI::SomeIP::ProxyHelper<
         CommonAPI::SomeIP::SerializableArguments<
-            CommonAPI::Deployable<
-                float,
-                CommonAPI::EmptyDeployment
-            >
         >,
         CommonAPI::SomeIP::SerializableArguments<
+            CommonAPI::Deployable<
+                std::string,
+                CommonAPI::SomeIP::StringDeployment
+            >,
+            CommonAPI::Deployable<
+                bool,
+                CommonAPI::EmptyDeployment
+            >
         >
     >::callMethodAsync(
         *this,
-        CommonAPI::SomeIP::method_id_t(0x7d2),
+        CommonAPI::SomeIP::method_id_t(0x7d3),
         false,
         false,
         (_info ? _info : &CommonAPI::SomeIP::defaultCallInfo),
-        deploy_volume,
-        [_callback] (CommonAPI::CallStatus _internalCallStatus) {
+        [_callback] (CommonAPI::CallStatus _internalCallStatus, CommonAPI::Deployable< std::string, CommonAPI::SomeIP::StringDeployment > _title, CommonAPI::Deployable< bool, CommonAPI::EmptyDeployment > _isPlaying) {
             if (_callback)
-                _callback(_internalCallStatus);
+                _callback(_internalCallStatus, _title.getValue(), _isPlaying.getValue());
         },
-        std::make_tuple());
+        std::make_tuple(deploy_title, deploy_isPlaying));
 }
 
 void MediaControlSomeIPProxy::getOwnVersion(uint16_t& ownVersionMajor, uint16_t& ownVersionMinor) const {

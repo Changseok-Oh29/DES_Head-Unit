@@ -7,10 +7,10 @@
 * If a copy of the MPL was not distributed with this file, You can obtain one at
 * http://mozilla.org/MPL/2.0/.
 */
-#ifndef V1_MEDIACONTROL_Media_Control_PROXY_HPP_
-#define V1_MEDIACONTROL_Media_Control_PROXY_HPP_
+#ifndef V1_AMBIENTCONTROL_Ambient_Control_PROXY_HPP_
+#define V1_AMBIENTCONTROL_Ambient_Control_PROXY_HPP_
 
-#include <v1/mediacontrol/MediaControlProxyBase.hpp>
+#include <v1/ambientcontrol/AmbientControlProxyBase.hpp>
 
 
 #if !defined (COMMONAPI_INTERNAL_COMPILATION)
@@ -25,18 +25,18 @@
 #endif
 
 namespace v1 {
-namespace mediacontrol {
+namespace ambientcontrol {
 
 template <typename ... _AttributeExtensions>
-class MediaControlProxy
-    : virtual public MediaControl,
-      virtual public MediaControlProxyBase,
+class AmbientControlProxy
+    : virtual public AmbientControl,
+      virtual public AmbientControlProxyBase,
       virtual public _AttributeExtensions... {
 public:
-    MediaControlProxy(std::shared_ptr<CommonAPI::Proxy> delegate);
-    ~MediaControlProxy();
+    AmbientControlProxy(std::shared_ptr<CommonAPI::Proxy> delegate);
+    ~AmbientControlProxy();
 
-    typedef MediaControl InterfaceType;
+    typedef AmbientControl InterfaceType;
 
 
     /**
@@ -69,16 +69,16 @@ public:
     virtual std::future<void> getCompletionFuture();
 
     /**
-     * Calls getVolume with synchronous semantics.
+     * Calls getAmbientColor with synchronous semantics.
      *
      * All non-const parameters will be filled with the returned values.
      * The CallStatus will be filled when the method returns and indicate either
      * "SUCCESS" or which type of error has occurred. In case of an error, ONLY the CallStatus
      * will be set.
      */
-    virtual void getVolume(CommonAPI::CallStatus &_internalCallStatus, float &_volume, const CommonAPI::CallInfo *_info = nullptr);
+    virtual void getAmbientColor(CommonAPI::CallStatus &_internalCallStatus, std::string &_color, const CommonAPI::CallInfo *_info = nullptr);
     /**
-     * Calls getVolume with asynchronous semantics.
+     * Calls getAmbientColor with asynchronous semantics.
      *
      * The provided callback will be called when the reply to this call arrives or
      * an error occurs during the call. The CallStatus will indicate either "SUCCESS"
@@ -87,18 +87,18 @@ public:
      * The std::future returned by this method will be fulfilled at arrival of the reply.
      * It will provide the same value for CallStatus as will be handed to the callback.
      */
-    virtual std::future<CommonAPI::CallStatus> getVolumeAsync(GetVolumeAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr);
+    virtual std::future<CommonAPI::CallStatus> getAmbientColorAsync(GetAmbientColorAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr);
     /**
-     * Calls getCurrentMusic with synchronous semantics.
+     * Calls getBrightness with synchronous semantics.
      *
      * All non-const parameters will be filled with the returned values.
      * The CallStatus will be filled when the method returns and indicate either
      * "SUCCESS" or which type of error has occurred. In case of an error, ONLY the CallStatus
      * will be set.
      */
-    virtual void getCurrentMusic(CommonAPI::CallStatus &_internalCallStatus, std::string &_title, bool &_isPlaying, const CommonAPI::CallInfo *_info = nullptr);
+    virtual void getBrightness(CommonAPI::CallStatus &_internalCallStatus, float &_brightness, const CommonAPI::CallInfo *_info = nullptr);
     /**
-     * Calls getCurrentMusic with asynchronous semantics.
+     * Calls getBrightness with asynchronous semantics.
      *
      * The provided callback will be called when the reply to this call arrives or
      * an error occurs during the call. The CallStatus will indicate either "SUCCESS"
@@ -107,93 +107,93 @@ public:
      * The std::future returned by this method will be fulfilled at arrival of the reply.
      * It will provide the same value for CallStatus as will be handed to the callback.
      */
-    virtual std::future<CommonAPI::CallStatus> getCurrentMusicAsync(GetCurrentMusicAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr);
+    virtual std::future<CommonAPI::CallStatus> getBrightnessAsync(GetBrightnessAsyncCallback _callback = nullptr, const CommonAPI::CallInfo *_info = nullptr);
     /**
-     * Returns the wrapper class that provides access to the broadcast volumeChanged.
+     * Returns the wrapper class that provides access to the broadcast ambientColorChanged.
      */
-    virtual VolumeChangedEvent& getVolumeChangedEvent() {
-        return delegate_->getVolumeChangedEvent();
+    virtual AmbientColorChangedEvent& getAmbientColorChangedEvent() {
+        return delegate_->getAmbientColorChangedEvent();
     }
     /**
-     * Returns the wrapper class that provides access to the broadcast currentMusicChanged.
+     * Returns the wrapper class that provides access to the broadcast brightnessChanged.
      */
-    virtual CurrentMusicChangedEvent& getCurrentMusicChangedEvent() {
-        return delegate_->getCurrentMusicChangedEvent();
+    virtual BrightnessChangedEvent& getBrightnessChangedEvent() {
+        return delegate_->getBrightnessChangedEvent();
     }
 
 
 
  private:
-    std::shared_ptr< MediaControlProxyBase> delegate_;
+    std::shared_ptr< AmbientControlProxyBase> delegate_;
 };
 
-typedef MediaControlProxy<> MediaControlProxyDefault;
+typedef AmbientControlProxy<> AmbientControlProxyDefault;
 
 
 //
-// MediaControlProxy Implementation
+// AmbientControlProxy Implementation
 //
 template <typename ... _AttributeExtensions>
-MediaControlProxy<_AttributeExtensions...>::MediaControlProxy(std::shared_ptr<CommonAPI::Proxy> delegate):
-        _AttributeExtensions(*(std::dynamic_pointer_cast< MediaControlProxyBase>(delegate)))...,
-        delegate_(std::dynamic_pointer_cast< MediaControlProxyBase>(delegate)) {
+AmbientControlProxy<_AttributeExtensions...>::AmbientControlProxy(std::shared_ptr<CommonAPI::Proxy> delegate):
+        _AttributeExtensions(*(std::dynamic_pointer_cast< AmbientControlProxyBase>(delegate)))...,
+        delegate_(std::dynamic_pointer_cast< AmbientControlProxyBase>(delegate)) {
 }
 
 template <typename ... _AttributeExtensions>
-MediaControlProxy<_AttributeExtensions...>::~MediaControlProxy() {
+AmbientControlProxy<_AttributeExtensions...>::~AmbientControlProxy() {
 }
 
 template <typename ... _AttributeExtensions>
-void MediaControlProxy<_AttributeExtensions...>::getVolume(CommonAPI::CallStatus &_internalCallStatus, float &_volume, const CommonAPI::CallInfo *_info) {
-    delegate_->getVolume(_internalCallStatus, _volume, _info);
+void AmbientControlProxy<_AttributeExtensions...>::getAmbientColor(CommonAPI::CallStatus &_internalCallStatus, std::string &_color, const CommonAPI::CallInfo *_info) {
+    delegate_->getAmbientColor(_internalCallStatus, _color, _info);
 }
 
 template <typename ... _AttributeExtensions>
-std::future<CommonAPI::CallStatus> MediaControlProxy<_AttributeExtensions...>::getVolumeAsync(GetVolumeAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
-    return delegate_->getVolumeAsync(_callback, _info);
+std::future<CommonAPI::CallStatus> AmbientControlProxy<_AttributeExtensions...>::getAmbientColorAsync(GetAmbientColorAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
+    return delegate_->getAmbientColorAsync(_callback, _info);
 }
 template <typename ... _AttributeExtensions>
-void MediaControlProxy<_AttributeExtensions...>::getCurrentMusic(CommonAPI::CallStatus &_internalCallStatus, std::string &_title, bool &_isPlaying, const CommonAPI::CallInfo *_info) {
-    delegate_->getCurrentMusic(_internalCallStatus, _title, _isPlaying, _info);
-}
-
-template <typename ... _AttributeExtensions>
-std::future<CommonAPI::CallStatus> MediaControlProxy<_AttributeExtensions...>::getCurrentMusicAsync(GetCurrentMusicAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
-    return delegate_->getCurrentMusicAsync(_callback, _info);
+void AmbientControlProxy<_AttributeExtensions...>::getBrightness(CommonAPI::CallStatus &_internalCallStatus, float &_brightness, const CommonAPI::CallInfo *_info) {
+    delegate_->getBrightness(_internalCallStatus, _brightness, _info);
 }
 
 template <typename ... _AttributeExtensions>
-const CommonAPI::Address &MediaControlProxy<_AttributeExtensions...>::getAddress() const {
+std::future<CommonAPI::CallStatus> AmbientControlProxy<_AttributeExtensions...>::getBrightnessAsync(GetBrightnessAsyncCallback _callback, const CommonAPI::CallInfo *_info) {
+    return delegate_->getBrightnessAsync(_callback, _info);
+}
+
+template <typename ... _AttributeExtensions>
+const CommonAPI::Address &AmbientControlProxy<_AttributeExtensions...>::getAddress() const {
     return delegate_->getAddress();
 }
 
 template <typename ... _AttributeExtensions>
-bool MediaControlProxy<_AttributeExtensions...>::isAvailable() const {
+bool AmbientControlProxy<_AttributeExtensions...>::isAvailable() const {
     return delegate_->isAvailable();
 }
 
 template <typename ... _AttributeExtensions>
-bool MediaControlProxy<_AttributeExtensions...>::isAvailableBlocking() const {
+bool AmbientControlProxy<_AttributeExtensions...>::isAvailableBlocking() const {
     return delegate_->isAvailableBlocking();
 }
 
 template <typename ... _AttributeExtensions>
-CommonAPI::ProxyStatusEvent& MediaControlProxy<_AttributeExtensions...>::getProxyStatusEvent() {
+CommonAPI::ProxyStatusEvent& AmbientControlProxy<_AttributeExtensions...>::getProxyStatusEvent() {
     return delegate_->getProxyStatusEvent();
 }
 
 template <typename ... _AttributeExtensions>
-CommonAPI::InterfaceVersionAttribute& MediaControlProxy<_AttributeExtensions...>::getInterfaceVersionAttribute() {
+CommonAPI::InterfaceVersionAttribute& AmbientControlProxy<_AttributeExtensions...>::getInterfaceVersionAttribute() {
     return delegate_->getInterfaceVersionAttribute();
 }
 
 
 template <typename ... _AttributeExtensions>
-std::future<void> MediaControlProxy<_AttributeExtensions...>::getCompletionFuture() {
+std::future<void> AmbientControlProxy<_AttributeExtensions...>::getCompletionFuture() {
     return delegate_->getCompletionFuture();
 }
 
-} // namespace mediacontrol
+} // namespace ambientcontrol
 } // namespace v1
 
 
@@ -201,4 +201,4 @@ std::future<void> MediaControlProxy<_AttributeExtensions...>::getCompletionFutur
 // Compatibility
 namespace v1_0 = v1;
 
-#endif // V1_MEDIACONTROL_Media_Control_PROXY_HPP_
+#endif // V1_AMBIENTCONTROL_Ambient_Control_PROXY_HPP_
