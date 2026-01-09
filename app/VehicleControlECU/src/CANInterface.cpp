@@ -9,7 +9,6 @@ CANInterface::CANInterface(QObject *parent)
     , m_receiveTimer(new QTimer(this))
     , m_currentSpeedCms(0.0f)
     , m_currentDistanceCm(0.0f)
-    , m_previousRawDistance(0.0f)
     , m_emaDistance(0.0f)
     , m_distanceFilterInitialized(false)
 {
@@ -244,26 +243,15 @@ float CANInterface::filterDistance(float rawDistance)
     // Step 2: Initialize filter on first valid reading
     if (!m_distanceFilterInitialized) {
         m_emaDistance = rawDistance;
-        m_previousRawDistance = rawDistance;
         m_currentDistanceCm = rawDistance;
         m_distanceFilterInitialized = true;
         qDebug() << "🔧 Distance filter initialized with:" << rawDistance << "cm";
         return rawDistance;
     }
 
-    // Step 3: Reject outliers (sudden unrealistic jumps)
-    if (isOutlier(rawDistance)) {
-        qDebug() << "⚠️  Outlier detected:" << rawDistance << "cm"
-                 << "(jump from" << m_previousRawDistance << "cm, ignored)";
-        return m_currentDistanceCm;  // Return last filtered value
-    }
-
-    // Step 4: Apply EMA filter (Exponential Moving Average)
+    // Step 3: Apply EMA filter (Exponential Moving Average)
     // Formula: filtered = alpha * new + (1 - alpha) * old
     m_emaDistance = DISTANCE_EMA_ALPHA * rawDistance + (1.0f - DISTANCE_EMA_ALPHA) * m_emaDistance;
-
-    // Step 5: Update previous raw value for next outlier check
-    m_previousRawDistance = rawDistance;
 
     return m_emaDistance;
 }
@@ -281,21 +269,6 @@ bool CANInterface::isValidDistance(float distance) const
     }
 
     return true;
-}
-
-bool CANInterface::isOutlier(float distance) const
-{
-    // Don't check outliers if filter not initialized
-    if (!m_distanceFilterInitialized) {
-        return false;
-    }
-
-    // Calculate absolute difference from previous raw reading
-    float delta = qAbs(distance - m_previousRawDistance);
-
-    // For PDC at 100ms update rate, 30cm jump means 3 m/s velocity
-    // This is unrealistic for parking scenarios (typical < 1 m/s)
-    return delta > DISTANCE_OUTLIER_THRESHOLD;
 }
 
 float CANInterface::getCurrentDistanceCm() const

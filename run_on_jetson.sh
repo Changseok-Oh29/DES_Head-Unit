@@ -44,6 +44,18 @@ cd "$BUILD_DIR"
 # ───────────────────────────────────────────────────────────────────────────────
 
 # ───────────────────────────────────────────────────────────────────────────────
+# Launch vsomeip Routing Manager (required for external communication)
+# ───────────────────────────────────────────────────────────────────────────────
+echo "Starting vsomeip Routing Manager..."
+export VSOMEIP_CONFIGURATION=$BASE_DIR/app/config/routing_manager_ecu2.json
+export VSOMEIP_APPLICATION_NAME=routingmanagerd
+nohup routingmanagerd > /tmp/routingmanagerd.log 2>&1 &
+ROUTING_PID=$!
+echo "  PID: $ROUTING_PID"
+echo "  Config: routing_manager_ecu2.json"
+sleep 2  # Wait for routing manager to initialize
+
+# ───────────────────────────────────────────────────────────────────────────────
 # Launch HU_MainApp Compositor
 # ───────────────────────────────────────────────────────────────────────────────
 echo "Starting HU_MainApp Compositor..."
@@ -185,6 +197,7 @@ echo "All apps started!"
 echo "═══════════════════════════════════════════════════════════════════════════════"
 echo ""
 echo "Process IDs:"
+echo "  Routing Manager:       $ROUTING_PID"
 echo "  HU_MainApp Compositor: $COMP_PID"
 echo "  GearApp:               $GEAR_PID"
 echo "  HomeScreenApp:         $HS_PID"
@@ -199,5 +212,5 @@ echo "VehicleControlECU should be running on Raspberry Pi (192.168.1.100)"
 echo "Logs are in /tmp/*.log"
 echo ""
 echo "To stop all apps, run:"
-echo "  pkill -f 'HU_MainApp|GearApp|HomeScreenApp|MediaApp|PDCApp|RemoteSpeakerApp|AmbientApp'"
+echo "  pkill -f 'routingmanagerd|HU_MainApp|GearApp|HomeScreenApp|MediaApp|PDCApp|RemoteSpeakerApp|AmbientApp'"
 echo ""

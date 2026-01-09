@@ -13,8 +13,8 @@ echo "Project Root: ${PROJECT_ROOT}"
 echo ""
 
 # 1단계: 완전 클린업
-echo "[1/6] Cleaning up all processes..."
-killall -9 GearApp AmbientApp IC_app MediaApp routingmanagerd 2>/dev/null
+echo "[1/8] Cleaning up all processes..."
+killall -9 GearApp AmbientApp IC_app MediaApp PDCApp HomeScreenApp routingmanagerd HU_MainApp_Compositor 2>/dev/null
 pkill -9 -f vsomeip 2>/dev/null
 sudo rm -rf /tmp/vsomeip-* 2>/dev/null
 sleep 1
@@ -22,7 +22,7 @@ echo "✓ Cleanup complete"
 echo ""
 
 # 2단계: 네트워크 확인
-echo "[2/6] Checking network configuration..."
+echo "[2/8] Checking network configuration..."
 IP_ADDR=$(ip addr show eth0 2>/dev/null | grep "inet " | awk '{print $2}' | cut -d'/' -f1)
 if [ "$IP_ADDR" != "192.168.1.101" ]; then
     echo "⚠ Warning: Setting up network..."
@@ -119,7 +119,7 @@ sleep 2
 echo ""
 
 # 6단계: IC_app 시작
-echo "[6/7] Starting IC_app..."
+echo "[6/9] Starting IC_app..."
 cd "${PROJECT_ROOT}/IC_app"
 if [ ! -f "build/IC_app" ]; then
     echo "⚠ IC_app not built, skipping..."
@@ -132,7 +132,7 @@ sleep 2
 echo ""
 
 # 7단계: MediaApp 시작
-echo "[7/7] Starting MediaApp..."
+echo "[7/9] Starting MediaApp..."
 cd "${PROJECT_ROOT}/MediaApp"
 if [ ! -f "build/MediaApp" ]; then
     echo "⚠ MediaApp not built, skipping..."
@@ -140,6 +140,32 @@ else
     ./run.sh &> /tmp/mediaapp.log &
     MEDIAAPP_PID=$!
     echo "✓ MediaApp started (PID: ${MEDIAAPP_PID})"
+fi
+sleep 2
+echo ""
+
+# 8단계: PDCApp 시작
+echo "[8/9] Starting PDCApp..."
+cd "${PROJECT_ROOT}/PDCApp"
+if [ ! -f "build/PDCApp" ]; then
+    echo "⚠ PDCApp not built, skipping..."
+else
+    ./run.sh &> /tmp/pdcapp.log &
+    PDCAPP_PID=$!
+    echo "✓ PDCApp started (PID: ${PDCAPP_PID})"
+fi
+sleep 2
+echo ""
+
+# 9단계: HomeScreenApp 시작
+echo "[9/9] Starting HomeScreenApp..."
+cd "${PROJECT_ROOT}/HomeScreenApp"
+if [ ! -f "build/HomeScreenApp" ]; then
+    echo "⚠ HomeScreenApp not built, skipping..."
+else
+    ./run.sh &> /tmp/homescreenapp.log &
+    HOMESCREEN_PID=$!
+    echo "✓ HomeScreenApp started (PID: ${HOMESCREEN_PID})"
 fi
 echo ""
 
@@ -158,6 +184,12 @@ fi
 if [ ! -z "$MEDIAAPP_PID" ]; then
     echo "  - MediaApp:        PID ${MEDIAAPP_PID}"
 fi
+if [ ! -z "$PDCAPP_PID" ]; then
+    echo "  - PDCApp:          PID ${PDCAPP_PID}"
+fi
+if [ ! -z "$HOMESCREEN_PID" ]; then
+    echo "  - HomeScreenApp:   PID ${HOMESCREEN_PID}"
+fi
 echo ""
 echo "로그 파일:"
 echo "  - Routing Manager: /tmp/routing_manager.log"
@@ -169,13 +201,21 @@ fi
 if [ ! -z "$MEDIAAPP_PID" ]; then
     echo "  - MediaApp:        /tmp/mediaapp.log"
 fi
+if [ ! -z "$PDCAPP_PID" ]; then
+    echo "  - PDCApp:          /tmp/pdcapp.log"
+fi
+if [ ! -z "$HOMESCREEN_PID" ]; then
+    echo "  - HomeScreenApp:   /tmp/homescreenapp.log"
+fi
 echo ""
 echo "실시간 로그 확인:"
 echo "  tail -f /tmp/gearapp.log"
 echo "  tail -f /tmp/ambientapp.log"
 echo "  tail -f /tmp/mediaapp.log"
+echo "  tail -f /tmp/pdcapp.log"
+echo "  tail -f /tmp/homescreenapp.log"
 echo ""
 echo "전체 종료:"
-echo "  killall -9 GearApp AmbientApp IC_app MediaApp routingmanagerd"
+echo "  killall -9 GearApp AmbientApp IC_app MediaApp PDCApp HomeScreenApp routingmanagerd"
 echo "  sudo rm -rf /tmp/vsomeip-*"
 echo ""
