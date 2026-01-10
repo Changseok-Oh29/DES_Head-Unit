@@ -84,7 +84,17 @@ int main(int argc, char *argv[])
         qCritical() << "❌ QML root objects are empty!";
         return -1;
     }
-    
+
+    // Set window to non-fullscreen mode for standalone X11 display
+    QObject *rootObject = engine.rootObjects().first();
+    if (rootObject) {
+        QWindow *window = qobject_cast<QWindow*>(rootObject);
+        if (window) {
+            window->setFlag(Qt::Window);
+            window->showNormal();  // Show as normal window, not fullscreen
+        }
+    }
+
     qDebug() << "✅ QML UI loaded";
 
     // Connect to CAN interface
