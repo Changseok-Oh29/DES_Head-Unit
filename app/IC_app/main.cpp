@@ -9,9 +9,10 @@
 
 int main(int argc, char *argv[])
 {
-    // Set app_id BEFORE creating QGuiApplication
-    // This ensures Qt Wayland uses it from the start
+    // Force standalone Wayland window (not managed by HU_MainApp compositor)
+    // This makes IC_app appear as a separate window on the screen
     qputenv("QT_WAYLAND_SHELL_INTEGRATION", "xdg-shell");
+    qputenv("QT_QPA_PLATFORM", "wayland");
 
     QGuiApplication app(argc, argv);
 
