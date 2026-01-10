@@ -165,39 +165,60 @@ echo ""
 
 # 8단계: MediaApp 시작
 echo "[8/10] Starting MediaApp..."
-cd "${PROJECT_ROOT}/MediaApp"
-if [ ! -f "build/MediaApp" ]; then
-    echo "⚠ MediaApp not built, skipping..."
-else
-    ./run.sh &> /tmp/mediaapp.log &
+if [ -f "${PROJECT_ROOT}/MediaApp/build/MediaApp" ]; then
+    cd "${PROJECT_ROOT}/MediaApp/build"
+    export QT_QPA_PLATFORM=wayland
+    export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+    export WAYLAND_DISPLAY=wayland-1
+    export VSOMEIP_APPLICATION_NAME=MediaApp
+    export VSOMEIP_CONFIGURATION=${PROJECT_ROOT}/GearApp/config/vsomeip_ecu2.json
+    export COMMONAPI_CONFIG=${PROJECT_ROOT}/MediaApp/commonapi.ini
+    nohup ./MediaApp > /tmp/mediaapp.log 2>&1 &
     MEDIAAPP_PID=$!
     echo "✓ MediaApp started (PID: ${MEDIAAPP_PID})"
+    cd "${PROJECT_ROOT}"
+else
+    echo "⚠ MediaApp not built, skipping..."
 fi
 sleep 2
 echo ""
 
 # 9단계: PDCApp 시작
 echo "[9/10] Starting PDCApp..."
-cd "${PROJECT_ROOT}/PDCApp"
-if [ ! -f "build/PDCApp" ]; then
-    echo "⚠ PDCApp not built, skipping..."
-else
-    ./run.sh &> /tmp/pdcapp.log &
+if [ -f "${PROJECT_ROOT}/PDCApp/build/PDCApp" ]; then
+    cd "${PROJECT_ROOT}/PDCApp/build"
+    export QT_QPA_PLATFORM=wayland
+    export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+    export WAYLAND_DISPLAY=wayland-1
+    export VSOMEIP_APPLICATION_NAME=PDCApp
+    export VSOMEIP_CONFIGURATION=${PROJECT_ROOT}/PDCApp/config/vsomeip_pdc.json
+    export COMMONAPI_CONFIG=${PROJECT_ROOT}/PDCApp/config/commonapi_pdc.ini
+    nohup ./PDCApp > /tmp/pdcapp.log 2>&1 &
     PDCAPP_PID=$!
     echo "✓ PDCApp started (PID: ${PDCAPP_PID})"
+    cd "${PROJECT_ROOT}"
+else
+    echo "⚠ PDCApp not built, skipping..."
 fi
 sleep 2
 echo ""
 
 # 10단계: HomeScreenApp 시작
 echo "[10/10] Starting HomeScreenApp..."
-cd "${PROJECT_ROOT}/HomeScreenApp"
-if [ ! -f "build/HomeScreenApp" ]; then
-    echo "⚠ HomeScreenApp not built, skipping..."
-else
-    ./run.sh &> /tmp/homescreenapp.log &
+if [ -f "${PROJECT_ROOT}/HomeScreenApp/build/HomeScreenApp" ]; then
+    cd "${PROJECT_ROOT}/HomeScreenApp/build"
+    export QT_QPA_PLATFORM=wayland
+    export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+    export WAYLAND_DISPLAY=wayland-1
+    export VSOMEIP_APPLICATION_NAME=HomeScreenApp
+    export VSOMEIP_CONFIGURATION=${PROJECT_ROOT}/GearApp/config/vsomeip_ecu2.json
+    export COMMONAPI_CONFIG=${PROJECT_ROOT}/HomeScreenApp/commonapi_homescreen.ini
+    nohup ./HomeScreenApp > /tmp/homescreenapp.log 2>&1 &
     HOMESCREEN_PID=$!
     echo "✓ HomeScreenApp started (PID: ${HOMESCREEN_PID})"
+    cd "${PROJECT_ROOT}"
+else
+    echo "⚠ HomeScreenApp not built, skipping..."
 fi
 echo ""
 
