@@ -164,21 +164,21 @@ cd "${PROJECT_ROOT}"
 sleep 2
 echo ""
 
-# 7단계: IC_app 시작 (Standalone X11 window)
+# 7단계: IC_app 시작 (Runs in background - designed for separate cluster display)
 echo "[7/10] Starting IC_app..."
 if [ -f "${PROJECT_ROOT}/IC_app/build/IC_app" ]; then
     cd "${PROJECT_ROOT}/IC_app/build"
-    # Run as standalone X11 window (not in compositor)
-    # Don't set WAYLAND_DISPLAY - app will auto-detect and use X11
-    unset WAYLAND_DISPLAY
-    unset QT_QPA_PLATFORM  # Let app decide based on environment
-    export DISPLAY=:0
+    # IC_app is designed for a separate instrument cluster display
+    # It runs with Wayland but won't show on main HU display (by design)
+    export QT_QPA_PLATFORM=wayland
+    export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+    export WAYLAND_DISPLAY=wayland-1
     export VSOMEIP_APPLICATION_NAME=IC_app
     export VSOMEIP_CONFIGURATION=${PROJECT_ROOT}/GearApp/config/vsomeip_ecu2.json
     export COMMONAPI_CONFIG=${PROJECT_ROOT}/IC_app/commonapi.ini
     nohup ./IC_app > /tmp/ic_app.log 2>&1 &
     IC_APP_PID=$!
-    echo "✓ IC_app started as standalone window (PID: ${IC_APP_PID})"
+    echo "✓ IC_app started (background - for cluster display) (PID: ${IC_APP_PID})"
     cd "${PROJECT_ROOT}"
 else
     echo "⚠ IC_app not built, skipping..."

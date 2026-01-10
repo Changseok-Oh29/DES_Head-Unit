@@ -9,17 +9,9 @@
 
 int main(int argc, char *argv[])
 {
-    // Auto-detect environment: Use Wayland if WAYLAND_DISPLAY is set, otherwise use X11
-    // This allows IC_app to work in both compositor and standalone modes
-    if (qEnvironmentVariableIsEmpty("WAYLAND_DISPLAY")) {
-        // No Wayland display available - run as standalone X11 window
-        qputenv("QT_QPA_PLATFORM", "xcb");
-        qDebug() << "IC_app: Running in standalone X11 mode";
-    } else {
-        // Wayland display available - use compositor
-        qputenv("QT_WAYLAND_SHELL_INTEGRATION", "xdg-shell");
-        qDebug() << "IC_app: Running in Wayland compositor mode";
-    }
+    // Set app_id BEFORE creating QGuiApplication
+    // This ensures Qt Wayland uses it from the start
+    qputenv("QT_WAYLAND_SHELL_INTEGRATION", "xdg-shell");
 
     QGuiApplication app(argc, argv);
 
