@@ -21,10 +21,10 @@ echo ""
 
 # 네트워크 확인
 echo "[2/4] Checking network configuration..."
-IP_ADDR=$(ip addr show eth0 2>/dev/null | grep "inet " | awk '{print $2}' | cut -d'/' -f1)
+IP_ADDR=$(ip addr show enP8p1s0 2>/dev/null | grep "inet " | awk '{print $2}' | cut -d'/' -f1)
 if [ -z "$IP_ADDR" ]; then
-    echo "⚠ Warning: eth0 not configured"
-    echo "Run: sudo ip addr add 192.168.1.101/24 dev eth0"
+    echo "⚠ Warning: enP8p1s0 not configured"
+    echo "Run: sudo ip addr add 192.168.1.101/24 dev enP8p1s0"
 else
     echo "✓ IP Address: ${IP_ADDR}"
 fi
@@ -32,7 +32,7 @@ fi
 MULTICAST_ROUTE=$(ip route | grep "224.0.0.0/4")
 if [ -z "$MULTICAST_ROUTE" ]; then
     echo "⚠ Warning: Multicast route not configured"
-    echo "Run: sudo ip route add 224.0.0.0/4 dev eth0"
+    echo "Run: sudo ip route add 224.0.0.0/4 dev enP8p1s0"
 else
     echo "✓ Multicast route: ${MULTICAST_ROUTE}"
 fi

@@ -23,13 +23,13 @@ echo ""
 
 # 2단계: 네트워크 확인
 echo "[2/8] Checking network configuration..."
-IP_ADDR=$(ip addr show eth0 2>/dev/null | grep "inet " | awk '{print $2}' | cut -d'/' -f1)
+IP_ADDR=$(ip addr show enP8p1s0 2>/dev/null | grep "inet " | awk '{print $2}' | cut -d'/' -f1)
 if [ "$IP_ADDR" != "192.168.1.101" ]; then
     echo "⚠ Warning: Setting up network..."
-    sudo nmcli device set eth0 managed no 2>/dev/null
-    sudo ip link set eth0 up
-    sudo ip addr flush dev eth0
-    sudo ip addr add 192.168.1.101/24 dev eth0
+    sudo nmcli device set enP8p1s0 managed no 2>/dev/null
+    sudo ip link set enP8p1s0 up
+    sudo ip addr flush dev enP8p1s0
+    sudo ip addr add 192.168.1.101/24 dev enP8p1s0
     echo "✓ IP configured: 192.168.1.101"
 else
     echo "✓ IP Address: ${IP_ADDR}"
@@ -38,7 +38,7 @@ fi
 MULTICAST_ROUTE=$(ip route | grep "224.0.0.0/4")
 if [ -z "$MULTICAST_ROUTE" ]; then
     echo "⚠ Adding multicast route..."
-    sudo ip route add 224.0.0.0/4 dev eth0
+    sudo ip route add 224.0.0.0/4 dev enP8p1s0
     echo "✓ Multicast route added"
 else
     echo "✓ Multicast route: OK"

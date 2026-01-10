@@ -80,10 +80,11 @@ void VehicleControlClient::setupEventSubscriptions()
         }
     );
     
-    // Subscribe to gearChanged event (secondary - event-driven)
-    m_proxy->getGearChangedEvent().subscribe(
-        [this](std::string newGear, std::string oldGear, uint64_t timestamp) {
+    // Subscribe to gearDistanceChanged event (secondary - event-driven with PDC distance)
+    m_proxy->getGearDistanceChangedEvent().subscribe(
+        [this](std::string newGear, std::string oldGear, uint16_t distance, uint64_t timestamp) {
             this->onGearChanged(newGear, oldGear, timestamp);
+            // Note: IC_app doesn't display distance, but receives it for future use
         }
     );
     
