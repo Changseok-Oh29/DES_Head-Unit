@@ -96,31 +96,31 @@ echo ""
 echo "[4/10] Starting HU_MainApp Compositor..."
 cd "${PROJECT_ROOT}/HU_MainApp"
 if [ ! -f "build/HU_MainApp_Compositor" ]; then
-    echo "⚠ HU_MainApp_Compositor not built, skipping GUI apps..."
-    COMPOSITOR_RUNNING=false
-else
-    export QT_QPA_PLATFORM=xcb
-    export QML2_IMPORT_PATH=/usr/lib/aarch64-linux-gnu/qt5/qml:/usr/lib/qt5/qml
-    nohup ./build/HU_MainApp_Compositor > /tmp/HU_MainApp_Compositor.log 2>&1 &
-    COMPOSITOR_PID=$!
-    echo "✓ Compositor started (PID: ${COMPOSITOR_PID})"
-
-    # Wait for wayland-1 socket
-    echo "  Waiting for wayland-1 socket..."
-    for i in {1..30}; do
-        if [ -S "${XDG_RUNTIME_DIR}/wayland-1" ]; then
-            echo "  ✓ Wayland socket ready"
-            COMPOSITOR_RUNNING=true
-            break
-        fi
-        sleep 1
-    done
-
-    if [ "$COMPOSITOR_RUNNING" != "true" ]; then
-        echo "  ✗ Wayland socket not created. Check /tmp/HU_MainApp_Compositor.log"
-        COMPOSITOR_RUNNING=false
-    fi
+    echo "✗ HU_MainApp_Compositor not built!"
+    exit 1
 fi
+
+export QT_QPA_PLATFORM=xcb
+export QML2_IMPORT_PATH=/usr/lib/aarch64-linux-gnu/qt5/qml:/usr/lib/qt5/qml
+nohup ./build/HU_MainApp_Compositor > /tmp/HU_MainApp_Compositor.log 2>&1 &
+COMPOSITOR_PID=$!
+echo "✓ Compositor started (PID: ${COMPOSITOR_PID})"
+
+# Wait for wayland-1 socket
+echo "  Waiting for wayland-1 socket..."
+for i in {1..30}; do
+    if [ -S "${XDG_RUNTIME_DIR}/wayland-1" ]; then
+        echo "  ✓ Wayland socket ready"
+        break
+    fi
+    sleep 1
+done
+
+if [ ! -S "${XDG_RUNTIME_DIR}/wayland-1" ]; then
+    echo "  ✗ Wayland socket not created. Check /tmp/HU_MainApp_Compositor.log"
+    exit 1
+fi
+
 sleep 2
 echo ""
 
