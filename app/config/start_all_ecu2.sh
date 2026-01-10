@@ -13,7 +13,7 @@ echo "Project Root: ${PROJECT_ROOT}"
 echo ""
 
 # 1단계: 완전 클린업
-echo "[1/8] Cleaning up all processes..."
+echo "[1/10] Cleaning up all processes..."
 killall -9 GearApp AmbientApp IC_app MediaApp PDCApp HomeScreenApp routingmanagerd HU_MainApp_Compositor 2>/dev/null
 pkill -9 -f vsomeip 2>/dev/null
 sudo rm -rf /tmp/vsomeip-* 2>/dev/null
@@ -22,7 +22,7 @@ echo "✓ Cleanup complete"
 echo ""
 
 # 2단계: 네트워크 확인
-echo "[2/8] Checking network configuration..."
+echo "[2/10] Checking network configuration..."
 IP_ADDR=$(ip addr show enP8p1s0 2>/dev/null | grep "inet " | awk '{print $2}' | cut -d'/' -f1)
 if [ "$IP_ADDR" != "192.168.1.101" ]; then
     echo "⚠ Warning: Setting up network..."
@@ -61,7 +61,7 @@ fi
 echo ""
 
 # 3단계: 라우팅 매니저 시작
-echo "[3/6] Starting Routing Manager..."
+echo "[3/10] Starting Routing Manager..."
 cd "${SCRIPT_DIR}"
 export VSOMEIP_CONFIGURATION="${SCRIPT_DIR}/routing_manager_ecu2.json"
 export VSOMEIP_APPLICATION_NAME="routingmanagerd"
@@ -92,8 +92,40 @@ fi
 echo "✓ Routing Manager ready (/tmp/vsomeip-0)"
 echo ""
 
-# 4단계: GearApp 시작
-echo "[4/6] Starting GearApp..."
+# 4단계: HU_MainApp Compositor 시작
+echo "[4/10] Starting HU_MainApp Compositor..."
+cd "${PROJECT_ROOT}/HU_MainApp"
+if [ ! -f "build/HU_MainApp_Compositor" ]; then
+    echo "⚠ HU_MainApp_Compositor not built, skipping GUI apps..."
+    COMPOSITOR_RUNNING=false
+else
+    export QT_QPA_PLATFORM=xcb
+    export QML2_IMPORT_PATH=/usr/lib/aarch64-linux-gnu/qt5/qml:/usr/lib/qt5/qml
+    nohup ./build/HU_MainApp_Compositor > /tmp/HU_MainApp_Compositor.log 2>&1 &
+    COMPOSITOR_PID=$!
+    echo "✓ Compositor started (PID: ${COMPOSITOR_PID})"
+
+    # Wait for wayland-1 socket
+    echo "  Waiting for wayland-1 socket..."
+    for i in {1..30}; do
+        if [ -S "${XDG_RUNTIME_DIR}/wayland-1" ]; then
+            echo "  ✓ Wayland socket ready"
+            COMPOSITOR_RUNNING=true
+            break
+        fi
+        sleep 1
+    done
+
+    if [ "$COMPOSITOR_RUNNING" != "true" ]; then
+        echo "  ✗ Wayland socket not created. Check /tmp/HU_MainApp_Compositor.log"
+        COMPOSITOR_RUNNING=false
+    fi
+fi
+sleep 2
+echo ""
+
+# 5단계: GearApp 시작
+echo "[5/10] Starting GearApp..."
 cd "${PROJECT_ROOT}/GearApp"
 if [ ! -f "build/GearApp" ]; then
     echo "✗ GearApp not built! Run: ./build.sh"
@@ -105,8 +137,8 @@ echo "✓ GearApp started (PID: ${GEARAPP_PID})"
 sleep 2
 echo ""
 
-# 5단계: AmbientApp 시작
-echo "[5/6] Starting AmbientApp..."
+# 6단계: AmbientApp 시작
+echo "[6/10] Starting AmbientApp..."
 cd "${PROJECT_ROOT}/AmbientApp"
 if [ ! -f "build/AmbientApp" ]; then
     echo "✗ AmbientApp not built! Run: ./build.sh"
@@ -118,8 +150,8 @@ echo "✓ AmbientApp started (PID: ${AMBIENTAPP_PID})"
 sleep 2
 echo ""
 
-# 6단계: IC_app 시작
-echo "[6/9] Starting IC_app..."
+# 7단계: IC_app 시작
+echo "[7/10] Starting IC_app..."
 cd "${PROJECT_ROOT}/IC_app"
 if [ ! -f "build/IC_app" ]; then
     echo "⚠ IC_app not built, skipping..."
@@ -131,8 +163,8 @@ fi
 sleep 2
 echo ""
 
-# 7단계: MediaApp 시작
-echo "[7/9] Starting MediaApp..."
+# 8단계: MediaApp 시작
+echo "[8/10] Starting MediaApp..."
 cd "${PROJECT_ROOT}/MediaApp"
 if [ ! -f "build/MediaApp" ]; then
     echo "⚠ MediaApp not built, skipping..."
@@ -144,8 +176,8 @@ fi
 sleep 2
 echo ""
 
-# 8단계: PDCApp 시작
-echo "[8/9] Starting PDCApp..."
+# 9단계: PDCApp 시작
+echo "[9/10] Starting PDCApp..."
 cd "${PROJECT_ROOT}/PDCApp"
 if [ ! -f "build/PDCApp" ]; then
     echo "⚠ PDCApp not built, skipping..."
@@ -157,8 +189,8 @@ fi
 sleep 2
 echo ""
 
-# 9단계: HomeScreenApp 시작
-echo "[9/9] Starting HomeScreenApp..."
+# 10단계: HomeScreenApp 시작
+echo "[10/10] Starting HomeScreenApp..."
 cd "${PROJECT_ROOT}/HomeScreenApp"
 if [ ! -f "build/HomeScreenApp" ]; then
     echo "⚠ HomeScreenApp not built, skipping..."
@@ -176,6 +208,9 @@ echo "=========================================="
 echo ""
 echo "실행 중인 프로세스:"
 echo "  - Routing Manager: PID ${RM_PID}"
+if [ ! -z "$COMPOSITOR_PID" ]; then
+    echo "  - HU_MainApp Compositor: PID ${COMPOSITOR_PID}"
+fi
 echo "  - GearApp:         PID ${GEARAPP_PID}"
 echo "  - AmbientApp:      PID ${AMBIENTAPP_PID}"
 if [ ! -z "$IC_APP_PID" ]; then
