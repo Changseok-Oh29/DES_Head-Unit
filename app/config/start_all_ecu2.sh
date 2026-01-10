@@ -126,39 +126,60 @@ echo ""
 
 # 5단계: GearApp 시작
 echo "[5/10] Starting GearApp..."
-cd "${PROJECT_ROOT}/GearApp"
-if [ ! -f "build/GearApp" ]; then
-    echo "✗ GearApp not built! Run: ./build.sh"
+cd "${PROJECT_ROOT}/GearApp/build"
+if [ ! -f "GearApp" ]; then
+    echo "✗ GearApp not built!"
     exit 1
 fi
-./run.sh &> /tmp/gearapp.log &
+export QT_QPA_PLATFORM=wayland
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export WAYLAND_DISPLAY=wayland-1
+export VSOMEIP_APPLICATION_NAME=GearApp
+export VSOMEIP_CONFIGURATION=${PROJECT_ROOT}/GearApp/config/vsomeip_ecu2.json
+export COMMONAPI_CONFIG=${PROJECT_ROOT}/GearApp/config/commonapi_ecu2.ini
+nohup ./GearApp > /tmp/gearapp.log 2>&1 &
 GEARAPP_PID=$!
 echo "✓ GearApp started (PID: ${GEARAPP_PID})"
+cd "${PROJECT_ROOT}"
 sleep 2
 echo ""
 
 # 6단계: AmbientApp 시작
 echo "[6/10] Starting AmbientApp..."
-cd "${PROJECT_ROOT}/AmbientApp"
-if [ ! -f "build/AmbientApp" ]; then
-    echo "✗ AmbientApp not built! Run: ./build.sh"
+cd "${PROJECT_ROOT}/AmbientApp/build"
+if [ ! -f "AmbientApp" ]; then
+    echo "✗ AmbientApp not built!"
     exit 1
 fi
-./run.sh &> /tmp/ambientapp.log &
+export QT_QPA_PLATFORM=wayland
+export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+export WAYLAND_DISPLAY=wayland-1
+export VSOMEIP_APPLICATION_NAME=AmbientApp
+export VSOMEIP_CONFIGURATION=${PROJECT_ROOT}/GearApp/config/vsomeip_ecu2.json
+export COMMONAPI_CONFIG=${PROJECT_ROOT}/AmbientApp/commonapi_ambient.ini
+nohup ./AmbientApp > /tmp/ambientapp.log 2>&1 &
 AMBIENTAPP_PID=$!
 echo "✓ AmbientApp started (PID: ${AMBIENTAPP_PID})"
+cd "${PROJECT_ROOT}"
 sleep 2
 echo ""
 
 # 7단계: IC_app 시작
 echo "[7/10] Starting IC_app..."
-cd "${PROJECT_ROOT}/IC_app"
-if [ ! -f "build/IC_app" ]; then
-    echo "⚠ IC_app not built, skipping..."
-else
-    ./run.sh &> /tmp/ic_app.log &
+if [ -f "${PROJECT_ROOT}/IC_app/build/IC_app" ]; then
+    cd "${PROJECT_ROOT}/IC_app/build"
+    export QT_QPA_PLATFORM=wayland
+    export QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+    export WAYLAND_DISPLAY=wayland-1
+    export VSOMEIP_APPLICATION_NAME=IC_app
+    export VSOMEIP_CONFIGURATION=${PROJECT_ROOT}/GearApp/config/vsomeip_ecu2.json
+    export COMMONAPI_CONFIG=${PROJECT_ROOT}/IC_app/commonapi.ini
+    nohup ./IC_app > /tmp/ic_app.log 2>&1 &
     IC_APP_PID=$!
     echo "✓ IC_app started (PID: ${IC_APP_PID})"
+    cd "${PROJECT_ROOT}"
+else
+    echo "⚠ IC_app not built, skipping..."
 fi
 sleep 2
 echo ""
