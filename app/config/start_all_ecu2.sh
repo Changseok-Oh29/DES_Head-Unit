@@ -164,14 +164,12 @@ cd "${PROJECT_ROOT}"
 sleep 2
 echo ""
 
-# 7단계: IC_app 시작 (Standalone window - separate from HU_MainApp)
+# 7단계: IC_app 시작 (Standalone X11 window)
 echo "[7/10] Starting IC_app..."
 if [ -f "${PROJECT_ROOT}/IC_app/build/IC_app" ]; then
     cd "${PROJECT_ROOT}/IC_app/build"
-    # Run IC_app as standalone window using system Wayland (wayland-0)
-    # This makes it appear as a separate window, independent of HU_MainApp compositor
-    export QT_QPA_PLATFORM=wayland
-    export WAYLAND_DISPLAY=wayland-0  # System Wayland, not HU_MainApp's wayland-1
+    # Run IC_app as standalone X11 window (separate from HU_MainApp compositor)
+    export QT_QPA_PLATFORM=xcb
     export VSOMEIP_APPLICATION_NAME=IC_app
     export VSOMEIP_CONFIGURATION=${PROJECT_ROOT}/GearApp/config/vsomeip_ecu2.json
     export COMMONAPI_CONFIG=${PROJECT_ROOT}/IC_app/commonapi.ini

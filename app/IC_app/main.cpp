@@ -9,10 +9,11 @@
 
 int main(int argc, char *argv[])
 {
-    // Force standalone Wayland window (not managed by HU_MainApp compositor)
-    // This makes IC_app appear as a separate window on the screen
-    qputenv("QT_WAYLAND_SHELL_INTEGRATION", "xdg-shell");
-    qputenv("QT_QPA_PLATFORM", "wayland");
+    // Check QT_QPA_PLATFORM from environment
+    // If not set, default to xcb (X11) for standalone window mode
+    if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM")) {
+        qputenv("QT_QPA_PLATFORM", "xcb");
+    }
 
     QGuiApplication app(argc, argv);
 
