@@ -1,0 +1,105 @@
+name: Meta VehicleControl CI
+
+on:
+  push:
+    branches: [main, develop, PDC]
+    paths:
+      - 'meta/meta-vehiclecontrol/**'
+  pull_request:
+    branches: [main]
+
+env:
+  BUILD_DIR: /home/seame/PDC/headunit/yocto-build
+  YOCTO_IMAGE: vehiclecontrol-image
+
+jobs:
+  build-meta-vehiclecontrol:
+    runs-on: self-hosted
+    timeout-minutes: 240  # 4 hours max
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          path: DES_Head-Unit
+      
+      - name: Clean previous builds (optional)
+        run: |
+          cd ${{ env.BUILD_DIR }}/build
+          source ../poky/oe-init-build-env
+          bitbake -c cleanall ${{ env.YOCTO_IMAGE }} || true
+      
+      - name: Initialize Yocto environment
+        run: |
+          cd ${{ env.BUILD_DIR }}
+          source poky/oe-init-build-env
+          echo "Yocto environment initialized"
+      
+      - name: Setup sstate cache
+        run: |
+          SSTATE_DIR="${{ env.BUILD_DIR }}/sstate-cache"
+          mkdir -p $SSTATE_DIR
+          echo 'SSTATE_DIR = "'$SSTATE_DIR'"' >> ${{ env.BUILD_DIR }}/build/conf/local.conf
+      
+      - name: Update local.conf with CI settings
+        run: |
+          cd ${{ env.BUILD_DIR }}/build
+          # Ensure U-Boot is disabled
+          grep -q "RPI_USE_U_BOOT" conf/local.conf || echo 'RPI_USE_U_BOOT = "0"' >> conf/local.conf
+          
+          # Add CI-specific optimizations
+          echo 'BB_NUMBER_THREADS = "8"' >> conf/local.conf
+          echo 'PARALLEL_MAKE = "-j 8"' >> conf/local.conf
+      
+      - name: Build Yocto image
+        run: |
+          cd ${{ env.BUILD_DIR }}
+          source poky/oe-init-build-env
+          bitbake ${{ env.YOCTO_IMAGE }}
+      
+      - name: Verify build output
+        run: |
+          IMAGE_DIR="${{ env.BUILD_DIR }}/build/tmp/deploy/images/raspberrypi4"
+          ls -lh $IMAGE_DIR/
+          
+          # Check if image was created
+          if [ -f "$IMAGE_DIR/${{ env.YOCTO_IMAGE }}-raspberrypi4.wic" ]; then
+            echo "✅ Build successful!"
+            echo "Image size: $(du -h $IMAGE_DIR/${{ env.YOCTO_IMAGE }}-raspberrypi4.wic | cut -f1)"
+          else
+            echo "❌ Build failed - image not found"
+            exit 1
+          fi
+      
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: vehiclecontrol-image-${{ github.sha }}
+          path: |
+            ${{ env.BUILD_DIR }}/build/tmp/deploy/images/raspberrypi4/*.wic
+            ${{ env.BUILD_DIR }}/build/tmp/deploy/images/raspberrypi4/*.manifest
+          retention-days: 30
+      
+      - name: Generate build report
+        if: always()
+        run: |
+          cd ${{ env.BUILD_DIR }}/build
+          cat > build-report.txt <<EOF
+          Build Report
+          ============
+          Commit: ${{ github.sha }}
+          Branch: ${{ github.ref_name }}
+          Triggered by: ${{ github.actor }}
+          Build time: $(date)
+          Status: ${{ job.status }}
+          EOF
+          cat build-report.txt
+      
+      - name: Cleanup (optional)
+        if: always()
+        run: |
+          # Clean tmp to save disk space
+          cd ${{ env.BUILD_DIR }}/build
+          source ../poky/oe-init-build-env
+          bitbake -c cleansstate ${{ env.YOCTO_IMAGE }}

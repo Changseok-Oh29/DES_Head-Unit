@@ -1,0 +1,29 @@
+name: Test Meta VehicleControl
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  BUILD_DIR: /home/seame/PDC/headunit/yocto-build
+  YOCTO_IMAGE: vehiclecontrol-image
+
+jobs:
+  test-recipe:
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Test recipe syntax
+        run: |
+          cd ${{ env.BUILD_DIR }}
+          source poky/oe-init-build-env
+          bitbake -e ${{ env.YOCTO_IMAGE }} | grep ^DISTRO=
+      
+      - name: Run recipe parse test
+        run: |
+          cd ${{ env.BUILD_DIR }}
+          source poky/oe-init-build-env
+          bitbake -p

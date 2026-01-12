@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  pdcapp:
+    build:
+      context: ../..
+      dockerfile: app/PDCApp/Dockerfile
+    container_name: pdcapp
+    privileged: true  # Needed for GPU/display access
+    network_mode: host  # Needed for vsomeip communication
+
+    # Display access options:
+    environment:
+      - DISPLAY=${DISPLAY}
+      - QT_QPA_PLATFORM=xcb  # X11 rendering
+      - VSOMEIP_CONFIGURATION=/app/config/vsomeip.json
+      - VSOMEIP_APPLICATION_NAME=PDCApp
+
+    # Device access
+    devices:
+      - /dev/dri:/dev/dri  # GPU access for Qt rendering
+      - /dev/fb0:/dev/fb0  # Framebuffer access
+      - /dev/tty0:/dev/tty0  # Console access
+      # Add CAN devices if needed:
+      # - /dev/can0:/dev/can0
+      # - /dev/can1:/dev/can1
+
+    # Volume mounts
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw  # X11 socket (alternative to eglfs)
+      - ./config:/app/config:ro  # vsomeip configuration
+      - /dev/shm:/dev/shm  # Shared memory for vsomeip
+
+    # For vsomeip IPC
+    ipc: host
+
+    restart: unless-stopped
