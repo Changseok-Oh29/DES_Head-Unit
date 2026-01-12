@@ -1,1 +1,1 @@
-# CI/CD Test - Mon Jan 12 05:48:24 PM CET 2026
+# CI/CD Test - Fixed paths - Mon Jan 12 06:14:00 PM CET 2026
