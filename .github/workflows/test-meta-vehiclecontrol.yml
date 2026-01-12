@@ -2,7 +2,12 @@ name: Test Meta VehicleControl
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, PDC]
+  push:
+    branches: [PDC]
+    paths:
+      - 'meta/meta-vehiclecontrol/**'
+  workflow_dispatch:
 
 env:
   BUILD_DIR: /home/seame/PDC/headunit/yocto-build

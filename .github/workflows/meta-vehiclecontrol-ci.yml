@@ -6,7 +6,7 @@ on:
     paths:
       - 'meta/meta-vehiclecontrol/**'
   pull_request:
-    branches: [main]
+    branches: [main, PDC]
   workflow_dispatch:
 
 env:
