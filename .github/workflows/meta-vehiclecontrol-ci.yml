@@ -12,6 +12,8 @@ on:
 env:
   BUILD_DIR: /home/seame/PDC/headunit/yocto-build
   YOCTO_IMAGE: vehiclecontrol-image
+  MACHINE: raspberrypi4-64
+  TMP_DIR: tmp-glibc
 
 jobs:
   build-meta-vehiclecontrol:
@@ -60,13 +62,13 @@ jobs:
       
       - name: Verify build output
         run: |
-          IMAGE_DIR="${{ env.BUILD_DIR }}/build/tmp/deploy/images/raspberrypi4"
+          IMAGE_DIR="${{ env.BUILD_DIR }}/build/${{env.TMP_DIR}}/deploy/images/${{ env.MACHINE }}"
           ls -lh $IMAGE_DIR/
           
           # Check if image was created
-          if [ -f "$IMAGE_DIR/${{ env.YOCTO_IMAGE }}-raspberrypi4.wic" ]; then
+          if [ -f "$IMAGE_DIR/${{ env.YOCTO_IMAGE }}-${{ env.MACHINE }}.wic" ]; then
             echo "✅ Build successful!"
-            echo "Image size: $(du -h $IMAGE_DIR/${{ env.YOCTO_IMAGE }}-raspberrypi4.wic | cut -f1)"
+            echo "Image size: $(du -h $IMAGE_DIR/${{ env.YOCTO_IMAGE }}-${{ env.MACHINE }}.wic | cut -f1)"
           else
             echo "❌ Build failed - image not found"
             exit 1
@@ -78,8 +80,8 @@ jobs:
         with:
           name: vehiclecontrol-image-${{ github.sha }}
           path: |
-            ${{ env.BUILD_DIR }}/build/tmp/deploy/images/raspberrypi4/*.wic
-            ${{ env.BUILD_DIR }}/build/tmp/deploy/images/raspberrypi4/*.manifest
+            ${{ env.BUILD_DIR }}/build/${{ env.TMP_DIR }}/deploy/images/${{ env.MACHINE }}/*.wic
+            ${{ env.BUILD_DIR }}/build/${{ env.TMP_DIR }}/deploy/images/${{ env.MACHINE }}/*.manifest
           retention-days: 30
       
       - name: Generate build report
