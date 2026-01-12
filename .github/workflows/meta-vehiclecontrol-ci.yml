@@ -7,6 +7,7 @@ on:
       - 'meta/meta-vehiclecontrol/**'
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 env:
   BUILD_DIR: /home/seame/PDC/headunit/yocto-build
