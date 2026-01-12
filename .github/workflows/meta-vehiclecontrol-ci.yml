@@ -26,14 +26,14 @@ jobs:
       
       - name: Clean previous builds (optional)
         run: |
-          cd ${{ env.BUILD_DIR }}/build
-          source ../poky/oe-init-build-env
+          cd ${{ env.BUILD_DIR }}
+          source sources/poky/oe-init-build-env build
           bitbake -c cleanall ${{ env.YOCTO_IMAGE }} || true
       
       - name: Initialize Yocto environment
         run: |
           cd ${{ env.BUILD_DIR }}
-          source poky/oe-init-build-env
+          source sources/poky/oe-init-build-env build
           echo "Yocto environment initialized"
       
       - name: Setup sstate cache
@@ -55,7 +55,7 @@ jobs:
       - name: Build Yocto image
         run: |
           cd ${{ env.BUILD_DIR }}
-          source poky/oe-init-build-env
+          source sources/poky/oe-init-build-env build
           bitbake ${{ env.YOCTO_IMAGE }}
       
       - name: Verify build output
@@ -101,6 +101,6 @@ jobs:
         if: always()
         run: |
           # Clean tmp to save disk space
-          cd ${{ env.BUILD_DIR }}/build
-          source ../poky/oe-init-build-env
+          cd ${{ env.BUILD_DIR }}
+          source sources/poky/oe-init-build-env build
           bitbake -c cleansstate ${{ env.YOCTO_IMAGE }}

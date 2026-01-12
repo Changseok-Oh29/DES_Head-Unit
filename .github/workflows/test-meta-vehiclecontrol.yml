@@ -24,11 +24,11 @@ jobs:
       - name: Test recipe syntax
         run: |
           cd ${{ env.BUILD_DIR }}
-          source poky/oe-init-build-env
+          source sources/poky/oe-init-build-env build
           bitbake -e ${{ env.YOCTO_IMAGE }} | grep ^DISTRO=
       
       - name: Run recipe parse test
         run: |
           cd ${{ env.BUILD_DIR }}
-          source poky/oe-init-build-env
+          source sources/poky/oe-init-build-env build
           bitbake -p
