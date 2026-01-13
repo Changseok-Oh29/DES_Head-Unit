@@ -65,10 +65,10 @@ jobs:
           IMAGE_DIR="${{ env.BUILD_DIR }}/build/${{env.TMP_DIR}}/deploy/images/${{ env.MACHINE }}"
           ls -lh $IMAGE_DIR/
           
-          # Check if image was created
-          if [ -f "$IMAGE_DIR/${{ env.YOCTO_IMAGE }}-${{ env.MACHINE }}.wic" ]; then
+          # Check if image was created (look for .rpi-sdimg instead of .wic)
+          if [ -f "$IMAGE_DIR/${{ env.YOCTO_IMAGE }}-${{ env.MACHINE }}.rpi-sdimg" ]; then
             echo "✅ Build successful!"
-            echo "Image size: $(du -h $IMAGE_DIR/${{ env.YOCTO_IMAGE }}-${{ env.MACHINE }}.wic | cut -f1)"
+            echo "Image size: $(du -h $IMAGE_DIR/${{ env.YOCTO_IMAGE }}-${{ env.MACHINE }}.rpi-sdimg | cut -f1)"
           else
             echo "❌ Build failed - image not found"
             exit 1
@@ -80,8 +80,9 @@ jobs:
         with:
           name: vehiclecontrol-image-${{ github.sha }}
           path: |
-            ${{ env.BUILD_DIR }}/build/${{ env.TMP_DIR }}/deploy/images/${{ env.MACHINE }}/*.wic
+            ${{ env.BUILD_DIR }}/build/${{ env.TMP_DIR }}/deploy/images/${{ env.MACHINE }}/*.rpi-sdimg
             ${{ env.BUILD_DIR }}/build/${{ env.TMP_DIR }}/deploy/images/${{ env.MACHINE }}/*.manifest
+            ${{ env.BUILD_DIR }}/build/${{ env.TMP_DIR }}/deploy/images/${{ env.MACHINE }}/*.tar.bz2
           retention-days: 30
       
       - name: Generate build report
