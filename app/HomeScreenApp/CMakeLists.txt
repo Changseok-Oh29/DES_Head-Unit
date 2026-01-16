@@ -38,24 +38,35 @@ find_package(CommonAPI REQUIRED)
 find_package(CommonAPI-SomeIP REQUIRED)
 find_package(vsomeip3 REQUIRED)
 
+# CommonAPI generated code path
+if(NOT COMMONAPI_GEN_DIR)
+    if(DEFINED ENV{COMMONAPI_GEN_DIR})
+        set(COMMONAPI_GEN_DIR $ENV{COMMONAPI_GEN_DIR})
+    else()
+        set(COMMONAPI_GEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated")
+    endif()
+endif()
+
+message(STATUS "CommonAPI generated code directory: ${COMMONAPI_GEN_DIR}")
+
 # Include directories
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated/core
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated/someip
+    ${COMMONAPI_GEN_DIR}/core
+    ${COMMONAPI_GEN_DIR}/someip
 )
 
 # Generated CommonAPI sources
 set(GENERATED_SOURCES_MEDIACONTROL
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPProxy.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPStubAdapter.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPDeployment.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/mediacontrol/MediaControlSomeIPProxy.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/mediacontrol/MediaControlSomeIPStubAdapter.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/mediacontrol/MediaControlSomeIPDeployment.cpp
 )
 
 set(GENERATED_SOURCES_AMBIENTCONTROL
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPProxy.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPStubAdapter.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPDeployment.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/ambientcontrol/AmbientControlSomeIPProxy.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/ambientcontrol/AmbientControlSomeIPStubAdapter.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/ambientcontrol/AmbientControlSomeIPDeployment.cpp
 )
 
 # HomeScreenApp executable

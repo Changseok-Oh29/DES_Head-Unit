@@ -1,4 +1,3 @@
-# Multi-stage build for PDCApp containerization
 # Stage 1: Build environment
 FROM ubuntu:22.04 AS builder
 
@@ -53,13 +52,13 @@ RUN mkdir -p build && cd build && \
     ldconfig
 
 # Copy application source code
-COPY ./app/PDCApp /build/PDCApp
+COPY ./app/RemoteSpeakerApp /build/RemoteSpeakerApp
 
 # Copy CommonAPI generated code
 COPY ./commonapi/generated /build/commonapi/generated
 
-# Build PDCApp
-WORKDIR /build/PDCApp
+# Build RemoteSpeakerApp
+WORKDIR /build/RemoteSpeakerApp
 RUN rm -rf build && mkdir -p build && cd build && \
     cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
@@ -72,22 +71,10 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install runtime dependencies only (including Wayland client support)
+# Install runtime dependencies only (no GUI needed for speaker app)
 RUN apt-get update && apt-get install -y \
-    qtbase5-dev \
-    qtdeclarative5-dev \
-    qtquickcontrols2-5-dev \
-    qtwayland5 \
-    libqt5waylandclient5 \
+    libqt5core5a \
     libqt5network5 \
-    libqt5quick5 \
-    libqt5qml5 \
-    libqt5widgets5 \
-    libqt5gui5 \
-    qml-module-qtquick2 \
-    qml-module-qtquick-window2 \
-    qml-module-qtquick-controls2 \
-    qml-module-qtquick-layouts \
     libboost-system1.74.0 \
     libboost-thread1.74.0 \
     libboost-filesystem1.74.0 \
@@ -104,22 +91,21 @@ RUN ldconfig
 WORKDIR /app
 
 # Copy built executable from builder stage
-COPY --from=builder /build/PDCApp/build/PDCApp /app/
-COPY --from=builder /build/PDCApp/config /app/config
-COPY --from=builder /build/PDCApp/asset /app/asset
+COPY --from=builder /build/RemoteSpeakerApp/build/RemoteSpeakerApp /app/
+COPY --from=builder /build/RemoteSpeakerApp/config/vsomeip_speaker.json /app/config/vsomeip.json
+COPY --from=builder /build/RemoteSpeakerApp/config/commonapi_speaker.ini /app/config/commonapi.ini
 
 # Set up vsomeip configuration
-ENV VSOMEIP_CONFIGURATION=/app/config/vsomeip_pdc.json
-ENV VSOMEIP_APPLICATION_NAME=PDCApp
+ENV VSOMEIP_CONFIGURATION=/app/config/vsomeip.json
+ENV VSOMEIP_APPLICATION_NAME=RemoteSpeakerApp
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
-# For Qt GUI display
-ENV QT_QPA_PLATFORM=eglfs
-ENV QT_QPA_EGLFS_INTEGRATION=eglfs_kms
+# No GUI needed for speaker app
+ENV QT_QPA_PLATFORM=offscreen
 
 # Expose vsomeip ports (adjust as needed)
 EXPOSE 30490-30510/tcp
 EXPOSE 30490-30510/udp
 
 # Run the application
-CMD ["/app/PDCApp"]
+CMD ["/app/RemoteSpeakerApp"]

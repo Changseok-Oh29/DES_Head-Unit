@@ -1,0 +1,157 @@
+version: '3.8'
+
+services:
+  # ═══════════════════════════════════════════════════════════════════
+  # HU_MainApp - Wayland Compositor (MUST START FIRST)
+  # Creates wayland-1 socket for client apps
+  # ═══════════════════════════════════════════════════════════════════
+  humainapp:
+    build:
+      context: ../
+      dockerfile: app/HU_MainApp/Dockerfile
+    container_name: humainapp
+    user: "1000:1000"
+    network_mode: host
+    privileged: true
+    ipc: host
+    pid: host
+    environment:
+      - DISPLAY=$DISPLAY
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=xcb
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════════════════════════════════
+  # Client Apps - Connect to HU_MainApp's wayland-1 socket
+  # ═══════════════════════════════════════════════════════════════════
+  
+  gearapp:
+    build:
+      context: ../
+      dockerfile: app/GearApp/Dockerfile
+    container_name: gearapp
+    user: "1000:1000"
+    network_mode: host
+    ipc: host
+    pid: host
+    depends_on:
+      - humainapp
+    environment:
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=wayland
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
+
+  pdcapp:
+    build:
+      context: ../
+      dockerfile: app/PDCApp/Dockerfile
+    container_name: pdcapp
+    user: "1000:1000"
+    network_mode: host
+    ipc: host
+    pid: host
+    depends_on:
+      - humainapp
+    environment:
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=wayland
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
+
+  homescreenapp:
+    build:
+      context: ../
+      dockerfile: app/HomeScreenApp/Dockerfile
+    container_name: homescreenapp
+    user: "1000:1000"
+    network_mode: host
+    ipc: host
+    pid: host
+    depends_on:
+      - humainapp
+    environment:
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=wayland
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
+
+  mediaapp:
+    build:
+      context: ../
+      dockerfile: app/MediaApp/Dockerfile
+    container_name: mediaapp
+    user: "1000:1000"
+    network_mode: host
+    ipc: host
+    pid: host
+    depends_on:
+      - humainapp
+    environment:
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=wayland
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
+
+  ambientapp:
+    build:
+      context: ../
+      dockerfile: app/AmbientApp/Dockerfile
+    container_name: ambientapp
+    user: "1000:1000"
+    network_mode: host
+    ipc: host
+    pid: host
+    depends_on:
+      - humainapp
+    environment:
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=wayland
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
+
+# RemoteSpeakerApp runs NATIVELY (not in Docker) for direct SSH TTY access
+# This allows beep sounds to play on your SSH client (laptop) automatically
+# Run it separately: ./build_native/RemoteSpeakerApp/RemoteSpeakerApp

@@ -1,4 +1,3 @@
-# Multi-stage build for PDCApp containerization
 # Stage 1: Build environment
 FROM ubuntu:22.04 AS builder
 
@@ -53,13 +52,13 @@ RUN mkdir -p build && cd build && \
     ldconfig
 
 # Copy application source code
-COPY ./app/PDCApp /build/PDCApp
+COPY ./app/GearApp /build/GearApp
 
 # Copy CommonAPI generated code
 COPY ./commonapi/generated /build/commonapi/generated
 
-# Build PDCApp
-WORKDIR /build/PDCApp
+# Build GearApp
+WORKDIR /build/GearApp
 RUN rm -rf build && mkdir -p build && cd build && \
     cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
@@ -104,13 +103,12 @@ RUN ldconfig
 WORKDIR /app
 
 # Copy built executable from builder stage
-COPY --from=builder /build/PDCApp/build/PDCApp /app/
-COPY --from=builder /build/PDCApp/config /app/config
-COPY --from=builder /build/PDCApp/asset /app/asset
+COPY --from=builder /build/GearApp/build/GearApp /app/
+COPY --from=builder /build/GearApp/config /app/config
 
 # Set up vsomeip configuration
-ENV VSOMEIP_CONFIGURATION=/app/config/vsomeip_pdc.json
-ENV VSOMEIP_APPLICATION_NAME=PDCApp
+ENV VSOMEIP_CONFIGURATION=/app/config/vsomeip_ecu2.json
+ENV VSOMEIP_APPLICATION_NAME=GearApp
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 # For Qt GUI display
@@ -122,4 +120,4 @@ EXPOSE 30490-30510/tcp
 EXPOSE 30490-30510/udp
 
 # Run the application
-CMD ["/app/PDCApp"]
+CMD ["/app/GearApp"]

@@ -116,7 +116,7 @@ ipc: host
 
 ### Configuration File
 Mount your vsomeip configuration:
-```yaml
+```yamllocal IPC
 volumes:
   - ./config:/app/config:ro
 environment:

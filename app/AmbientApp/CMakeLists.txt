@@ -40,28 +40,39 @@ find_package(Boost 1.74 REQUIRED COMPONENTS system thread filesystem)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+# CommonAPI generated code path
+if(NOT COMMONAPI_GEN_DIR)
+    if(DEFINED ENV{COMMONAPI_GEN_DIR})
+        set(COMMONAPI_GEN_DIR $ENV{COMMONAPI_GEN_DIR})
+    else()
+        set(COMMONAPI_GEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated")
+    endif()
+endif()
+
+message(STATUS "CommonAPI generated code directory: ${COMMONAPI_GEN_DIR}")
+
 # Include generated code directories
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated/core
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated/someip
+    ${COMMONAPI_GEN_DIR}/core
+    ${COMMONAPI_GEN_DIR}/someip
 )
 
 # Generated CommonAPI sources
 set(GENERATED_SOURCES
     # MediaControl (MediaApp 통신용 - Client)
-    ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPProxy.cpp
-    ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPStubAdapter.cpp
-    ../../commonapi/generated/someip/v1/mediacontrol/MediaControlSomeIPDeployment.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/mediacontrol/MediaControlSomeIPProxy.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/mediacontrol/MediaControlSomeIPStubAdapter.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/mediacontrol/MediaControlSomeIPDeployment.cpp
 
     # VehicleControl (VehicleControlECU 통신용 - Client)
-    ../../commonapi/generated/someip/v1/vehiclecontrol/VehicleControlSomeIPProxy.cpp
-    ../../commonapi/generated/someip/v1/vehiclecontrol/VehicleControlSomeIPStubAdapter.cpp
-    ../../commonapi/generated/someip/v1/vehiclecontrol/VehicleControlSomeIPDeployment.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/vehiclecontrol/VehicleControlSomeIPProxy.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/vehiclecontrol/VehicleControlSomeIPStubAdapter.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/vehiclecontrol/VehicleControlSomeIPDeployment.cpp
 
     # AmbientControl (AmbientApp 서비스 제공 - Service)
-    ../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPProxy.cpp
-    ../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPStubAdapter.cpp
-    ../../commonapi/generated/someip/v1/ambientcontrol/AmbientControlSomeIPDeployment.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/ambientcontrol/AmbientControlSomeIPProxy.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/ambientcontrol/AmbientControlSomeIPStubAdapter.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/ambientcontrol/AmbientControlSomeIPDeployment.cpp
 )
 
 # Source files

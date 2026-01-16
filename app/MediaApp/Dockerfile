@@ -1,4 +1,3 @@
-# Multi-stage build for PDCApp containerization
 # Stage 1: Build environment
 FROM ubuntu:22.04 AS builder
 
@@ -14,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     qtbase5-dev \
     qtdeclarative5-dev \
     qtquickcontrols2-5-dev \
+    qtmultimedia5-dev \
     libqt5network5 \
     libboost-all-dev \
     libboost-system-dev \
@@ -53,13 +53,13 @@ RUN mkdir -p build && cd build && \
     ldconfig
 
 # Copy application source code
-COPY ./app/PDCApp /build/PDCApp
+COPY ./app/MediaApp /build/MediaApp
 
 # Copy CommonAPI generated code
 COPY ./commonapi/generated /build/commonapi/generated
 
-# Build PDCApp
-WORKDIR /build/PDCApp
+# Build MediaApp
+WORKDIR /build/MediaApp
 RUN rm -rf build && mkdir -p build && cd build && \
     cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
@@ -84,10 +84,13 @@ RUN apt-get update && apt-get install -y \
     libqt5qml5 \
     libqt5widgets5 \
     libqt5gui5 \
+    libqt5multimedia5 \
     qml-module-qtquick2 \
     qml-module-qtquick-window2 \
     qml-module-qtquick-controls2 \
     qml-module-qtquick-layouts \
+    qml-module-qtgraphicaleffects \
+    qml-module-qtmultimedia \
     libboost-system1.74.0 \
     libboost-thread1.74.0 \
     libboost-filesystem1.74.0 \
@@ -104,13 +107,13 @@ RUN ldconfig
 WORKDIR /app
 
 # Copy built executable from builder stage
-COPY --from=builder /build/PDCApp/build/PDCApp /app/
-COPY --from=builder /build/PDCApp/config /app/config
-COPY --from=builder /build/PDCApp/asset /app/asset
+COPY --from=builder /build/MediaApp/build/MediaApp /app/
+COPY --from=builder /build/MediaApp/vsomeip.json /app/config/vsomeip.json
+COPY --from=builder /build/MediaApp/images /app/images
 
 # Set up vsomeip configuration
-ENV VSOMEIP_CONFIGURATION=/app/config/vsomeip_pdc.json
-ENV VSOMEIP_APPLICATION_NAME=PDCApp
+ENV VSOMEIP_CONFIGURATION=/app/config/vsomeip.json
+ENV VSOMEIP_APPLICATION_NAME=MediaApp
 ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 # For Qt GUI display
@@ -122,4 +125,4 @@ EXPOSE 30490-30510/tcp
 EXPOSE 30490-30510/udp
 
 # Run the application
-CMD ["/app/PDCApp"]
+CMD ["/app/MediaApp"]
