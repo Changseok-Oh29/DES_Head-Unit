@@ -1,0 +1,146 @@
+version: '3.8'
+
+# ═══════════════════════════════════════════════════════════════════
+# Docker Compose for GHCR Images
+# Use this to run pre-built images from GitHub Container Registry
+# ═══════════════════════════════════════════════════════════════════
+
+services:
+  # ═══════════════════════════════════════════════════════════════════
+  # HU_MainApp - Wayland Compositor (MUST START FIRST)
+  # Creates wayland-1 socket for client apps
+  # ═══════════════════════════════════════════════════════════════════
+  humainapp:
+    image: ghcr.io/changseok-oh29/des_head-unit/humainapp:${IMAGE_TAG:-latest}
+    container_name: humainapp
+    user: "1000:1000"
+    network_mode: host
+    privileged: true
+    ipc: host
+    pid: host
+    environment:
+      - DISPLAY=${DISPLAY}
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=xcb
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
+
+  # ═══════════════════════════════════════════════════════════════════
+  # Client Apps - Connect to HU_MainApp's wayland-1 socket
+  # ═══════════════════════════════════════════════════════════════════
+
+  gearapp:
+    image: ghcr.io/changseok-oh29/des_head-unit/gearapp:${IMAGE_TAG:-latest}
+    container_name: gearapp
+    user: "1000:1000"
+    network_mode: host
+    ipc: host
+    pid: host
+    depends_on:
+      - humainapp
+    environment:
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=wayland
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
+
+  pdcapp:
+    image: ghcr.io/changseok-oh29/des_head-unit/pdcapp:${IMAGE_TAG:-latest}
+    container_name: pdcapp
+    user: "1000:1000"
+    network_mode: host
+    ipc: host
+    pid: host
+    depends_on:
+      - humainapp
+    environment:
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=wayland
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
+
+  homescreenapp:
+    image: ghcr.io/changseok-oh29/des_head-unit/homescreenapp:${IMAGE_TAG:-latest}
+    container_name: homescreenapp
+    user: "1000:1000"
+    network_mode: host
+    ipc: host
+    pid: host
+    depends_on:
+      - humainapp
+    environment:
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=wayland
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
+
+  mediaapp:
+    image: ghcr.io/changseok-oh29/des_head-unit/mediaapp:${IMAGE_TAG:-latest}
+    container_name: mediaapp
+    user: "1000:1000"
+    network_mode: host
+    ipc: host
+    pid: host
+    depends_on:
+      - humainapp
+    environment:
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=wayland
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
+
+  ambientapp:
+    image: ghcr.io/changseok-oh29/des_head-unit/ambientapp:${IMAGE_TAG:-latest}
+    container_name: ambientapp
+    user: "1000:1000"
+    network_mode: host
+    ipc: host
+    pid: host
+    depends_on:
+      - humainapp
+    environment:
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - QT_QPA_PLATFORM=wayland
+      - WAYLAND_DISPLAY=wayland-1
+      - QT_WAYLAND_DISABLE_WINDOWDECORATION=1
+      - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+    volumes:
+      - /tmp:/tmp
+      - /dev/dri:/dev/dri
+      - /dev/shm:/dev/shm
+      - /usr/share/X11/xkb:/usr/share/X11/xkb:ro
+    restart: unless-stopped
