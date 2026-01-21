@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QDebug>
+#include "VehicleControlClient.h"
 
 int main(int argc, char *argv[])
 {
@@ -13,6 +14,7 @@ int main(int argc, char *argv[])
     // - Shows on HDMI output via Weston (Kiosk Shell routing)
     // - Creates sub-compositor socket (wayland-1) for HU apps
     // - Manages window layout and surface routing for HU apps
+    // - Receives distance data via vsomeip (gearDistanceChanged)
 
     // Set platform - allow override from environment for local testing
     // On Raspberry Pi: wayland (connects to Weston)
@@ -50,29 +52,39 @@ int main(int argc, char *argv[])
     // KIOSK SHELL: Set application name for display routing
     // ═══════════════════════════════════════════════════════
     // This name must match the app-ids in weston.ini
-    app.setApplicationName("HeadUnitApp");  // ← Routes to HDMI-A-1 output
+    app.setApplicationName("HeadUnitApp");  // Routes to HDMI-A-1 output
     app.setApplicationVersion("2.0-Kiosk");
     app.setOrganizationName("SEA-ME");
     app.setDesktopFileName("HeadUnitApp");  // Critical for Wayland app_id
 
     qDebug() << "═══════════════════════════════════════════════════════";
     qDebug() << "HU_MainApp - Nested Wayland Compositor (Kiosk Shell)";
-    qDebug() << "App ID: HeadUnitApp → HDMI-A-1 (1024x600)";
+    qDebug() << "App ID: HeadUnitApp -> HDMI-A-1 (1024x600)";
     qDebug() << "═══════════════════════════════════════════════════════";
     qDebug() << "Display Platform:" << app.platformName();
     qDebug() << "Parent Compositor:" << qgetenv("WAYLAND_DISPLAY");
     qDebug() << "";
-    qDebug() << "📋 Role: Nested Wayland Compositor";
+    qDebug() << "Role: Nested Wayland Compositor";
     qDebug() << "   - Client of Weston (wayland-0)";
     qDebug() << "   - Shows on HDMI via Kiosk Shell routing";
     qDebug() << "   - Creates wayland-1 socket for HU apps";
     qDebug() << "   - Manages app window embedding";
+    qDebug() << "   - Receives distance data via vsomeip";
     qDebug() << "═══════════════════════════════════════════════════════";
+
+    // ═══════════════════════════════════════════════════════
+    // VehicleControl Client - vsomeip communication
+    // ═══════════════════════════════════════════════════════
+    VehicleControlClient vehicleControlClient;
+    vehicleControlClient.connectToService();
 
     // ═══════════════════════════════════════════════════════
     // QML Engine - Compositor UI
     // ═══════════════════════════════════════════════════════
     QQmlApplicationEngine engine;
+
+    // Expose VehicleControlClient to QML
+    engine.rootContext()->setContextProperty("vehicleControl", &vehicleControlClient);
 
     // Add QML import path for Qt modules
     engine.addImportPath("/usr/lib/qml");
@@ -85,11 +97,11 @@ int main(int argc, char *argv[])
         &app,
         [url](QObject *obj, const QUrl &objUrl) {
             if (!obj && url == objUrl) {
-                qCritical() << "❌ Failed to load Compositor QML:" << url;
+                qCritical() << "Failed to load Compositor QML:" << url;
                 QCoreApplication::exit(-1);
             } else {
                 qDebug() << "";
-                qDebug() << "✅ Compositor UI loaded";
+                qDebug() << "Compositor UI loaded";
                 qDebug() << "   Ready to embed app windows";
                 qDebug() << "";
             }
@@ -99,11 +111,11 @@ int main(int argc, char *argv[])
     engine.load(url);
 
     if (engine.rootObjects().isEmpty()) {
-        qCritical() << "❌ No root objects found!";
+        qCritical() << "No root objects found!";
         return -1;
     }
 
-    qDebug() << "🚀 Compositor running...";
+    qDebug() << "Compositor running...";
     qDebug() << "   Waiting for HU apps to connect...";
     qDebug() << "";
 

@@ -160,30 +160,28 @@ void CANInterface::receiveCANMessages()
 void CANInterface::processCANFrame(const struct can_frame &frame)
 {
     if (frame.can_id == ARDUINO_SPEED_ID) {
-        // Parse speed data (bytes 0-2) - UNCHANGED
+        // Parse speed data (bytes 0-2)
         float speedCms = parseSpeedData(frame.data);
 
-        // NEW: Parse distance data (bytes 3-6)
+        // Parse distance data (bytes 3-6) - Send RAW data (filtering done in PDCApp)
         float rawDistance = parseDistanceData(frame.data);
-        float filteredDistance = filterDistance(rawDistance);
 
         {
             QMutexLocker locker(&m_dataMutex);
             m_currentSpeedCms = speedCms;
-            m_currentDistanceCm = filteredDistance;  // NEW: Store filtered distance
+            m_currentDistanceCm = rawDistance;  // Store raw distance
         }
 
         // Debug log
         static int logCount = 0;
         if (++logCount % 100 == 0) {  // Every 1 second (10ms * 100)
-            qDebug() << "📡 CAN Data:"
+            qDebug() << "CAN Data:"
                      << "Speed:" << speedCms << "cm/s"
-                     << "| Distance (raw):" << rawDistance << "cm"
-                     << "| Distance (filtered):" << filteredDistance << "cm";
+                     << "| Distance (raw):" << rawDistance << "cm";
         }
 
         emit speedDataReceived(speedCms);
-        emit distanceDataReceived(filteredDistance);  // NEW: Emit filtered distance
+        emit distanceDataReceived(rawDistance);  // Emit RAW distance (filtering in PDCApp)
     }
 }
 

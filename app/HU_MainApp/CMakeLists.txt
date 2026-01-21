@@ -10,26 +10,76 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # ════════════════════════════════════════════════════════════
-# Wayland Compositor Only - No Manager Dependencies
+# Deploy environment path settings (environment variable priority)
 # ════════════════════════════════════════════════════════════
-# HU_MainApp은 이제 Wayland Compositor 역할만 수행합니다.
-# 각 앱(GearApp, MediaApp, AmbientApp)은 독립 프로세스로 실행되며,
-# vsomeip를 통해 직접 통신합니다.
-#
-# 이 Compositor는 단순히 각 앱의 창을 배치하고 합성만 수행합니다.
+if(DEFINED ENV{DEPLOY_PREFIX})
+    set(INSTALL_PREFIX $ENV{DEPLOY_PREFIX})
+    message(STATUS "Using DEPLOY_PREFIX from environment: ${INSTALL_PREFIX}")
+else()
+    set(INSTALL_PREFIX "${CMAKE_CURRENT_SOURCE_DIR}/../../install_folder")
+    message(STATUS "Using default DEPLOY_PREFIX: ${INSTALL_PREFIX}")
+endif()
+
+# RPATH settings (vsomeip, CommonAPI library paths)
+set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};${INSTALL_PREFIX}")
+set(CMAKE_INSTALL_RPATH "${INSTALL_PREFIX}/lib")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--disable-new-dtags")
+
+# ════════════════════════════════════════════════════════════
+# Wayland Compositor + VehicleControl Client
+# ════════════════════════════════════════════════════════════
+# HU_MainApp is a Wayland Compositor that:
+# - Composites windows from child apps (GearApp, MediaApp, etc.)
+# - Receives distance data via vsomeip (gearDistanceChanged event)
+# - Exposes distance data to QML for UI updates
 # ════════════════════════════════════════════════════════════
 
 # Qt packages - GUI + WaylandCompositor
 find_package(Qt5 REQUIRED COMPONENTS Core Quick Qml WaylandCompositor)
 
+# CommonAPI & vsomeip
+find_package(CommonAPI 3.2 REQUIRED)
+find_package(CommonAPI-SomeIP 3.2 REQUIRED)
+find_package(vsomeip3 3.5 REQUIRED)
+
+# CommonAPI generated code path
+if(NOT COMMONAPI_GEN_DIR)
+    if(DEFINED ENV{COMMONAPI_GEN_DIR})
+        set(COMMONAPI_GEN_DIR $ENV{COMMONAPI_GEN_DIR})
+    else()
+        set(COMMONAPI_GEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../commonapi/generated")
+    endif()
+endif()
+
+message(STATUS "CommonAPI generated code directory: ${COMMONAPI_GEN_DIR}")
+
+# Include directories
+include_directories(
+    ${COMMONAPI_GEN_DIR}/core
+    ${COMMONAPI_GEN_DIR}/someip
+)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
 # ════════════════════════════════════════════════════════════
-# Source files - Compositor Only
+# Source files - Compositor + VehicleControlClient
 # ════════════════════════════════════════════════════════════
 set(SOURCES
     src/main_compositor.cpp
+    src/VehicleControlClient.cpp
+)
+
+set(HEADERS
+    src/VehicleControlClient.h
+)
+
+# CommonAPI generated sources (SomeIP binding)
+set(COMMONAPI_SOURCES
+    ${COMMONAPI_GEN_DIR}/someip/v1/vehiclecontrol/VehicleControlSomeIPProxy.cpp
+    ${COMMONAPI_GEN_DIR}/someip/v1/vehiclecontrol/VehicleControlSomeIPDeployment.cpp
 )
 
 # QML resources
@@ -40,6 +90,8 @@ set(QML_RESOURCES
 # Executable
 add_executable(HU_MainApp_Compositor
     ${SOURCES}
+    ${HEADERS}
+    ${COMMONAPI_SOURCES}
     ${QML_RESOURCES}
 )
 
@@ -48,6 +100,9 @@ target_link_libraries(HU_MainApp_Compositor
     Qt5::Quick
     Qt5::Qml
     Qt5::WaylandCompositor
+    CommonAPI
+    CommonAPI-SomeIP
+    vsomeip3
 )
 
 # Install
@@ -56,6 +111,7 @@ install(TARGETS HU_MainApp_Compositor
 )
 
 message(STATUS "════════════════════════════════════════════════════════════")
-message(STATUS "HU_MainApp - Wayland Compositor Only")
-message(STATUS "No Manager dependencies - Apps run independently")
+message(STATUS "HU_MainApp - Wayland Compositor + VehicleControl Client")
+message(STATUS "  - Receives gearDistanceChanged events via vsomeip")
+message(STATUS "  - Exposes distance data to QML")
 message(STATUS "════════════════════════════════════════════════════════════")

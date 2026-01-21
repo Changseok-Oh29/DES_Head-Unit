@@ -74,11 +74,16 @@ WaylandCompositor {
         mediaAppContainer: layout.mediaAppContainer
         ambientAppContainer: layout.ambientAppContainer
         pdcAppContainer: layout.pdcAppContainer
+    }
 
-        // Connect gear change signal to layout
-        onGearChanged: {
+    // ═══════════════════════════════════════════════════════════
+    // VehicleControl - Gear status from vsomeip (VehicleControlECU)
+    // ═══════════════════════════════════════════════════════════
+    Connections {
+        target: vehicleControl
+        onCurrentGearChanged: {
             layout.isReverseGear = (gear === "R")
-            console.log("🚗 Gear changed to:", gear, "- PDC overlay:", layout.isReverseGear ? "VISIBLE" : "HIDDEN")
+            console.log("Gear from vsomeip:", gear, "- PDC overlay:", layout.isReverseGear ? "VISIBLE" : "HIDDEN")
         }
     }
 
@@ -140,16 +145,6 @@ WaylandCompositor {
                 surfaceRouter.routeSurface(chrome, newTitle)
                 console.log("═══════════════════════════════════════")
 
-                // Detect gear change from GearApp title (e.g., "GearApp - R" or "Gear: R")
-                // Check title since appId may be empty on some platforms
-                if (appId === "GearApp" || appId.toLowerCase().includes("gear") ||
-                    newTitle.toLowerCase().includes("gearapp") || newTitle.toLowerCase().includes("gear")) {
-                    var gearMatch = newTitle.match(/- ([PRND])$/)  // Match "GearApp - R" format
-                    if (gearMatch) {
-                        console.log("🚗 Detected gear change from title:", gearMatch[1])
-                        surfaceRouter.gearChanged(gearMatch[1])
-                    }
-                }
             })
 
             // Initial routing

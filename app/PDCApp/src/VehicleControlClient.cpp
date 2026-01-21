@@ -7,6 +7,8 @@ VehicleControlClient::VehicleControlClient(QObject *parent)
     , m_currentGear("P")
     , m_currentDistance(200)  // Default: far distance (no alert)
     , m_serviceAvailable(false)
+    , m_emaDistance(0.0f)
+    , m_filterInitialized(false)
 {
     qDebug() << "[PDCApp] VehicleControlClient created";
 }
@@ -97,13 +99,56 @@ void VehicleControlClient::onGearDistanceChanged(std::string newGear, std::strin
         qDebug() << "[PDCApp] Gear changed to:" << m_currentGear;
     }
 
-    // Update distance (important for PDC visualization)
-    int newDistance = static_cast<int>(distance);
-    if (m_currentDistance != newDistance) {
-        m_currentDistance = newDistance;
+    // Apply filtering to raw distance data
+    int rawDistance = static_cast<int>(distance);
+    int filteredDistance = filterDistance(rawDistance);
+
+    // Update distance if changed (important for PDC visualization)
+    if (m_currentDistance != filteredDistance) {
+        m_currentDistance = filteredDistance;
         emit currentDistanceChanged(m_currentDistance);
-        qDebug() << "[PDCApp] Distance updated:" << m_currentDistance << "cm";
+        qDebug() << "[PDCApp] Distance - Raw:" << rawDistance << "cm | Filtered:" << filteredDistance << "cm";
     }
+}
+
+int VehicleControlClient::filterDistance(int rawDistance)
+{
+    // Step 1: Validate reading (check range)
+    if (!isValidDistance(rawDistance)) {
+        qDebug() << "[PDCApp] Invalid distance reading:" << rawDistance << "cm (ignored)";
+        return m_currentDistance;  // Return last valid filtered value
+    }
+
+    // Step 2: Initialize filter on first valid reading
+    if (!m_filterInitialized) {
+        m_emaDistance = static_cast<float>(rawDistance);
+        m_filterInitialized = true;
+        qDebug() << "[PDCApp] Distance filter initialized with:" << rawDistance << "cm";
+        return rawDistance;
+    }
+
+    // Step 3: Apply EMA filter (Exponential Moving Average)
+    // Formula: filtered = alpha * new + (1 - alpha) * old
+    m_emaDistance = DISTANCE_EMA_ALPHA * static_cast<float>(rawDistance) +
+                   (1.0f - DISTANCE_EMA_ALPHA) * m_emaDistance;
+
+    return static_cast<int>(m_emaDistance);
+}
+
+bool VehicleControlClient::isValidDistance(int distance) const
+{
+    // Check for invalid values (negative or sensor failure)
+    if (distance < 0) {
+        return false;
+    }
+
+    // Check physical sensor limits (HC-SR04: 2cm - 400cm)
+    if (distance < static_cast<int>(DISTANCE_MIN_VALID) ||
+        distance > static_cast<int>(DISTANCE_MAX_VALID)) {
+        return false;
+    }
+
+    return true;
 }
 
 void VehicleControlClient::onVehicleStateChanged(std::string gear, uint16_t speed, uint8_t battery, uint64_t timestamp)

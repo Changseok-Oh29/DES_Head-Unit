@@ -18,9 +18,12 @@ services:
     environment:
       - DISPLAY=$DISPLAY
       - XDG_RUNTIME_DIR=/tmp/runtime-root
+#     - QT_QPA_PLATFORM=wayland
+#     - WAYLAND_DISPLAY=wayland-0
       - QT_QPA_PLATFORM=xcb
       - WAYLAND_DISPLAY=wayland-1
       - QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+
     volumes:
       - /tmp:/tmp
       - /dev/dri:/dev/dri

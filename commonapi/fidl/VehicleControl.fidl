@@ -18,7 +18,7 @@ interface VehicleControl {
     broadcast vehicleStateChanged {
         out {
             String gear
-            UInt16 speed  
+            UInt16 speed
             UInt8 batteryLevel
             UInt64 timestamp
         }
