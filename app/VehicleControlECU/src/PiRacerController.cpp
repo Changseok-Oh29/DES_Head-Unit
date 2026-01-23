@@ -9,11 +9,17 @@ PiRacerController::PiRacerController(QObject *parent)
     , m_currentSpeed(0)
     , m_currentDistance(200)  // Default to max distance (no obstacle)
     , m_currentThrottle(0.0f)
+    , m_stateTimer(nullptr)
 {
 }
 
 PiRacerController::~PiRacerController()
 {
+    // Stop camera streaming before cleanup
+    if (m_cameraStreamer && m_cameraStreamer->isStreaming()) {
+        m_cameraStreamer->stopStreaming();
+    }
+
     // Stop motors before cleanup
     if (m_throttleController) {
         setThrottlePercent(0.0f);
@@ -46,13 +52,35 @@ bool PiRacerController::initialize()
         } else {
             qWarning() << "⚠️  CAN interface failed - speed/distance will be unavailable";
         }
+
+        // Initialize camera streamer for reverse camera
+        m_cameraStreamer = std::make_unique<CameraStreamer>();
+        if (m_cameraStreamer->initialize()) {
+            qDebug() << "✅ Camera streamer initialized";
+            connect(m_cameraStreamer.get(), &CameraStreamer::streamingStarted,
+                    this, &PiRacerController::cameraStreamingStarted);
+            connect(m_cameraStreamer.get(), &CameraStreamer::streamingStopped,
+                    this, &PiRacerController::cameraStreamingStopped);
+            connect(m_cameraStreamer.get(), &CameraStreamer::streamingError,
+                    this, &PiRacerController::cameraStreamingError);
+        } else {
+            qWarning() << "⚠️  Camera streamer failed - reverse camera will be unavailable";
+        }
         
+        // Setup periodic state broadcast timer (10Hz)
+        m_stateTimer = new QTimer(this);
+        connect(m_stateTimer, &QTimer::timeout, this, [this]() {
+            emit vehicleStateChanged(m_currentGear, m_currentSpeed, getBatteryLevel());
+        });
+        m_stateTimer->start(100);  // 10Hz = 100ms interval
+
         qDebug() << "✅ PiRacerController initialized";
         qDebug() << "   - Steering Controller: 0x40";
         qDebug() << "   - Throttle Controller: 0x60";
         qDebug() << "   - Battery Monitor: INA219";
         qDebug() << "   - CAN Interface: can0 (1000kbps)";
-        
+        qDebug() << "   - State Broadcast: 10Hz";
+
         warmUp();
         return true;
         
@@ -72,6 +100,17 @@ void PiRacerController::setGearPosition(const QString& gear)
 
         // Stop throttle when changing gears
         setThrottlePercent(0.0f);
+
+        // Start/stop camera streaming based on gear
+        if (m_cameraStreamer) {
+            if (gear == "R") {
+                qDebug() << "📷 Starting reverse camera stream...";
+                m_cameraStreamer->startStreaming();
+            } else if (oldGear == "R") {
+                qDebug() << "📷 Stopping reverse camera stream...";
+                m_cameraStreamer->stopStreaming();
+            }
+        }
 
         emit gearDistanceChanged(gear, oldGear, m_currentDistance);
     }
@@ -102,9 +141,9 @@ void PiRacerController::setThrottlePercent(float percent)
     if (m_currentGear == "P" || m_currentGear == "N") {
         percent = 0.0f;
     } else if (m_currentGear == "D" && percent < 0.0f) {
-        percent = 0.0f;  // No reverse in Drive
-    } else if (m_currentGear == "R" && percent > 0.0f) {
-        percent = 0.0f;  // No forward in Reverse
+        percent = 0.0f;  // No backward in Drive
+    } else if (m_currentGear == "R" && percent < 0.0f) {
+        percent = 0.0f;  // No backward in Reverse
     }
     
     // Set motor direction
@@ -138,18 +177,9 @@ void PiRacerController::onSpeedDataReceived(float speedCms)
 
 void PiRacerController::onDistanceDataReceived(float distanceCm)
 {
-    // Store distance in cm
-    uint16_t newDistance = static_cast<uint16_t>(distanceCm);
-
-    // Always emit when in Reverse gear (for PDC continuous updates)
-    // or when distance changes significantly
-    if (m_currentGear == "R" || qAbs(static_cast<int>(newDistance) - static_cast<int>(m_currentDistance)) > 2) {
-        m_currentDistance = newDistance;
-        // Emit with current gear so PDCApp/RemoteSpeaker can receive continuous updates
-        emit gearDistanceChanged(m_currentGear, m_currentGear, m_currentDistance);
-    } else {
-        m_currentDistance = newDistance;
-    }
+    // Store and forward raw distance data (filtering done in PDCApp)
+    m_currentDistance = static_cast<uint16_t>(distanceCm);
+    emit gearDistanceChanged(m_currentGear, m_currentGear, m_currentDistance);
 }
 
 uint8_t PiRacerController::getBatteryLevel() const
@@ -172,4 +202,23 @@ void PiRacerController::warmUp()
     setThrottlePercent(0.0f);
     QThread::msleep(1000);
     qDebug() << "✅ Warm-up complete";
+}
+
+void PiRacerController::setCameraTargetHost(const QString& host)
+{
+    if (m_cameraStreamer) {
+        m_cameraStreamer->setTargetHost(host);
+    }
+}
+
+void PiRacerController::setCameraTargetPort(int port)
+{
+    if (m_cameraStreamer) {
+        m_cameraStreamer->setTargetPort(port);
+    }
+}
+
+bool PiRacerController::isCameraStreaming() const
+{
+    return m_cameraStreamer ? m_cameraStreamer->isStreaming() : false;
 }

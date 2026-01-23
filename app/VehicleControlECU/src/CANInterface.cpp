@@ -9,8 +9,6 @@ CANInterface::CANInterface(QObject *parent)
     , m_receiveTimer(new QTimer(this))
     , m_currentSpeedCms(0.0f)
     , m_currentDistanceCm(0.0f)
-    , m_emaDistance(0.0f)
-    , m_distanceFilterInitialized(false)
 {
     // Timer to check CAN messages every 10ms
     m_receiveTimer->setSingleShot(false);
@@ -212,7 +210,7 @@ float CANInterface::getCurrentSpeedKmh() const
 }
 
 // ============================================================================
-// NEW: Distance Parsing and Filtering Methods
+// Distance Parsing Method
 // ============================================================================
 
 float CANInterface::parseDistanceData(const uint8_t *data)
@@ -228,45 +226,6 @@ float CANInterface::parseDistanceData(const uint8_t *data)
     memcpy(distanceUnion.bytes, &data[3], 4);
 
     return distanceUnion.value;
-}
-
-float CANInterface::filterDistance(float rawDistance)
-{
-    // Step 1: Validate reading (check range and special values)
-    if (!isValidDistance(rawDistance)) {
-        qDebug() << "⚠️  Invalid distance reading:" << rawDistance << "cm (ignored)";
-        return m_currentDistanceCm;  // Return last valid filtered value
-    }
-
-    // Step 2: Initialize filter on first valid reading
-    if (!m_distanceFilterInitialized) {
-        m_emaDistance = rawDistance;
-        m_currentDistanceCm = rawDistance;
-        m_distanceFilterInitialized = true;
-        qDebug() << "🔧 Distance filter initialized with:" << rawDistance << "cm";
-        return rawDistance;
-    }
-
-    // Step 3: Apply EMA filter (Exponential Moving Average)
-    // Formula: filtered = alpha * new + (1 - alpha) * old
-    m_emaDistance = DISTANCE_EMA_ALPHA * rawDistance + (1.0f - DISTANCE_EMA_ALPHA) * m_emaDistance;
-
-    return m_emaDistance;
-}
-
-bool CANInterface::isValidDistance(float distance) const
-{
-    // Check for Arduino sensor failure flag (-1.0)
-    if (distance < 0.0f) {
-        return false;
-    }
-
-    // Check physical sensor limits (HC-SR04: 2cm - 400cm, but we limit to 200cm for PDC)
-    if (distance < DISTANCE_MIN_VALID || distance > DISTANCE_MAX_VALID) {
-        return false;
-    }
-
-    return true;
 }
 
 float CANInterface::getCurrentDistanceCm() const

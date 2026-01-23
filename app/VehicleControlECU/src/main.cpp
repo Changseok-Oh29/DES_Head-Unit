@@ -1,5 +1,4 @@
 #include <QCoreApplication>
-#include <QTimer>
 #include <QDebug>
 #include <CommonAPI/CommonAPI.hpp>
 #include <pigpio.h>
@@ -63,7 +62,7 @@ int main(int argc, char *argv[])
         
         gamepadHandler.start();
         qDebug() << "✅ Gamepad controls active";
-        qDebug() << "   A = Drive, B = Park, X = Neutral, Y = Reverse";
+        qDebug() << "   A = Drive, X = Park, B = Neutral, Y = Reverse";
         qDebug() << "   Left Stick = Steering, Right Stick = Throttle";
     } else {
         qWarning() << "⚠️  Gamepad not found - will use vsomeip RPC only";
@@ -102,27 +101,9 @@ int main(int argc, char *argv[])
     qDebug() << "✅ VehicleControl service registered";
     qDebug() << "   Domain:" << QString::fromStdString(domain);
     qDebug() << "   Instance:" << QString::fromStdString(instance);
-    
+
     // ═══════════════════════════════════════════════════════
-    // 6. Setup Periodic Vehicle State Broadcast
-    // ═══════════════════════════════════════════════════════
-    qDebug() << "";
-    qDebug() << "📡 Setting up periodic state broadcast...";
-    
-    QTimer* stateTimer = new QTimer(&app);
-    QObject::connect(stateTimer, &QTimer::timeout, [&piracerController]() {
-        QString gear = piracerController.getCurrentGear();
-        uint16_t speed = piracerController.getCurrentSpeed();
-        uint8_t battery = piracerController.getBatteryLevel();
-        
-        emit piracerController.vehicleStateChanged(gear, speed, battery);
-    });
-    stateTimer->start(100);  // 10Hz update rate
-    
-    qDebug() << "✅ Broadcasting vehicle state at 10Hz";
-    
-    // ═══════════════════════════════════════════════════════
-    // 7. Ready to Run
+    // 6. Ready to Run
     // ═══════════════════════════════════════════════════════
     qDebug() << "";
     qDebug() << "═══════════════════════════════════════════════════════";
@@ -134,7 +115,7 @@ int main(int argc, char *argv[])
     qDebug() << "   - Battery:" << piracerController.getBatteryLevel() << "%";
     qDebug() << "";
     qDebug() << "🎮 Gamepad Controls:";
-    qDebug() << "   A = Drive   B = Park   X = Neutral   Y = Reverse";
+    qDebug() << "   A = Drive   X = Park   B = Neutral   Y = Reverse";
     qDebug() << "   Left Analog = Steering   Right Analog Y = Throttle";
     qDebug() << "";
     qDebug() << "Press Ctrl+C to stop...";

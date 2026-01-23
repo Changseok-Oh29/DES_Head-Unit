@@ -1,5 +1,5 @@
 SUMMARY = "VehicleControl ECU Application"
-DESCRIPTION = "PiRacer vehicle control service using vsomeip and CommonAPI for inter-ECU communication"
+DESCRIPTION = "PiRacer vehicle control service using vsomeip and CommonAPI for inter-ECU communication with reverse camera streaming via GStreamer"
 HOMEPAGE = "https://github.com/Changseok-Oh29/DES_Head-Unit"
 SECTION = "apps"
 LICENSE = "MIT"
@@ -44,14 +44,14 @@ do_install:append() {
     # Install configuration files
     install -d ${D}${sysconfdir}/vsomeip
     install -d ${D}${sysconfdir}/commonapi
-    
+
     install -m 0644 ${S}/config/vsomeip_ecu1.json ${D}${sysconfdir}/vsomeip/
     install -m 0644 ${S}/config/commonapi_ecu1.ini ${D}${sysconfdir}/commonapi/
-    
+
     # Install systemd service
     install -d ${D}${systemd_system_unitdir}
     install -m 0644 ${WORKDIR}/vehiclecontrol-ecu.service ${D}${systemd_system_unitdir}/
-    
+
     # Clean up /usr/etc if it exists (vsomeip might install here)
     if [ -d ${D}${prefix}/etc ]; then
         rm -rf ${D}${prefix}/etc
@@ -65,6 +65,8 @@ FILES:${PN} = " \
     ${systemd_system_unitdir}/vehiclecontrol-ecu.service \
 "
 
+# Runtime dependencies
+# Note: libcamera requires meta-openembedded/meta-multimedia layer
 RDEPENDS:${PN} = " \
     commonapi-core \
     commonapi-someip \
@@ -75,6 +77,12 @@ RDEPENDS:${PN} = " \
     boost-log \
     pigpio \
     bash \
+    gstreamer1.0 \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    libcamera \
+    libcamera-gst \
 "
 
 # The application needs root access for GPIO

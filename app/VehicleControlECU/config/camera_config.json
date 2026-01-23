@@ -1,0 +1,13 @@
+{
+    "camera": {
+        "enabled": true,
+        "target_host": "192.168.1.101",
+        "target_port": 5000,
+        "resolution": {
+            "width": 1280,
+            "height": 720
+        },
+        "framerate": 30,
+        "bitrate_kbps": 4000
+    }
+}

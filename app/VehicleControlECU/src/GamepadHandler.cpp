@@ -71,9 +71,9 @@ void GamepadHandler::handleGearButtons(const ShanWanGamepadInput& input)
     if (input.button_a && !m_buttonAPressed) {
         newGear = "D";  // Drive
     } else if (input.button_b && !m_buttonBPressed) {
-        newGear = "P";  // Park
-    } else if (input.button_x && !m_buttonXPressed) {
         newGear = "N";  // Neutral
+    } else if (input.button_x && !m_buttonXPressed) {
+        newGear = "P";  // Park
     } else if (input.button_y && !m_buttonYPressed) {
         newGear = "R";  // Reverse
     }

@@ -48,11 +48,7 @@ private:
     bool setupCANInterface(const QString &interface);
     void processCANFrame(const struct can_frame &frame);
     float parseSpeedData(const uint8_t *data);
-
-    // Distance parsing and filtering methods
     float parseDistanceData(const uint8_t *data);
-    float filterDistance(float rawDistance);
-    bool isValidDistance(float distance) const;
 
     int m_canSocket;
     bool m_isConnected;
@@ -60,17 +56,8 @@ private:
     QTimer *m_receiveTimer;
 
     float m_currentSpeedCms;
+    float m_currentDistanceCm;
     mutable QMutex m_dataMutex;
-
-    // Distance filter state variables
-    float m_currentDistanceCm;      // Filtered distance value
-    float m_emaDistance;            // EMA filter state
-    bool m_distanceFilterInitialized;
-
-    // NEW: Filter configuration constants
-    static constexpr float DISTANCE_EMA_ALPHA = 0.3f;        // EMA smoothing (30% new, 70% old)
-    static constexpr float DISTANCE_MAX_VALID = 400.0f;      // Max valid distance (cm) - HC-SR04 max range
-    static constexpr float DISTANCE_MIN_VALID = 2.0f;        // Min valid distance (cm)
 };
 
 #endif // CANINTERFACE_H

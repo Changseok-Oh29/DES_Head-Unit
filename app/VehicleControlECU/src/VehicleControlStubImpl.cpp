@@ -5,7 +5,7 @@
 VehicleControlStubImpl::VehicleControlStubImpl(PiRacerController* piracerController)
     : m_piracerController(piracerController)
 {
-    // Connect PiRacerController signals to vsomeip event broadcasters
+    // Connect PiRacerController signals (QT signals) to vsomeip event broadcasters
     if (m_piracerController) {
         QObject::connect(m_piracerController, &PiRacerController::gearDistanceChanged,
                         this, &VehicleControlStubImpl::onGearDistanceChanged);

@@ -1,11 +1,14 @@
 SUMMARY = "VehicleControl ECU Minimal Image"
-DESCRIPTION = "Lightweight Linux image for Raspberry Pi with VehicleControl ECU application"
+DESCRIPTION = "Lightweight Linux image for Raspberry Pi with VehicleControl ECU application including reverse camera streaming support"
 LICENSE = "MIT"
 
 inherit core-image
 
-# Add mcp251xfd overlay (already exists in rpi-bootfiles firmware)
+# Device tree overlays
+# - mcp251xfd: CAN bus support
+# - imx219: Camera module support (Raspberry Pi Camera Module v2)
 RPI_KERNEL_DEVICETREE_OVERLAYS:append = " overlays/mcp251xfd.dtbo"
+RPI_KERNEL_DEVICETREE_OVERLAYS:append = " overlays/imx219.dtbo"
 
 # Image file system types
 IMAGE_FSTYPES = "tar.bz2 ext4 rpi-sdimg"
@@ -63,8 +66,8 @@ IMAGE_FEATURES += " \
 # Kernel features for Wi-Fi
 KERNEL_FEATURES:append = " cfg/wifi.scc"
 
-# Enable bluetooth hardware support
-MACHINE_FEATURES:append = " bluetooth wifi"
+# Enable hardware support features
+MACHINE_FEATURES:append = " bluetooth wifi camera"
 
 # Use systemd as init manager
 DISTRO_FEATURES:append = " systemd bluetooth wifi"

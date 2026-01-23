@@ -12,12 +12,14 @@ PACKAGES = "\
     ${PN}-connectivity \
     ${PN}-hardware \
     ${PN}-system \
+    ${PN}-camera \
 "
 
 RDEPENDS:${PN} = " \
     ${PN}-connectivity \
     ${PN}-hardware \
     ${PN}-system \
+    ${PN}-camera \
 "
 
 RDEPENDS:${PN}-connectivity = " \
@@ -56,4 +58,19 @@ RDEPENDS:${PN}-system = " \
     iproute2 \
     iputils \
     udev-rules-vehiclecontrol \
+"
+
+# Camera streaming for reverse camera (RPi to Jetson via GStreamer RTP/UDP)
+# Requires: meta-openembedded/meta-multimedia layer for libcamera
+RDEPENDS:${PN}-camera = " \
+    gstreamer1.0 \
+    gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    libcamera \
+    libcamera-gst \
+"
+
+RRECOMMENDS:${PN}-camera = " \
+    v4l-utils \
 "

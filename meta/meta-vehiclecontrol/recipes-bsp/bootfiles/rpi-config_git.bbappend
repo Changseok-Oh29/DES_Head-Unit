@@ -30,4 +30,14 @@ do_deploy:append:raspberrypi4-64() {
     echo "dtoverlay=spi1-3cs" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     echo "dtoverlay=mcp251xfd,spi0-0,interrupt=25" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     echo "dtoverlay=mcp251xfd,spi1-0,interrupt=24" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+
+    # ========================================
+    # Camera Configuration (Reverse Camera)
+    # ========================================
+    echo "" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "# Reverse Camera Configuration" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "# Enable camera with libcamera stack" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "camera_auto_detect=1" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "dtoverlay=imx219" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "gpu_mem=128" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
 }
