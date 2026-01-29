@@ -67,6 +67,8 @@ FILES:${PN} = " \
 
 # Runtime dependencies
 # Note: libcamera requires meta-openembedded/meta-multimedia layer
+# Note: x264enc requires gstreamer1.0-plugins-ugly AND x264 library
+# Note: x264 requires LICENSE_FLAGS_ACCEPTED += "commercial" in local.conf
 RDEPENDS:${PN} = " \
     commonapi-core \
     commonapi-someip \
@@ -81,6 +83,8 @@ RDEPENDS:${PN} = " \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
     gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
+    x264 \
     libcamera \
     libcamera-gst \
 "

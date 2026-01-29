@@ -5,10 +5,8 @@ LICENSE = "MIT"
 inherit core-image
 
 # Device tree overlays
-# - mcp251xfd: CAN bus support
-# - imx219: Camera module support (Raspberry Pi Camera Module v2)
-RPI_KERNEL_DEVICETREE_OVERLAYS:append = " overlays/mcp251xfd.dtbo"
-RPI_KERNEL_DEVICETREE_OVERLAYS:append = " overlays/imx219.dtbo"
+# Note: mcp251xfd is loaded via rpi-config bbappend, imx708 is explicitly added here
+RPI_KERNEL_DEVICETREE_OVERLAYS:append = " overlays/imx708.dtbo"
 
 # Image file system types
 IMAGE_FSTYPES = "tar.bz2 ext4 rpi-sdimg"

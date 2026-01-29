@@ -22,14 +22,9 @@ RDEPENDS:${PN} = " \
     ${PN}-camera \
 "
 
+# Note: vsomeip, commonapi, and boost packages are already RDEPENDS of vehiclecontrol-ecu
+# Only list additional connectivity tools here to avoid dynamic rename conflicts
 RDEPENDS:${PN}-connectivity = " \
-    vsomeip \
-    commonapi-core \
-    commonapi-someip \
-    boost-system \
-    boost-thread \
-    boost-filesystem \
-    boost-log \
 "
 
 RDEPENDS:${PN}-hardware = " \
@@ -62,11 +57,13 @@ RDEPENDS:${PN}-system = " \
 
 # Camera streaming for reverse camera (RPi to Jetson via GStreamer RTP/UDP)
 # Requires: meta-openembedded/meta-multimedia layer for libcamera
+# Note: x264enc is in gstreamer1.0-plugins-ugly
 RDEPENDS:${PN}-camera = " \
     gstreamer1.0 \
     gstreamer1.0-plugins-base \
     gstreamer1.0-plugins-good \
     gstreamer1.0-plugins-bad \
+    gstreamer1.0-plugins-ugly \
     libcamera \
     libcamera-gst \
 "

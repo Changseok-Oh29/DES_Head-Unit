@@ -33,11 +33,12 @@ do_deploy:append:raspberrypi4-64() {
 
     # ========================================
     # Camera Configuration (Reverse Camera)
+    # Camera Module 3 Wide (imx708)
     # ========================================
     echo "" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
-    echo "# Reverse Camera Configuration" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "# Reverse Camera Configuration - Camera Module 3 Wide" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     echo "# Enable camera with libcamera stack" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
     echo "camera_auto_detect=1" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
-    echo "dtoverlay=imx219" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
-    echo "gpu_mem=128" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "dtoverlay=imx708" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
+    echo "gpu_mem=256" >> ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}/config.txt
 }

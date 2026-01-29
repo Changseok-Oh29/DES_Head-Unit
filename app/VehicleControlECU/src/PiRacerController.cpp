@@ -15,11 +15,6 @@ PiRacerController::PiRacerController(QObject *parent)
 
 PiRacerController::~PiRacerController()
 {
-    // Stop camera streaming before cleanup
-    if (m_cameraStreamer && m_cameraStreamer->isStreaming()) {
-        m_cameraStreamer->stopStreaming();
-    }
-
     // Stop motors before cleanup
     if (m_throttleController) {
         setThrottlePercent(0.0f);
@@ -53,20 +48,6 @@ bool PiRacerController::initialize()
             qWarning() << "⚠️  CAN interface failed - speed/distance will be unavailable";
         }
 
-        // Initialize camera streamer for reverse camera
-        m_cameraStreamer = std::make_unique<CameraStreamer>();
-        if (m_cameraStreamer->initialize()) {
-            qDebug() << "✅ Camera streamer initialized";
-            connect(m_cameraStreamer.get(), &CameraStreamer::streamingStarted,
-                    this, &PiRacerController::cameraStreamingStarted);
-            connect(m_cameraStreamer.get(), &CameraStreamer::streamingStopped,
-                    this, &PiRacerController::cameraStreamingStopped);
-            connect(m_cameraStreamer.get(), &CameraStreamer::streamingError,
-                    this, &PiRacerController::cameraStreamingError);
-        } else {
-            qWarning() << "⚠️  Camera streamer failed - reverse camera will be unavailable";
-        }
-        
         // Setup periodic state broadcast timer (10Hz)
         m_stateTimer = new QTimer(this);
         connect(m_stateTimer, &QTimer::timeout, this, [this]() {
@@ -100,17 +81,6 @@ void PiRacerController::setGearPosition(const QString& gear)
 
         // Stop throttle when changing gears
         setThrottlePercent(0.0f);
-
-        // Start/stop camera streaming based on gear
-        if (m_cameraStreamer) {
-            if (gear == "R") {
-                qDebug() << "📷 Starting reverse camera stream...";
-                m_cameraStreamer->startStreaming();
-            } else if (oldGear == "R") {
-                qDebug() << "📷 Stopping reverse camera stream...";
-                m_cameraStreamer->stopStreaming();
-            }
-        }
 
         emit gearDistanceChanged(gear, oldGear, m_currentDistance);
     }
@@ -202,23 +172,4 @@ void PiRacerController::warmUp()
     setThrottlePercent(0.0f);
     QThread::msleep(1000);
     qDebug() << "✅ Warm-up complete";
-}
-
-void PiRacerController::setCameraTargetHost(const QString& host)
-{
-    if (m_cameraStreamer) {
-        m_cameraStreamer->setTargetHost(host);
-    }
-}
-
-void PiRacerController::setCameraTargetPort(int port)
-{
-    if (m_cameraStreamer) {
-        m_cameraStreamer->setTargetPort(port);
-    }
-}
-
-bool PiRacerController::isCameraStreaming() const
-{
-    return m_cameraStreamer ? m_cameraStreamer->isStreaming() : false;
 }

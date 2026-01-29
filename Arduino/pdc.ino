@@ -2,29 +2,29 @@
 #include <mcp2515.h>
 
 #define SLAVE_ID 0x0F6
-#define PIN_OUT 3              // 속도 센서 핀
-#define TRIG 8                 // 초음파 Trig
-#define ECHO 7                 // 초음파 Echo
-#define CUSTOM_DELAY 100       // 측정 주기 [ms]
+#define PIN_OUT 3              // Speed sensor pin
+#define TRIG 8                 // Ultrasonic Trigger pin
+#define ECHO 7                 // Ultrasonic Echo pin
+#define CUSTOM_DELAY 100       // Measurement cycle [ms]
 #define WHEEL_CIRCUMFERENCE_CM 20.083  
 #define PULSES_PER_REV 20      
 
-MCP2515 mcp2515(9);
+MCP2515 mcp2515(9);            // CS pin is 9
 volatile unsigned int pulseCount = 0;
 struct can_frame canMsg;
 
-/* 거리 데이터를 위한 Union (4바이트 float) */
+/* Union for distance data (4-byte float conversion) */
 union DistanceUnion {
     float value;
     byte bytes[4];
 } distanceData;
 
-// 속도 센서 인터럽트 함수
+// Speed sensor Interrupt Service Routine (ISR)
 void isrCount() {
     pulseCount++;
 }
 
-// 초음파 거리 측정 함수
+// Function to measure distance using ultrasonic sensor
 float getDistance() {
     digitalWrite(TRIG, LOW);
     delayMicroseconds(2);
@@ -32,42 +32,42 @@ float getDistance() {
     delayMicroseconds(10);
     digitalWrite(TRIG, LOW);
     
-    // 타임아웃 50ms (약 8.5m 거리까지 측정 가능)
+    // Timeout set to 50ms (measures up to approx. 8.5m)
     float cycletime = pulseIn(ECHO, HIGH, 50000); 
     
-    if (cycletime == 0) return -1.0; // 측정 실패 시
+    if (cycletime == 0) return -1.0; // Return -1.0 if measurement fails
     
-    // 시간(us)을 cm로 변환: (시간 * 음속(340m/s)) / 10000 / 왕복(2)
+    // Convert time(us) to cm: (Time * Speed of Sound(340m/s)) / 10000 / 2 (Round trip)
     return ((340.0 * cycletime) / 10000.0) / 2.0;
 }
 
 void setup() {
     Serial.begin(115200);
 
-    // CAN 초기화 (1000KBPS)
+    // Initialize CAN (1000KBPS)
     mcp2515.reset();
     mcp2515.setBitrate(CAN_1000KBPS, MCP_16MHZ);
     mcp2515.setNormalMode();
 
-    // 속도 센서 설정
+    // Configure speed sensor
     pinMode(PIN_OUT, INPUT);
     attachInterrupt(digitalPinToInterrupt(PIN_OUT), isrCount, RISING);
 
-    // 초음파 센서 설정
+    // Configure ultrasonic sensor
     pinMode(TRIG, OUTPUT);
     pinMode(ECHO, INPUT);
 
-    // CAN 메시지 기본 틀 설정
+    // Initialize CAN message structure
     canMsg.can_id = SLAVE_ID;
     canMsg.can_dlc = 8;
     memset(canMsg.data, 0x00, 8);
 }
 
 void loop() {
-    // 1. 측정 주기 대기
+    // 1. Wait for the measurement cycle
     delay(CUSTOM_DELAY);
 
-    // 2. 속도 계산 (인터럽트 안전하게 복사)
+    // 2. Calculate speed (Safely copy pulse count from ISR)
     noInterrupts();
     unsigned int pulses = pulseCount;
     pulseCount = 0;
@@ -77,26 +77,26 @@ void loop() {
     float revs = pulses / (float)PULSES_PER_REV;
     float speed = revs * WHEEL_CIRCUMFERENCE_CM / intervalSec;
 
-    // 3. 거리 측정
+    // 3. Measure distance
     distanceData.value = getDistance();
 
-    // 4. CAN 데이터 패킹 (데이터 구성)
-    // [속도 데이터 - 0, 1, 2번 인덱스]
+    // 4. CAN Data Packing
+    // [Speed Data - Indices 0, 1, 2]
     int int1_spd = (int)speed;
     int int2_spd = round((speed - int1_spd) * 100);
 
-    canMsg.data[0] = int1_spd / 256;      // 정수 상위 바이트
-    canMsg.data[1] = int1_spd % 256;      // 정수 하위 바이트
-    canMsg.data[2] = (byte)int2_spd;      // 소수점 2자리
+    canMsg.data[0] = int1_spd / 256;      // Integer part (High byte)
+    canMsg.data[1] = int1_spd % 256;      // Integer part (Low byte)
+    canMsg.data[2] = (byte)int2_spd;      // Two decimal places
 
-    // [거리 데이터 - 3, 4, 5, 6번 인덱스] (Float 4바이트)
+    // [Distance Data - Indices 3, 4, 5, 6] (4-byte Float)
     for (int i = 0; i < 4; i++) {
         canMsg.data[3 + i] = distanceData.bytes[i];
     }
 
-    canMsg.data[7] = 0x00; // 마지막 바이트 비움
+    canMsg.data[7] = 0x00; // Reserved/Empty byte
 
-    // 5. CAN 메시지 전송 및 시리얼 출력
+    // 5. Send CAN message and output to Serial
     if (mcp2515.sendMessage(&canMsg) == MCP2515::ERROR_OK) {
         Serial.print("Speed: "); Serial.print(speed);
         Serial.print(" cm/s, Distance: "); Serial.print(distanceData.value);

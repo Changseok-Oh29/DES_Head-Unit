@@ -7,7 +7,6 @@
 #include "../lib/Adafruit_PCA9685.hpp"
 #include "BatteryMonitor.h"
 #include "CANInterface.h"
-#include "CameraStreamer.h"
 
 class PiRacerController : public QObject
 {
@@ -30,17 +29,9 @@ public:
     uint16_t getCurrentDistance() const { return m_currentDistance; }
     uint8_t getBatteryLevel() const;
 
-    // Camera streaming
-    void setCameraTargetHost(const QString& host);
-    void setCameraTargetPort(int port);
-    bool isCameraStreaming() const;
-
 signals:
     void gearDistanceChanged(QString newGear, QString oldGear, uint16_t distance);
     void vehicleStateChanged(QString gear, uint16_t speed, uint8_t battery);
-    void cameraStreamingStarted();
-    void cameraStreamingStopped();
-    void cameraStreamingError(QString error);
 
 private slots:
     void onSpeedDataReceived(float speedCms);
@@ -52,7 +43,6 @@ private:
     std::unique_ptr<PCA9685> m_throttleController;
     std::unique_ptr<BatteryMonitor> m_batteryMonitor;
     std::unique_ptr<CANInterface> m_canInterface;
-    std::unique_ptr<CameraStreamer> m_cameraStreamer;
     
     // PWM Configuration
     const int PWM_RESOLUTION = 12;
