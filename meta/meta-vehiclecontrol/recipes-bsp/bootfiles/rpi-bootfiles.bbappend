@@ -1,15 +1,22 @@
-# Deploy mcp251xfd.dtbo from rpi-bootfiles firmware
-# The file already exists in raspberrypi-firmware, we just need to deploy it
+# Deploy device tree overlays from rpi-bootfiles firmware
+# Deploy to DEPLOYDIR root so IMAGE_BOOT_FILES can find them
 
 FILESEXTRAPATHS:prepend := "${THISDIR}:"
 
-# Copy mcp251xfd.dtbo from firmware to deployment directory
 do_deploy:append() {
-    # The dtbo is in rpi-bootfiles source
+    # Deploy mcp251xfd.dtbo for CAN
     if [ -f ${S}/overlays/mcp251xfd.dtbo ]; then
         install -m 0644 ${S}/overlays/mcp251xfd.dtbo ${DEPLOYDIR}/
-        bbnote "✅ Deployed mcp251xfd.dtbo from rpi-bootfiles firmware"
+        bbnote "✅ Deployed mcp251xfd.dtbo"
     else
         bbwarn "❌ mcp251xfd.dtbo not found in ${S}/overlays/"
+    fi
+
+    # Deploy ov5647.dtbo for Camera Module v1.3
+    if [ -f ${S}/overlays/ov5647.dtbo ]; then
+        install -m 0644 ${S}/overlays/ov5647.dtbo ${DEPLOYDIR}/
+        bbnote "✅ Deployed ov5647.dtbo"
+    else
+        bbwarn "❌ ov5647.dtbo not found in ${S}/overlays/"
     fi
 }

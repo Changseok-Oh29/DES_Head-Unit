@@ -58,6 +58,9 @@ RDEPENDS:${PN}-system = " \
 # Camera streaming for reverse camera (RPi to Jetson via GStreamer RTP/UDP)
 # Requires: meta-openembedded/meta-multimedia layer for libcamera
 # Note: x264enc is in gstreamer1.0-plugins-ugly
+# Note: IPA modules are included in the libcamera package itself
+# Note: libcamera-apps (libcamera-hello, etc.) are not available in this Yocto version
+#       Use GStreamer with libcamerasrc instead for camera access
 RDEPENDS:${PN}-camera = " \
     gstreamer1.0 \
     gstreamer1.0-plugins-base \

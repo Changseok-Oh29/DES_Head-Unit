@@ -11,3 +11,7 @@ SUBSYSTEM=="gpio", MODE="0660", GROUP="gpio"
 
 # Allow access to CAN devices
 SUBSYSTEM=="net", KERNEL=="can[0-9]*", MODE="0660", GROUP="netdev"
+
+# eth0 power management: disable USB autosuspend for onboard ethernet
+# Default "auto" causes 40-60% packet loss on sustained UDP streaming
+ACTION=="add", SUBSYSTEM=="net", KERNEL=="eth0", RUN+="/bin/sh -c 'echo on > /sys/class/net/eth0/device/power/control'"

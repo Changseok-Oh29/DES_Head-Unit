@@ -11,3 +11,13 @@ dtparam=i2c_arm_baudrate=400000
 
 # Enable UART for debugging
 enable_uart=1
+
+# Camera Configuration
+# Enable Camera Serial Interface (CSI)
+start_x=1
+gpu_mem=128
+
+# Camera overlay for OV5647 (RPi Camera Module v1.3)
+# Note: dtoverlay will auto-detect camera if connected
+# For explicit OV5647 configuration:
+dtoverlay=ov5647

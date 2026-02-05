@@ -5,8 +5,18 @@ LICENSE = "MIT"
 inherit core-image
 
 # Device tree overlays
-# Note: mcp251xfd is loaded via rpi-config bbappend, imx708 is explicitly added here
-RPI_KERNEL_DEVICETREE_OVERLAYS:append = " overlays/imx708.dtbo"
+# Note: mcp251xfd and ov5647 are loaded via rpi-config bbappend (config.txt dtoverlay=)
+# The PROPER way to add overlays is via KERNEL_DEVICETREE, not IMAGE_BOOT_FILES directly
+# meta-raspberrypi's make_dtb_boot_files() function automatically converts KERNEL_DEVICETREE
+# entries to IMAGE_BOOT_FILES format. Format: overlays/filename.dtbo
+# It will look for filename.dtbo in DEPLOY_DIR_IMAGE and copy to overlays/filename.dtbo
+KERNEL_DEVICETREE:append:raspberrypi4-64 = " \
+    overlays/ov5647.dtbo \
+    overlays/mcp251xfd.dtbo \
+"
+
+# Ensure rpi-bootfiles deploys our custom overlays before image creation
+do_image_rpi_sdimg[depends] += "rpi-bootfiles:do_deploy"
 
 # Image file system types
 IMAGE_FSTYPES = "tar.bz2 ext4 rpi-sdimg"
@@ -21,6 +31,7 @@ IMAGE_INSTALL = " \
     packagegroup-vehiclecontrol \
     vehiclecontrol-ecu \
     can-setup \
+    camera-streaming \
     ${CORE_IMAGE_EXTRA_INSTALL} \
 "
 
@@ -45,6 +56,8 @@ IMAGE_INSTALL:append = " \
     kernel-module-joydev \
     kernel-module-hci-uart \
     kernel-module-btbcm \
+    kernel-module-ov5647 \
+    kernel-module-bcm2835-unicam \
     kernel-modules \
     can-utils \
     openssh \

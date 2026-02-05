@@ -1,0 +1,18 @@
+[Unit]
+Description=Camera Streaming Service (OV5647 to Jetson via RTP/UDP)
+After=network-online.target systemd-networkd-wait-online.service systemd-modules-load.service
+Wants=network-online.target
+Requires=systemd-networkd.service
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/camera-streaming.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+TimeoutStopSec=10
+
+[Install]
+WantedBy=multi-user.target
