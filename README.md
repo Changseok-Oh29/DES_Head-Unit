@@ -1,6 +1,6 @@
 # DES_Head-Unit
 
-A distributed automotive infotainment system built on SOME/IP middleware with multi-ECU architecture, featuring a head unit, instrument cluster, and reverse camera streaming.
+A distributed automotive infotainment system built on SOME/IP middleware with multi-ECU architecture, featuring instrument cluster, head unit, and PDC(Parking Distance Control) features.
 
 ## Table of Contents
 
