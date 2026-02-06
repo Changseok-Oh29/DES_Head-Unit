@@ -111,8 +111,8 @@ The project demonstrates key automotive software concepts including:
 
 ### Communication Flow
 
-| Source | Destination | Protocol | Purpose |
-|--------|-------------|----------|---------|
+| Source → Destination | Protocol | Purpose |
+|----------------------|----------|---------|
 | ECU1 → ECU2 | SOME/IP (vsomeip) | vehicleStateChanged broadcast (gear, speed, battery) |
 | ECU2 → ECU1 | SOME/IP (vsomeip) | setGearPosition RPC method |
 | ECU1 → ECU2 | SOME/IP (vsomeip) | gearDistanceChanged broadcast (gear, distance) |
