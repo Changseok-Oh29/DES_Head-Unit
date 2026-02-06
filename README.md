@@ -30,7 +30,7 @@ TODO: Add logo table here
 </table>
 -->
 
-DES_Head-Unit is a service-oriented automotive infotainment system developed as part of the SEAME (Software Engineering for Automotive and Mobility Engineers) program. The system implements a dual-ECU architecture where a Raspberry Pi 4 and an NVIDIA Jetson Orin Nano communicate over Ethernet using vsomeip/CommonAPI, providing a head unit display, instrument cluster, and reverse camera streaming.
+DES_Head-Unit is a service-oriented automotive infotainment system developed as part of the SEAME (Software Engineering for Automotive and Mobility Engineers) program. The system implements a dual-ECU architecture where a Raspberry Pi 4 and an NVIDIA Jetson Orin Nano communicate over Ethernet, providing a head unit display, instrument cluster, and reverse camera streaming.
 
 The project demonstrates key automotive software concepts including:
 
@@ -42,14 +42,14 @@ The project demonstrates key automotive software concepts including:
 
 ## Features
 
-### Head Unit (HDMI-1: 1024x600 Touchscreen)
+### Head Unit (HDMI-1: 1028x600)
 
 - **Media Player** — USB auto-detection, playback controls, supports MP3/WAV/FLAC/M4A/AAC/OGG/WMA
 - **Gear Selection** — PRND gear control with real-time visual feedback via SOME/IP
 - **Ambient Lighting** — RGB color picker with manual, auto, and music sync modes
 - **Home Screen** — Application launcher and navigation
 
-### Instrument Cluster (HDMI-2: 800x480 Display)
+### Instrument Cluster (HDMI-2: 1028x600)
 
 - **Speed Display** — Real-time speed gauge from vehicle sensors
 - **Battery Monitor** — Battery voltage and level from INA219 sensor
@@ -74,9 +74,9 @@ The project demonstrates key automotive software concepts including:
 <!-- Example: ![System Architecture](docs/images/system-architecture.png) -->
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│                    Ethernet (192.168.1.0/24)              │
-│                                                          │
+┌─────────────────────────────────────────────────────────┐
+│                    Ethernet (192.168.1.0/24)            │
+│                                                         │
 │  ┌─────────────────────┐      ┌──────────────────────┐  │
 │  │  ECU1 - VehicleCtrl │      │  ECU2 - Head Unit    │  │
 │  │  (RPi4)             │      │  (Jetson Orin Nano)  │  │
@@ -91,22 +91,22 @@ The project demonstrates key automotive software concepts including:
 │  │  ┌───────────────┐  │      │  └────────────────┘  │  │
 │  │  │ OV5647 Camera │  │      │                      │  │
 │  │  │ → GStreamer   │──┼─UDP──┼─►┌────────────────┐  │  │
-│  │  │ → RTP/H.264  │  │ 5000 │  │  PDCApp        │  │  │
-│  │  └───────────────┘  │      │  │  (nvv4l2decoder │  │  │
+│  │  │ → RTP/H.264   │  │ 5000 │  │  PDCApp        │  │  │
+│  │  └───────────────┘  │      │  │  (nvv4l2decoder│  │  │
 │  │                     │      │  │   + nv3dsink)  │  │  │
 │  │  ┌───────────────┐  │      │  └────────────────┘  │  │
-│  │  │ PiRacer HW   │  │      │                      │  │
+│  │  │ PiRacer HW    │  │      │                      │  │
 │  │  │ Motor/Servo   │  │      │  ┌────────────────┐  │  │
-│  │  │ INA219/CAN   │  │      │  │  IC_app        │  │  │
-│  │  │ Gamepad      │  │      │  │  SpeedApp      │  │  │
+│  │  │ INA219/CAN    │  │      │  │  IC_app        │  │  │
+│  │  │ Gamepad       │  │      │  │  SpeedApp      │  │  │
 │  │  └───────────────┘  │      │  │  BatteryApp    │  │  │
 │  │                     │      │  │  ICGearApp     │  │  │
 │  └─────────────────────┘      │  └────────────────┘  │  │
 │                               │                      │  │
 │                               │  HDMI-1  │  HDMI-2   │  │
-│                               │(1024x600) (800x480)  │  │
+│                               │(1028x600) (1280x600) │  │
 │                               └──────────────────────┘  │
-└──────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────────┘
 ```
 
 ### Communication Flow
