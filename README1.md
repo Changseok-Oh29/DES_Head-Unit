@@ -61,26 +61,26 @@ The system is built around the **PiRacer AI Kit**, providing vehicle control wit
 graph TD
     Arduino["<b>Arduino</b><br/>Speed, Distance"]
 
-    subgraph ECU1["VehicleControl ECU - RPi4"]
+    subgraph ECU1["<b>VehicleControl ECU(ECU1) - RPi4</b>"]
 
-        subgraph Gamepad["GamepadHandler"]
+        subgraph Gamepad["<b>GamepadHandler</b>"]
             GP_Buttons["Buttons: Gear Select<br/>L-Stick: Steering<br/>R-Stick: Throttle"]
         end
 
-        subgraph PiRacer["PiRacerController"]
+        subgraph PiRacer["<b>PiRacerController</b>"]
             Steering["<b>Steering</b><br/>PCA9685"]
             Throttle["<b>Throttle Motors</b><br/>PCA9685"]
             Battery["<b>Battery Monitor</b><br/>INA219"]
             CAN["<b>CAN Interface</b>"]
         end
 
-        subgraph Stub["VehicleControlStubImpl"]
+        subgraph Stub["<b>VehicleControlStubImpl</b>"]
             direction LR
             Events["<b>Events</b><br/>vehicleStateChanged<br/>gearDistanceChanged"]
             RPC["<b>RPC</b><br/>setGearPosition"]
         end
 
-        subgraph Camera["Camera Streaming Service"]
+        subgraph Camera["<b>Camera Streaming Service</b>"]
             Pipeline["libcamerasrc → x264enc<br/>→ rtph264pay → udpsink"]
         end
     end
