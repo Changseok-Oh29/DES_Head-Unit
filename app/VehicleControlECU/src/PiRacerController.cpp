@@ -108,12 +108,13 @@ void PiRacerController::setThrottlePercent(float percent)
     m_currentThrottle = percent;
     
     // Only allow movement in appropriate gears
+    // Stick UP (positive) is the only input allowed in both D and R
     if (m_currentGear == "P" || m_currentGear == "N") {
         percent = 0.0f;
-    } else if (m_currentGear == "D" && percent < 0.0f) {
-        percent = 0.0f;  // No backward in Drive
-    } else if (m_currentGear == "R" && percent < 0.0f) {
-        percent = 0.0f;  // No backward in Reverse
+    } else if (percent < 0.0f) {
+        percent = 0.0f;  // Block stick DOWN in both Drive and Reverse
+    } else if (m_currentGear == "R") {
+        percent = -percent;  // Negate so stick UP drives motors backward
     }
     
     // Set motor direction

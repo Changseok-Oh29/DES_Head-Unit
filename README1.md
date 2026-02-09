@@ -36,11 +36,17 @@
 </tr>
 </table>
 
-The **VehicleControl ECU** is the hardware control unit (ECU1) of the DES_Head-Unit distributed automotive infotainment system, developed as part of the **SEAME** (Software Engineering for Automotive and Mobility Engineers) program.
+The **VehicleControl ECU** is the hardware control unit (ECU1) of the DES_Head-Unit distributed automotive infotainment system, developed as part of the **SEA:ME** (Software Engineering for Automotive and Mobility Engineers) program.
 
-Running on a **Raspberry Pi 4** with a custom **Yocto Linux** image, ECU1 serves as the SOME/IP service provider responsible for all physical vehicle control — motor actuation, steering, battery monitoring, CAN bus communication, and reverse camera streaming. It communicates with ECU2 (NVIDIA Jetson Orin Nano) over Ethernet using the **vsomeip/CommonAPI** middleware stack.
+Running on a **Raspberry Pi 4** with a custom **Yocto Linux** image, ECU1 has three distinct responsibilities:
 
-The system is built around the **PiRacer AI Kit**, providing real-world vehicle control with a gamepad interface, while exposing all vehicle state data as SOME/IP service events for consumption by the head unit and instrument cluster applications on ECU2.
+1. **Physical Vehicle Control** — Motor actuation and steering via PCA9685 PWM controllers, battery monitoring via INA219, and gamepad input handling for manual driving
+2. **Sensor Data Collection** — Receiving speed and distance data from an Arduino over CAN bus
+3. **SOME/IP Service Provider** — Exposing vehicle state data (gear, speed, battery, distance) to ECU2 over Ethernet using the **vsomeip/CommonAPI** middleware stack, and accepting remote commands (e.g., gear change) from the head unit
+
+Additionally, a separate **camera streaming service** runs independently on ECU1, streaming the picamera(OV5647 camera) feed to ECU2 via RTP/UDP using GStreamer.
+
+The system is built around the **PiRacer AI Kit**, providing vehicle control with a gamepad interface, while exposing all vehicle state data as SOME/IP service events for consumption by the head unit and instrument cluster applications on ECU2.
 
 ---
 
@@ -51,60 +57,47 @@ The system is built around the **PiRacer AI Kit**, providing real-world vehicle 
 <!-- TODO: Replace with actual architecture diagram -->
 <!-- <img src="docs/images/ecu1-software-architecture.png" alt="software_architecture" width="100%" height="100%"/> -->
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     VehicleControl ECU (RPi4)                   │
-│                                                                 │
-│  ┌──────────────┐    ┌──────────────────────────────────────┐   │
-│  │ GamepadHandler│    │        PiRacerController             │   │
-│  │  (50Hz poll) │    │                                      │   │
-│  │              │    │  ┌──────────┐  ┌───────────────────┐ │   │
-│  │  A = Drive   ├───►│  │ Steering │  │  Throttle Motors  │ │   │
-│  │  B = Neutral │    │  │ PCA9685  │  │  PCA9685 (0x60)   │ │   │
-│  │  X = Park    │    │  │ (0x40)   │  │  Left + Right     │ │   │
-│  │  Y = Reverse │    │  └──────────┘  └───────────────────┘ │   │
-│  │              │    │                                      │   │
-│  │  L-Stick:    │    │  ┌──────────┐  ┌───────────────────┐ │   │
-│  │   Steering   │    │  │ Battery  │  │   CAN Interface   │ │   │
-│  │  R-Stick:    │    │  │ INA219   │  │   can0 @ 1Mbps    │ │   │
-│  │   Throttle   │    │  │ (0x41)   │  │   ← Arduino data  │ │   │
-│  └──────────────┘    │  └──────────┘  └───────────────────┘ │   │
-│                      └──────────┬───────────────────────────┘   │
-│                                 │                               │
-│                                 ▼                               │
-│                    ┌────────────────────────┐                   │
-│                    │ VehicleControlStubImpl  │                   │
-│                    │   (SOME/IP Service)     │                   │
-│                    │                        │                   │
-│                    │  Service: 0x1234       │                   │
-│                    │  Instance: 0x5678      │                   │
-│                    │                        │                   │
-│                    │  Events:               │                   │
-│                    │  • vehicleStateChanged │                   │
-│                    │  • gearDistanceChanged │                   │
-│                    │                        │                   │
-│                    │  Methods:              │                   │
-│                    │  • setGearPosition()   │                   │
-│                    └───────────┬────────────┘                   │
-│                                │                                │
-│  ┌─────────────────────────────┼────────────────────────────┐   │
-│  │            Camera Streaming Service (systemd)            │   │
-│  │  libcamerasrc → x264enc → rtph264pay → udpsink:5000     │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└─────────────────────────┬───────────────────────────────────────┘
-                          │
-                    Ethernet (192.168.1.0/24)
-                          │
-                          ▼
-              ┌───────────────────────┐
-              │  ECU2 - Head Unit     │
-              │  (Jetson Orin Nano)   │
-              │  192.168.1.101        │
-              │                       │
-              │  SOME/IP Consumer     │
-              │  Camera Receiver      │
-              │  Qt5 Applications     │
-              └───────────────────────┘
+```mermaid
+graph TD
+    Arduino["Arduino<br/>(Speed, Distance)"]
+
+    subgraph ECU1["VehicleControl ECU (RPi4)"]
+
+        subgraph Gamepad["GamepadHandler"]
+            GP_Buttons["Buttons: Gear Select<br/>L-Stick: Steering<br/>R-Stick: Throttle"]
+        end
+
+        subgraph PiRacer["PiRacerController"]
+            Steering["Steering<br/>PCA9685"]
+            Throttle["Throttle Motors<br/>PCA9685"]
+            Battery["Battery Monitor<br/>INA219"]
+            CAN["CAN Interface"]
+        end
+
+        subgraph Stub["VehicleControlStubImpl<br/>(SOME/IP Service)"]
+            Events["Events:<br/>vehicleStateChanged<br/>gearDistanceChanged"]
+            RPC["RPC:<br/>setGearPosition()"]
+        end
+
+        subgraph Camera["Camera Streaming Service<br/>(independent systemd)"]
+            Pipeline["libcamerasrc → x264enc<br/>→ rtph264pay → udpsink"]
+        end
+    end
+
+    subgraph ECU2["ECU2 - Head Unit / Instrument Cluster<br/>(Jetson Orin Nano)"]
+        SOMEIP_Consumer["SOME/IP Consumer"]
+        Camera_Receiver["Camera Receiver"]
+        QtApps["Qt5 Applications"]
+    end
+
+    Arduino -- "CAN bus" --> CAN
+    GP_Buttons -- "gear, steering,<br/>throttle signals" --> PiRacer
+    PiRacer -- "vehicleStateChanged<br/>gearDistanceChanged" --> Stub
+    RPC -- "setGearPosition()" --> PiRacer
+    Events -- "SOME/IP<br/>(vsomeip)" --> SOMEIP_Consumer
+    Pipeline -- "RTP/UDP" --> Camera_Receiver
+    SOMEIP_Consumer --> QtApps
+    Camera_Receiver --> QtApps
 ```
 
 ## Hardware Architecture
@@ -240,7 +233,7 @@ gst-launch-1.0 udpsrc port=5000 \
 
 ### Why vsomeip and CommonAPI?
 
-In this project, ECU1 acts as the **SOME/IP service provider**, exposing vehicle state data (gear, speed, battery, distance) to any consumer on the network. ECU2 subscribes to these events to update its head unit and instrument cluster displays.
+In this project, the VehicleControlECU application on ECU1 handles physical vehicle control (motors, steering, battery) and collects sensor data from Arduino via CAN bus. It then acts as a **SOME/IP service provider**, exposing this vehicle state data (gear, speed, battery, distance) to any consumer on the network. ECU2 subscribes to these events to update its head unit and instrument cluster displays. Note that camera streaming is a separate systemd service — it does not go through SOME/IP.
 
 1. **Service Discovery** — ECU2 automatically discovers ECU1's services via multicast (224.244.224.245:30490), eliminating hardcoded addresses for service endpoints
 2. **Event-based Communication** — Vehicle state changes are broadcast as events, allowing multiple consumers (GearApp, SpeedApp, BatteryApp, PDCApp) to subscribe independently
