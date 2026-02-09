@@ -68,15 +68,15 @@ graph TD
         end
 
         subgraph PiRacer["PiRacerController"]
-            Steering["Steering PCA9685"]
-            Throttle["Throttle Motors PCA9685"]
-            Battery["Battery Monitor INA219"]
-            CAN["CAN Interface"]
+            Steering["<b>Steering</b><br/>PCA9685"]
+            Throttle["<b>Throttle Motors</b><br/>PCA9685"]
+            Battery["<b>Battery Monitor</b><br/>INA219"]
+            CAN["<b>CAN Interface</b>"]
         end
 
         subgraph Stub["VehicleControlStubImpl - SOME/IP Service"]
-            Events["vehicleStateChanged<br/>gearDistanceChanged"]
-            RPC["setGearPosition"]
+            Events["<b>Events</b><br/>vehicleStateChanged<br/>gearDistanceChanged"]
+            RPC["<b>RPC</b><br/>setGearPosition"]
         end
 
         subgraph Camera["Camera Streaming Service"]
