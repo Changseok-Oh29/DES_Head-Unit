@@ -97,37 +97,7 @@ graph TD
 
 ## Hardware Architecture
 
-<!-- TODO: Replace with actual hardware diagram -->
-<!-- <img src="docs/images/ecu1-hardware-architecture.png" alt="hardware_architecture" width="100%" height="100%"/> -->
-
-```
-                    ┌─────────────────────────────────┐
-                    │       Raspberry Pi 4 (ECU1)     │
-                    │         192.168.1.100           │
-                    │                                 │
-  ┌──────────┐      │  ┌──────┐  ┌──────┐  ┌──────┐  │      ┌──────────┐
-  │ Shanwan  │ USB  │  │ I2C  │  │ SPI  │  │ CSI  │  │ ETH  │  Jetson  │
-  │ Gamepad  ├─────►│  │ Bus  │  │ Bus  │  │ Port │  ├─────►│  Orin    │
-  │          │      │  └──┬───┘  └──┬───┘  └──┬───┘  │      │  Nano    │
-  └──────────┘      │     │         │         │      │      │  (ECU2)  │
-                    │     ▼         ▼         ▼      │      └──────────┘
-                    │  ┌──────┐ ┌───────┐ ┌───────┐  │
-                    │  │0x40  │ │MCP251x│ │OV5647 │  │
-                    │  │Steer │ │FD CAN │ │Camera │  │
-                    │  │PCA968│ │ HAT   │ │Module │  │
-                    │  └──────┘ └───┬───┘ └───────┘  │
-                    │  ┌──────┐     │                 │
-                    │  │0x60  │     │                 │
-                    │  │Motor │     ▼                 │
-                    │  │PCA968│ ┌───────┐             │
-                    │  └──────┘ │Arduino│             │
-                    │  ┌──────┐ │(Speed │             │
-                    │  │0x41  │ │ Dist) │             │
-                    │  │INA219│ └───────┘             │
-                    │  │Batt. │                       │
-                    │  └──────┘                       │
-                    └─────────────────────────────────┘
-```
+<img src="Hardware_diagram.png" alt="Hardware Architecture" width="100%"/>
 
 ---
 
