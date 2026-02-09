@@ -59,42 +59,42 @@ The system is built around the **PiRacer AI Kit**, providing vehicle control wit
 
 ```mermaid
 graph TD
-    Arduino["Arduino<br/>(Speed, Distance)"]
+    Arduino["Arduino<br/>Speed, Distance"]
 
-    subgraph ECU1["VehicleControl ECU (RPi4)"]
+    subgraph ECU1["VehicleControl ECU - RPi4"]
 
         subgraph Gamepad["GamepadHandler"]
             GP_Buttons["Buttons: Gear Select<br/>L-Stick: Steering<br/>R-Stick: Throttle"]
         end
 
         subgraph PiRacer["PiRacerController"]
-            Steering["Steering<br/>PCA9685"]
-            Throttle["Throttle Motors<br/>PCA9685"]
-            Battery["Battery Monitor<br/>INA219"]
+            Steering["Steering PCA9685"]
+            Throttle["Throttle Motors PCA9685"]
+            Battery["Battery Monitor INA219"]
             CAN["CAN Interface"]
         end
 
-        subgraph Stub["VehicleControlStubImpl<br/>(SOME/IP Service)"]
-            Events["Events:<br/>vehicleStateChanged<br/>gearDistanceChanged"]
-            RPC["RPC:<br/>setGearPosition()"]
+        subgraph Stub["VehicleControlStubImpl - SOME/IP Service"]
+            Events["vehicleStateChanged<br/>gearDistanceChanged"]
+            RPC["setGearPosition"]
         end
 
-        subgraph Camera["Camera Streaming Service<br/>(independent systemd)"]
+        subgraph Camera["Camera Streaming Service"]
             Pipeline["libcamerasrc → x264enc<br/>→ rtph264pay → udpsink"]
         end
     end
 
-    subgraph ECU2["ECU2 - Head Unit / Instrument Cluster<br/>(Jetson Orin Nano)"]
+    subgraph ECU2["ECU2 - Jetson Orin Nano"]
         SOMEIP_Consumer["SOME/IP Consumer"]
         Camera_Receiver["Camera Receiver"]
         QtApps["Qt5 Applications"]
     end
 
     Arduino -- "CAN bus" --> CAN
-    GP_Buttons -- "gear, steering,<br/>throttle signals" --> PiRacer
-    PiRacer -- "vehicleStateChanged<br/>gearDistanceChanged" --> Stub
-    RPC -- "setGearPosition()" --> PiRacer
-    Events -- "SOME/IP<br/>(vsomeip)" --> SOMEIP_Consumer
+    GP_Buttons -- "gear, steering,<br/>throttle" --> PiRacer
+    PiRacer -- "Qt signals" --> Events
+    RPC -- "setGearPosition" --> PiRacer
+    Events -- "SOME/IP" --> SOMEIP_Consumer
     Pipeline -- "RTP/UDP" --> Camera_Receiver
     SOMEIP_Consumer --> QtApps
     Camera_Receiver --> QtApps
