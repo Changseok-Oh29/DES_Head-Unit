@@ -59,7 +59,7 @@ The system is built around the **PiRacer AI Kit**, providing vehicle control wit
 
 ```mermaid
 graph TD
-    Arduino["Arduino<br/>Speed, Distance"]
+    Arduino["<b>Arduino</b><br/>Speed, Distance"]
 
     subgraph ECU1["VehicleControl ECU - RPi4"]
 
@@ -74,7 +74,8 @@ graph TD
             CAN["<b>CAN Interface</b>"]
         end
 
-        subgraph Stub["VehicleControlStubImpl - SOME/IP Service"]
+        subgraph Stub["VehicleControlStubImpl"]
+            direction LR
             Events["<b>Events</b><br/>vehicleStateChanged<br/>gearDistanceChanged"]
             RPC["<b>RPC</b><br/>setGearPosition"]
         end
@@ -84,20 +85,14 @@ graph TD
         end
     end
 
-    subgraph ECU2["ECU2 - Jetson Orin Nano"]
-        SOMEIP_Consumer["SOME/IP Consumer"]
-        Camera_Receiver["Camera Receiver"]
-        QtApps["Qt5 Applications"]
-    end
+    ECU2["<b>ECU2 - Jetson Orin Nano</b>"]
 
     Arduino -- "CAN bus" --> CAN
     GP_Buttons -- "gear, steering,<br/>throttle" --> PiRacer
     PiRacer -- "Qt signals" --> Events
     RPC -- "setGearPosition" --> PiRacer
-    Events -- "SOME/IP" --> SOMEIP_Consumer
-    Pipeline -- "RTP/UDP" --> Camera_Receiver
-    SOMEIP_Consumer --> QtApps
-    Camera_Receiver --> QtApps
+    Events -- "SOME/IP" --> ECU2
+    Pipeline -- "RTP/UDP" --> ECU2
 ```
 
 ## Hardware Architecture
