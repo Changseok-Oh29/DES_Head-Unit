@@ -118,7 +118,7 @@ graph TD
 
 ## Arduino UNO
 
-- Speed sensor (wheel encoder)
+- Photoelectric Slot Sensor (wheel encoder)
 - HC-SR04 Ultrasonic distance sensor
 - MCP2515 CAN Shield (1000 kbps, matching ECU1)
 - CAN Frame ID: 0x0F6
@@ -152,8 +152,18 @@ bitbake vehiclecontrol-image
 ## Flashing to SD Card
 
 ```bash
-sudo dd if=tmp/deploy/images/raspberrypi4-64/vehiclecontrol-image-raspberrypi4-64.wic of=/dev/sdX bs=4M status=progress
+# 1.
+lsblk
+
+# 2. umount the sdcard
+sudo umount /sdcard
+
+# 3. flash image
+sudo dd if=/path/to/yocto-build/build/tmp-glibc/deploy/images/raspberrypi4-64/vehiclecontrol-image-raspberrypi4-64.rpi-sdimg of=/dev/sda bs=4M status=progress conv=fsync
+
+# 4. sdcard eject
 sync
+sudo eject /sdcard
 ```
 
 ## Verifying Services After Boot
@@ -177,15 +187,6 @@ journalctl -u vehiclecontrol-ecu.service -f
 journalctl -u camera-streaming.service -f
 ```
 
-## Receiving Camera Stream on ECU2 (Jetson Orin Nano)
-
-```bash
-export DISPLAY=:0
-gst-launch-1.0 udpsrc port=5000 \
-    caps="application/x-rtp,encoding-name=H264,payload=96" \
-    ! rtph264depay ! h264parse ! nvv4l2decoder ! nv3dsink
-```
-
 ---
 
 # Key Concept
@@ -200,22 +201,10 @@ gst-launch-1.0 udpsrc port=5000 \
 
 In this project, the VehicleControlECU application on ECU1 handles physical vehicle control (motors, steering, battery) and collects sensor data from Arduino via CAN bus. It then acts as a **SOME/IP service provider**, exposing this vehicle state data (gear, speed, battery, distance) to any consumer on the network. ECU2 subscribes to these events to update its head unit and instrument cluster displays. Note that camera streaming is a separate systemd service — it does not go through SOME/IP.
 
-1. **Service Discovery** — ECU2 automatically discovers ECU1's services via multicast (224.244.224.245:30490), eliminating hardcoded addresses for service endpoints
+1. **Service Discovery** — ECU2 automatically discovers ECU1's services via multicast, eliminating hardcoded addresses for service endpoints
 2. **Event-based Communication** — Vehicle state changes are broadcast as events, allowing multiple consumers (GearApp, SpeedApp, BatteryApp, PDCApp) to subscribe independently
 3. **RPC Methods** — ECU2 can call `setGearPosition()` on ECU1 remotely, enabling bidirectional control
 4. **CommonAPI Abstraction** — FIDL interface definitions generate type-safe C++ proxy/stub code, decoupling application logic from the transport protocol
-
-### Service Configuration
-
-| Parameter | Value |
-|-----------|-------|
-| Service ID | 0x1234 |
-| Instance ID | 0x5678 |
-| Application ID | 0x1001 |
-| Unicast | 192.168.1.100 |
-| UDP Port (unreliable) | 30501 |
-| TCP Port (reliable) | 30502 |
-| SD Multicast | 224.244.224.245:30490 |
 
 ## Yocto Project
 
