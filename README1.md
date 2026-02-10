@@ -125,7 +125,7 @@ graph TD
   - Bytes 0-2: Speed (cm/s, big-endian int16 + decimal uint8)
   - Bytes 3-6: Distance (cm, little-endian float)
 
-## Network Configuration
+## Network Configuration btw two ECUs
 
 | Device | Interface | IP Address | Role |
 |--------|-----------|-----------|------|
@@ -234,57 +234,29 @@ meta-vehiclecontrol/
 └── recipes-vehiclecontrol/            # VehicleControlECU application recipe
 ```
 
-## libcamera
+## libcamera & GStreamer
 
-### What is libcamera?
-
-**libcamera** is an open-source camera stack for Linux that provides a unified API for camera hardware. It replaces the legacy V4L2 camera interface with a modern architecture that includes **IPA (Image Processing Algorithm)** modules for per-platform image tuning.
-
-### Why libcamera for ECU1?
-
-1. **Raspberry Pi IPA Module** — The OV5647 camera sensor requires Raspberry Pi-specific image processing (auto-exposure, white balance, lens shading correction) that only the `ipa_rpi.so` module provides
-2. **GStreamer Integration** — The `libcamerasrc` GStreamer element provides direct access to the camera pipeline without manual V4L2 configuration
-3. **Yocto Fix** — The base Yocto libcamera recipe builds only the `vimc` (virtual camera) IPA module. The `meta-vehiclecontrol` layer overrides this with `-Dipas=raspberrypi` to build the correct IPA module and packages it into the image
-
-### Key Configuration (libcamera.bbappend)
+We used [libcamera](https://libcamera.org/) with GStreamer to stream the OV5647 reverse camera from ECU1 to ECU2 over RTP/UDP. The default Yocto libcamera recipe only builds the `vimc` (virtual camera) IPA module, so we added a bbappend to build the Raspberry Pi IPA module instead:
 
 ```bitbake
-# Build Raspberry Pi IPA instead of vimc
+# libcamera.bbappend
 EXTRA_OEMESON:remove:rpi = "-Dipas=vimc"
 EXTRA_OEMESON:append:rpi = " -Dipas=raspberrypi"
 
-# Package IPA modules into the final image
 FILES:${PN} += "${libdir}/libcamera/*.so"
 FILES:${PN} += "${libdir}/libcamera/*.so.sign"
 ```
 
-## GStreamer
+The camera streaming runs as an independent systemd service on ECU1, using the following GStreamer pipeline:
 
-### What is GStreamer?
-
-**GStreamer** is an open-source multimedia framework that allows construction of media processing pipelines. Elements are linked together to form a pipeline that processes media data from source to sink.
-
-### Why GStreamer for Camera Streaming?
-
-1. **Pipeline Architecture** — GStreamer's plugin-based design allows composing the exact pipeline needed: camera capture → encoding → network transport
-2. **Hardware Acceleration** — On the Jetson receiver side, `nvv4l2decoder` provides hardware H.264 decoding with minimal CPU usage
-3. **RTP/UDP Transport** — Low-latency, real-time streaming over standard UDP with RTP packetization, ideal for reverse camera feed
-4. **Zero-latency Encoding** — x264enc with `tune=zerolatency` minimizes encoding delay for real-time video
-
-### Camera Streaming Pipeline
-
-**Sender (ECU1 — Raspberry Pi 4):**
+**Sender (ECU1):**
 ```
-libcamerasrc → video/x-raw,1280x720@30fps → videoconvert → x264enc
-    (tune=zerolatency, bitrate=4000, speed-preset=ultrafast)
-    → h264parse (config-interval=1) → rtph264pay (pt=96)
-    → udpsink (host=192.168.1.101, port=5000)
+libcamerasrc → videoconvert → x264enc (zerolatency) → rtph264pay → udpsink
 ```
 
-**Receiver (ECU2 — Jetson Orin Nano):**
+**Receiver (ECU2):**
 ```
-udpsrc (port=5000) → rtph264depay → h264parse
-    → nvv4l2decoder → nv3dsink
+udpsrc → rtph264depay → h264parse → nvv4l2decoder → nv3dsink
 ```
 
 ## PiRacer Hardware Control
@@ -292,17 +264,6 @@ udpsrc (port=5000) → rtph264depay → h264parse
 ### What is PiRacer?
 
 The **PiRacer** is an AI racing robot kit built around Raspberry Pi, using PCA9685 PWM controllers for motor and servo control, and I2C sensors for telemetry.
-
-### Hardware Interface Map
-
-| Bus | Address | Device | Function |
-|-----|---------|--------|----------|
-| I2C-1 | 0x40 | PCA9685 | Steering servo (Channel 0, 50Hz PWM) |
-| I2C-1 | 0x60 | PCA9685 | Throttle motors (Left: Ch5-7, Right: Ch0-2) |
-| I2C-1 | 0x41 | INA219 | Battery monitor (3S LiPo, 9.0V-12.6V) |
-| SPI | — | MCP251xFD | CAN transceiver (1000 kbps) |
-| CSI | — | OV5647 | Camera module (1280x720 @ 30fps) |
-| USB | /dev/input/js0 | Shanwan | Gamepad controller (50Hz polling) |
 
 ### Gamepad Input Mapping
 
