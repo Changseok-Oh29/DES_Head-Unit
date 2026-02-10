@@ -313,7 +313,7 @@ The **PiRacer** is an AI racing robot kit built around Raspberry Pi, using PCA96
 | Button X | Gear: Park |
 | Button Y | Gear: Reverse |
 | Left Stick X-axis | Steering (-1.0 to 1.0) |
-| Right Stick Y-axis | Throttle (-1.0 to 1.0, capped at 50%) |
+| Right Stick Y-axis | Throttle (0 to 1.0, capped at 50%) |
 
 ### Gear Behavior
 
