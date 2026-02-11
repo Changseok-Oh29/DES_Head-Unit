@@ -11,31 +11,6 @@
 
 # Introduction
 
-<table border="0" rules="none">
-<tr border="0">
-    <td width="280" height="200" align="center">
-        <a href="https://www.yoctoproject.org/">
-            <img alt="Yocto Logo" src="docs/images/yocto-logo.png" width="200">
-        </a>
-    </td>
-    <td width="280" height="200" align="center">
-        <a href="https://github.com/COVESA/vsomeip">
-            <img alt="COVESA Logo" src="docs/images/covesa-logo.png" width="200">
-        </a>
-    </td>
-    <td width="280" height="200" align="center">
-        <a href="https://libcamera.org/">
-            <img alt="libcamera Logo" src="docs/images/libcamera-logo.png" width="200">
-        </a>
-    </td>
-    <td width="280" height="200" align="center">
-        <a href="https://gstreamer.freedesktop.org/">
-            <img alt="GStreamer Logo" src="docs/images/gstreamer-logo.png" width="200">
-        </a>
-    </td>
-</tr>
-</table>
-
 The **VehicleControl ECU** is the hardware control unit (ECU1) of the DES_Head-Unit distributed automotive infotainment system, developed as part of the **SEA:ME** (Software Engineering for Automotive and Mobility Engineers) program.
 
 Running on a **Raspberry Pi 4** with a custom **Yocto Linux** image, ECU1 has three distinct responsibilities:
@@ -46,7 +21,7 @@ Running on a **Raspberry Pi 4** with a custom **Yocto Linux** image, ECU1 has th
 
 Additionally, a separate **camera streaming service** runs independently on ECU1, streaming the picamera(OV5647 camera) feed to ECU2 via RTP/UDP using GStreamer.
 
-The system is built around the **PiRacer AI Kit**, providing vehicle control with a gamepad interface, while exposing all vehicle state data as SOME/IP service events for consumption by the head unit and instrument cluster applications on ECU2.
+The system is built around the **PiRacer AI Kit**, providing vehicle control with a gamepad interface, while exposing all vehicle state data as SOME/IP service events for consumption by the head unit(including PDC app) and instrument cluster applications on ECU2.
 
 ---
 
@@ -236,7 +211,7 @@ meta-vehiclecontrol/
 
 ## libcamera & GStreamer
 
-We used [libcamera](https://libcamera.org/) with GStreamer to stream the OV5647 reverse camera from ECU1 to ECU2 over RTP/UDP. The default Yocto libcamera recipe only builds the `vimc` (virtual camera) IPA module, so we added a bbappend to build the Raspberry Pi IPA module instead:
+We used [libcamera](https://libcamera.org/) with GStreamer to stream the OV5647 reverse camera(picamera rev 1.3) from ECU1 to ECU2 over RTP/UDP. The default Yocto libcamera recipe only builds the `vimc` (virtual camera) IPA module, so we added a bbappend to build the Raspberry Pi IPA module instead:
 
 ```bitbake
 # libcamera.bbappend
@@ -273,8 +248,8 @@ The **PiRacer** is an AI racing robot kit built around Raspberry Pi, using PCA96
 | Button B | Gear: Neutral |
 | Button X | Gear: Park |
 | Button Y | Gear: Reverse |
-| Left Stick X-axis | Steering (-1.0 to 1.0) |
-| Right Stick Y-axis | Throttle (0 to 1.0, capped at 50%) |
+| Left Stick X-axis | Steering (-1.0 to 1.0 : 100%)|
+| Right Stick Y-axis | Throttle (0 to 1.0 : 50%, capped at 50%) |
 
 ### Gear Behavior
 
